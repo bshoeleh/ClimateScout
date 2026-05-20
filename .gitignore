@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/A-U_ClimateScout/obj
+/A-U_ClimateScout/bin/Debug/net10.0
+/.vs
