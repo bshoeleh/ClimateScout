@@ -1,0 +1,27 @@
+/Models
+    Country.cs
+    State.cs
+    ClimateZone.cs
+    KoppenClimateZone.cs
+    DesignStrategy.cs
+    ClimateScoutClimateZone.cs
+    ProjectAddress.cs
+/ViewModels
+    EditAddressVM.cs
+/Pages/Projects
+    Address.cshtml
+    Address.cshtml.cs
+/wwwroot/css
+    climatescout.css
+    site.css
+/wwwroot/js
+    projectaddress.js
+/wwwroot/images/strategies
+    [all strategy images]
+/Views/Shared
+    _ClimateScoutSVGHotHumid.cshtml
+    _ClimateScoutSVGHotDry.cshtml
+    _ClimateScoutSVGCold.cshtml
+    _ClimateScoutSVGTemperate.cshtml
+    _ClimateMapModal.cshtml
+    [any other partials]

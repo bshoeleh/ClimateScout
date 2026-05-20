@@ -1,0 +1,404 @@
+﻿
+.cz-header-accent {
+    color: #fff;
+    padding: .5rem .5rem 0 .5rem
+}
+
+.cz-card-body {
+    padding: 0 0 1.25em 0;
+}
+
+.cz-diagram {
+    background-color: #000;
+    color: #FFF;
+    position: sticky;
+    top: -50px;
+    z-index: 100;
+    
+}
+
+    .cz-diagram svg {
+        max-height: 50vh;
+    }
+
+    .cz-diagram a {
+        color: #FFF;
+    }
+    /*internet explorer only */
+    _:-ms-lang(x), .cz-diagram svg {
+        min-height: 500px;
+    }
+
+@media only screen and (max-width: 768px) {
+    _:-ms-lang(x), .cz-diagram svg {
+        min-height: 250px;
+    }
+}
+
+.cz-diagram h5 svg {
+    min-height: auto;
+}
+
+.rp-container {
+    position: relative;
+    z-index: 100;
+}
+
+.rm-container {
+    /* position: relative;
+    top: -12.5rem;
+    margin-bottom: -12.5rem; */
+    margin-top: -12.5rem;
+    padding-top: 11rem;
+    z-index: 50;
+    background-color: #000;
+    color: #FFF;
+    border-top: 3px solid white;
+}
+
+    .rm-container a {
+        color: #FFF;
+    }
+
+/*.card {*/
+    /* border: none; */
+    /*border-radius: 0;
+}*/
+
+.card-img, .card-img-top {
+    border-radius: 0;
+}
+
+#ds-top-daylighting-controls {
+    visibility: hidden;
+}
+
+#ds-top-daylighting {
+    visibility: hidden;
+}
+
+#ds-thermal-storage-wall {
+    visibility: hidden;
+}
+
+#ds-stack-ventilation {
+    visibility: hidden;
+}
+
+#ds-solar-shading {
+    visibility: hidden;
+}
+
+#ds-solar-greenhouse {
+    visibility: hidden;
+}
+
+#ds-side-daylighting-controls {
+    visibility: hidden;
+}
+
+#ds-side-daylighting {
+    visibility: hidden;
+}
+
+#ds-shading-devices {
+    visibility: hidden;
+}
+
+#ds-night-vent-cooling {
+    visibility: hidden;
+}
+
+#ds-intermediate-light-shelves {
+    visibility: hidden;
+}
+
+#ds-indirect-gain-sunspace {
+    visibility: hidden;
+}
+
+#ds-green-roof {
+    visibility: hidden;
+}
+
+#ds-form-for-heating {
+    visibility: hidden;
+}
+
+#ds-form-for-daylighting {
+    visibility: hidden;
+}
+
+#ds-form-for-cooling {
+    visibility: hidden;
+}
+
+#ds-evaporative-cooling-towers {
+    visibility: hidden;
+}
+
+#ds-east-west-shading {
+    visibility: hidden;
+}
+
+#ds-earth-sheltering {
+    visibility: hidden;
+}
+
+#ds-double-roof {
+    visibility: hidden;
+}
+
+#ds-direct-gain-heat-storage {
+    visibility: hidden;
+}
+
+#ds-direct-gain-glazing {
+    visibility: hidden;
+}
+
+#ds-daylighting-from-multiple-sides {
+    visibility: hidden;
+}
+
+#ds-cross-ventilation {
+    visibility: hidden;
+}
+
+#ds-cool-roof {
+    visibility: hidden;
+}
+
+#ds-clerestories-and-skylights {
+    visibility: hidden;
+}
+
+#ds-building-facades {
+    visibility: hidden;
+}
+
+#ds-east-west-shading-with-cooling-tower {
+    visibility: hidden;
+}
+
+.toggle-button {
+    display: block;
+    width: 25px;
+    height: 25px;
+    background-image: url(https://climatescout.arcadis.com/wp-content/themes/crtkl-climate/theme/images/plus-circle-fill.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transition: filter 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+    /* position: absolute;
+  bottom:0px; */
+}
+
+.st-toggle .media-body {
+    height: 100%;
+    position: relative;
+    flex-direction: column;
+    /* opacity: 1;
+    filter: grayscale(0%);
+    transition:filter 0.2s ease-in-out;
+    transition:opacity 0.2s ease-in-out; */
+}
+
+.toggle-button-toggled {
+    background-image: url(https://climatescout.arcadis.com/wp-content/themes/crtkl-climate/theme/images/dash-circle.svg);
+}
+
+.toggle-button-disabled {
+    opacity: 50%;
+    filter: grayscale(100%);
+    /* transition:filter 0.2s ease-in-out;
+    transition:opacity 0.2s ease-in-out; */
+}
+
+
+.underline-text {
+    border-bottom: 2px solid #fff;
+    padding-bottom: 5px;
+    margin-right: 10px;
+}
+
+.palette-2030 a:hover {
+    text-decoration: none;
+    color: #ccc;
+}
+
+    .palette-2030 a:hover .underline-text {
+        border-color: #ccc;
+    }
+
+.breadcrumb {
+    padding-top: 0;
+}
+
+.breadcrumb-item a {
+    color: #585858;
+}
+
+.breadcrumb-item .active a {
+    color: #000
+}
+/*
+.navbar {
+    height: 75px;
+}
+
+    .navbar .nav-item {
+        padding: 12px 24px 0;
+    }
+
+    .navbar .nav-link:hover {
+        text-decoration: underline;
+    }*/
+
+.st_toggle .media-body {
+    min-height: 75px;
+    position: relative;
+}
+
+.st_toggle .toggle-button {
+    position: absolute;
+    bottom: 0;
+}
+
+.leaflet-control-attribution {
+    color: #666 !important;
+}
+
+
+
+.leaflet-geosearch-bar {
+    color: #666;
+}
+
+.leaflet-touch .leaflet-geosearch-bar form input:focus {
+    box-shadow: none;
+}
+
+
+.leaflet-container .leaflet-control-attribution {
+    background: transparent !important;
+}
+
+.reference-projects .card-body {
+    min-height: 124px;
+}
+
+.ds-help-text {
+    position: absolute;
+    top: 0;
+    left: 15px;
+    color: #FFF;
+}
+
+
+.legend.leaflet-control {
+    line-height: 18px;
+    color: #555;
+    width: 120px;
+}
+
+.legend i {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+
+h1 strong, h2 strong, h3 strong, h4 strong {
+    font-family: "FS Elliot Heavy","Arial Black",sans-serif;
+}
+/*
+.leaflet-overlay-pane {
+    mix-blend-mode: screen;
+}
+*/
+
+.info {
+    width: 200px;
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    color: #777;
+}
+
+    .info h4 {
+        font: 16px Arial, Helvetica, sans-serif;
+        margin: 0 0 5px;
+        color: #777;
+    }
+
+@media print {
+    body {
+        background-color: transparent;
+        color: #000;
+    }
+
+
+    .navbar {
+        display: block;
+    }
+
+        .navbar #navbarDropdown {
+            display: none;
+        }
+
+    nav {
+        display: none;
+    }
+
+
+    .noprint, .toggle-button, #helpBubble {
+        display: none;
+    }
+    /*.strategy-title {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }*/
+    .cz-diagram {
+        /* background-color: #000;
+        color: #FFF; */
+        position: relative;
+        top: 0;
+    }
+
+    .media a {
+        color: #000;
+        text-decoration: none;
+    }
+
+    .media h6 {
+        font-size: 1.25rem;
+    }
+    /*
+    .footer-menu {
+        display: none;
+    }
+
+    footer.site-footer {
+        height: auto;
+        background-color: transparent;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+        footer.site-footer div.site-info {
+            margin: 0 0 20px 0;
+            padding: 0;
+            color: #000;
+        }*/
+}
+
+.leaflet-attribution-flag {
+    display: none !important;
+}
