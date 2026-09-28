@@ -231,7 +231,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ## 10. Decisions & open questions
 
 ### Decided (2026-09-28)
-- **Hosting:** Arcadis on-prem **IIS + SQL Server**. → Media on local disk / file share behind `IFileStorage`; secrets via IIS environment variables (not committed appsettings); email via SMTP relay (see open Q); Data Protection keys persisted to a folder/SQL so logins survive app-pool recycles.
+- **Hosting:** Arcadis on-prem **IIS + SQL Server**. → Media on local disk / file share behind `IFileStorage`; secrets via IIS environment variables (not committed appsettings); email via Mailjet (see below); Data Protection keys persisted to a folder/SQL so logins survive app-pool recycles.
+- **Configuration & secrets:** development values live in **User Secrets** (never in committed files). Production reads **environment variables prefixed `CS__`** (ClimateScout), set per IIS site: `CS__ConnectionStrings__DefaultConnection`, `CS__Mapbox__AccessToken`, … — the prefix is stripped and `__` becomes `:`. `CS__` values override everything else. Exception: `ASPNETCORE_ENVIRONMENT` keeps its standard name (read by the framework before our code). Unprefixed variables are still read by the framework default, but `CS__` is the documented convention.
 - **Strategy conflicts:** always **symmetric**. Saving A↔B writes both rows; migration unions the old one-directional data.
 - **API access:** **API key required** for all external callers. The site's own pages call the API with same-origin cookie/antiforgery auth. Admin screen to issue, name, rotate and revoke keys; keys stored hashed; per-key rate limits and usage logging.
 
@@ -261,7 +262,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] 1.1 Project structure: single web project + `tests/A-U_ClimateScout.Tests` (flat; Copilot models/seeder moved to `xfer/copilot-reference`)
 - [x] 1.2 Test project set up and running (`dotnet test` / Test Explorer)
 - [x] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
-- [ ] 1.4 Configuration: strongly-typed options (Mapbox, Email, Storage, ApiKeys); connection string + secrets via User Secrets (dev) / IIS env vars (prod)
+- [x] 1.4 Configuration: connection string in User Secrets (dev); production reads `CS__`-prefixed environment variables. Typed settings classes (Mapbox, Email, Storage, ApiKeys) are deferred — each is added with the feature that uses it (Phases 3–8).
 - [ ] 1.5 Cross-cutting: Serilog, global exception handling + ProblemDetails, health checks, `.editorconfig`, analyzers
 - [ ] 1.6 Front-end pipeline: Bootstrap 5.3 SCSS build, palette tokens, LibMan for Chart.js / Leaflet / topojson-client / locate control / Quill (jQuery kept)
 - [ ] 1.7 Layout shell: new `_Layout` (ClimateScout branding, no CRTKL), header/nav, footer placeholder, Admin area skeleton locked behind `[Authorize]`, public registration disabled
@@ -323,7 +324,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Account emails (invite, reset)
 
 ### Phase 9 — Hardening & launch
-- [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS environment variables
+- [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
 - [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails)
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
