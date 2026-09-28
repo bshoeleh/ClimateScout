@@ -260,7 +260,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 1 — Platform setup (walkthrough, one step at a time)
 - [x] 1.1 Project structure: single web project + `tests/A-U_ClimateScout.Tests` (flat; Copilot models/seeder moved to `xfer/copilot-reference`)
 - [x] 1.2 Test project set up and running (`dotnet test` / Test Explorer)
-- [ ] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
+- [x] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
 - [ ] 1.4 Configuration: strongly-typed options (Mapbox, Email, Storage, ApiKeys); connection string + secrets via User Secrets (dev) / IIS env vars (prod)
 - [ ] 1.5 Cross-cutting: Serilog, global exception handling + ProblemDetails, health checks, `.editorconfig`, analyzers
 - [ ] 1.6 Front-end pipeline: Bootstrap 5.3 SCSS build, palette tokens, LibMan for Chart.js / Leaflet / topojson-client / locate control / Quill (jQuery kept)
