@@ -1,0 +1,333 @@
+# ClimateScout Modernization Plan
+
+Status: **DRAFT — decisions recorded in section 10; awaiting go-ahead**
+Last updated: 2026-09-28
+
+---
+
+## 1. Goals
+
+Rebuild ClimateScout (currently WordPress + ACF + custom theme) as an ASP.NET Core MVC application on SQL Server that:
+
+- Preserves every public feature of the current site (climate map, zone pages, interactive strategy diagrams, strategy pages, carbon map, carbon calculator/comparison).
+- Makes **all** content editable from a locked-down admin area.
+- Imports new grid-carbon-intensity data (CSV) frequently and safely, with preview and history.
+- Exposes a versioned JSON API.
+- Sends email (contact, admin notifications, account emails).
+- Adds a Sponsors page, plus a sponsor logo strip in the site footer.
+- Removes all CallisonRTKL / CRTKL branding; branded as Arcadis ClimateScout®.
+- Looks modern and clean — Bootstrap 5, vanilla JS for our code (jQuery stays installed but isn't used by new code), Chart.js, Arcadis-referenced palette.
+
+## 2. Findings from the old platform (summary)
+
+| Area | Old implementation | Notes for rebuild |
+|---|---|---|
+| Climate zones | WP taxonomy `climate-zone`, 5 groups + 31 Köppen sub-zones; ACF term fields `body`, `climate-code`, `heading-color`, `map_id`, `diagram` | `map_id` joins to property `n` in `koppen-2018-2.json` TopoJSON (5,499 polygons) |
+| Design strategies | CPT `climate-strategy` (27); ACF `2030_url`, `conflicts` (PHP-serialized post IDs), `reference_projects` repeater (name/image/description/url/sector) | Conflicts are **asymmetric** in data; one 2030 URL wrong (east-west-shading → earth-sheltering) |
+| Zone page diagram | 4 inline SVGs (hot-humid, hot-dry, temperate, cold), layers `id="ds-{slug}"`; toggling, conflict disabling (ref-counted), URL-hash state, print-only-selected | Keep behavior; SVGs become uploadable admin assets |
+| Carbon map | Leaflet choropleth from a 1–1.7 MB JS file mixing geometry + values (267 features) | Split: geometry = static GeoJSON; values = SQL |
+| Calculator | EUI × grid intensity × area; unit conversions; EPA equivalencies (gasoline, seedlings) | Port to a server-side service + API; fix dead unit-branch bug |
+| Maps | Leaflet 1.9 + Mapbox tiles/geocoding, **token hard-coded**, style owned by personal account | Keep Leaflet; move Mapbox to an Arcadis account behind a server proxy (see §5) |
+| Content | About page, calculator intro/result text, carbon sources (ACF) | Becomes editable content blocks |
+| Media | 149 attachments; still downloadable from `climatescout.arcadis.com/wp-content/uploads/…` | Download once into our storage |
+| Data quirks | `�` mojibake for degree signs; unused `product` CPT; duplicate/dead templates | Clean during migration |
+
+### New carbon data (`xfer/carbondata`)
+
+| File | Shape | Issues the importer must handle |
+|---|---|---|
+| `CEI_all_countries_from Ember.csv` | `Area,Year,Continent,Variable,Unit,Value` (228 rows) | Aggregates with blank continent (World, EU, G7, OECD, ASEAN…); **mixed years per row** (2009–2025); quoted names containing commas; names differ from map (`Viet Nam` vs `Vietnam`, `Congo (the)`, `Bahamas (the)`, …) |
+| `CEI_USA_from Ember.csv` | `Country,State,Year,…` (53 rows) | Source changed EPA → Ember; includes `US Total`; `"Washington, DC"` vs map `District of Columbia` |
+| `CEI_Canada_from Canada Energy Regulator.csv` | `Country,Province,Year,…` (12 rows) | Yukon missing (map has it) |
+
+→ Regions must be keyed by **stable codes** (ISO 3166-1 alpha-3 for countries, ISO 3166-2 for states/provinces) with an **alias table** for name matching. Unmatched rows go to a review screen, never silently dropped.
+
+### Existing starter project (`A-U_ClimateScout`)
+
+.NET 10 MVC template + Identity + EF SQL Server, plus Copilot-generated models and a 1,071-line seeder. Treat as **scaffolding only**: models lack reference projects, zone↔strategy relation, proper conflicts, carbon, sponsors, content; image URLs point at the WP site that will be retired; jQuery/Bootstrap libs from the template. Plan: restructure and rebuild the domain; reuse seed text only after verifying it against the SQLite source.
+
+## 3. Target architecture
+
+### 3.1 Solution layout
+
+```
+A-U_ClimateScout.slnx
+A-U_ClimateScout/                   ASP.NET Core MVC web project (existing; public site, Admin area, API)
+  Areas/
+    Admin/
+      Controllers/                  lean: validate → call service → return view
+      Views/
+      ViewModels/
+  Controllers/                      public MVC controllers
+  Controllers/Api/V1/               API controllers ([ApiController], versioned)
+  ViewModels/
+  Views/
+    Shared/Components/              view components (nav, footer, sponsor strip)
+  wwwroot/
+    css/  (app.css built from SCSS)
+    js/   (ES modules: map.js, zone-diagram.js, calculator.js, carbon-chart.js, admin/*.js)
+    geo/  (koppen.json, carbon-regions.geojson)
+    lib/  (bootstrap 5, chart.js, leaflet, topojson-client, leaflet.locatecontrol, quill — via LibMan)
+  Program.cs                        composition root only (calls AddCore / AddInfrastructure)
+A-U_ClimateScout.Core/              domain: entities, enums, DTOs, service interfaces, business rules
+  Entities/
+  Services/                         IClimateZoneService, IDesignStrategyService, ICarbonService,
+                                    ICarbonCalculator, ICarbonImportService, ISponsorService,
+                                    IContentService, IEmailService, IFileStorage, IApiKeyService …
+  Calculations/                     CarbonCalculator (pure, unit-tested)
+A-U_ClimateScout.Infrastructure/    EF Core, migrations, service implementations, email, storage, CSV
+  Data/
+    ApplicationDbContext.cs
+    Configurations/                 IEntityTypeConfiguration<T> per entity
+    Migrations/
+    Initialization/                 idempotent initializers used by the DataTool (no HasData seeding)
+  Services/
+  Importing/                        CSV parsers per source profile (CsvHelper)
+  Email/                            MailjetEmailSender (+ SMTP sender for dev/Mailpit)
+  Storage/                          LocalFileStorage (disk / file share)
+A-U_ClimateScout.DataTool/         console tool, re-runnable any time (see §3.3)
+tests/
+  A-U_ClimateScout.Core.Tests/      calculator, conflict rules, import matching
+  A-U_ClimateScout.Web.Tests/       integration tests (WebApplicationFactory, API contracts, admin auth)
+docs/
+```
+
+Namespaces stay `A_U_ClimateScout.*` (e.g. `A_U_ClimateScout.Core.Services`).
+
+### 3.3 Data initialization (no seeding)
+
+The database schema comes from EF migrations only. **No `HasData` seeding and no startup seeder.** Data is loaded by `A-U_ClimateScout.DataTool`, a console app whose commands are idempotent and can be run at any point, against any environment:
+
+| Command | Does |
+|---|---|
+| `db migrate` | apply pending migrations |
+| `init reference` | create/update lookup data (roles, zone groups, diagrams, equivalency factors, carbon sources) |
+| `init admin --email …` | create/reset the first Admin user |
+| `import wordpress --sqlite … [--dry-run]` | import zones, strategies, conflicts, reference projects, content from the old WP database |
+| `import media --from-sqlite …` | download old WP images into media storage |
+| `import carbon --file … --profile …` | same import pipeline the Admin screen uses |
+| `import geo …` | load carbon-region geometry/aliases |
+
+Every command reports created / updated / skipped counts and supports `--dry-run`. The admin screens call the same Infrastructure services, so there's one code path.
+
+Rules: controllers never touch `DbContext`; services return DTOs/results; validation via FluentValidation or DataAnnotations; `Result<T>` pattern for expected failures.
+
+### 3.2 Data model (first cut)
+
+- **ClimateZoneGroup** — Id, Code (A–E), Name, Slug, Color, SortOrder
+- **ClimateZone** — Id, GroupId, KoppenCode (`Cfa`), Name, Slug, DescriptionHtml, Color, MapId, DiagramId, SortOrder, IsActive
+- **Diagram** — Id, Name (Hot-Humid …), Slug, SvgAssetId (uploaded SVG containing `ds-{slug}` layers)
+- **DesignStrategy** — Id, Name, Slug, SummaryHtml, BodyHtml, IconAssetId, ImageAssetId, Palette2030Url, SortOrder, IsActive
+- **ClimateZoneStrategy** — ZoneId, StrategyId (many-to-many, optional SortOrder)
+- **StrategyConflict** — StrategyId, ConflictsWithStrategyId (store both directions if symmetric — see Q)
+- **ReferenceProject** — Id, StrategyId, Name, Sector, DescriptionHtml, Url, ImageAssetId, SortOrder
+- **CarbonRegion** — Id, Code (ISO), Name, RegionType (Country/State/Province/Aggregate), ParentRegionId, Continent, ShowOnMap
+- **CarbonRegionAlias** — RegionId, Alias (unique), Source
+- **CarbonDataSource** — Id, Name (Ember, CER, EPA), Url, Notes
+- **CarbonIntensity** — Id, RegionId, SourceId, Year, ValueGPerKWh, ImportBatchId; unique (Region, Source, Year)
+- **CarbonImportBatch** — Id, FileName, SourceId, Profile, UploadedBy, UploadedAt, Status (Preview/Committed/RolledBack), row counts, ErrorsJson
+- **Sponsor** — Id, Name, Tier, LogoAssetId, Url, DescriptionHtml, StartDate, EndDate, SortOrder, IsActive, ShowInFooter
+  - "Visible" = IsActive and today within Start/End dates (open-ended if null). Footer shows visible sponsors with ShowInFooter, ordered by Tier then SortOrder; cached and invalidated on save.
+- **ContentBlock** — Key (`about.body`, `carbon.calculator.intro`, `footer.text` …), Title, Html, UpdatedBy/At
+- **MediaAsset** — Id, FileName, ContentType, Path, Alt, Width, Height, UploadedAt
+- **EquivalencyFactor** — Key, Label, TonsCo2ePerUnit, SourceUrl (EPA factors editable)
+- **ContactMessage** — Id, Name, Email, Message, CreatedAt, Handled
+- **AuditLog** — who changed what, when (all admin writes)
+- Identity tables (ApplicationUser : IdentityUser, roles **Admin**, **Editor**)
+
+"Current" carbon value for a region = latest year for that region's preferred source.
+
+## 4. Front end
+
+- **Bootstrap 5.3** (SCSS, custom theme variables). Vanilla ES modules for our code; Bootstrap's own JS for tooltips/tabs/modals.
+- **jQuery policy:** jQuery, jquery-validation and jquery-validation-unobtrusive **stay in the project** (template/Identity pages use them) but new code doesn't depend on them unless there's a clear reason.
+- Client validation: the template's jquery-validation-unobtrusive is fine for standard forms; custom interactive widgets are vanilla JS.
+- Rich-text editing in admin: Quill 2 (BSD) or TinyMCE (needs licence key) — see Q. All saved HTML sanitized server-side (`HtmlSanitizer`).
+- Chart.js 4 for the comparison chart.
+- Accessibility: WCAG 2.2 AA — keyboard toggle for strategies, focus states, contrast-checked palette, `prefers-reduced-motion`.
+- Keep public URLs so links/SEO survive: `/zone/{slug}`, `/design-strategy/{slug}`, `/carbon`, `/carbon-comparison`, `/about`; 301s for anything that changes.
+
+### 4.1 Proposed palette (to validate against Arcadis brand guidelines)
+
+| Token | Hex | Use |
+|---|---|---|
+| `--cs-orange` (Arcadis orange) | `#E4610F` | primary actions, highlights, active states |
+| `--cs-orange-soft` | `#FBE7DA` | tints, badges |
+| `--cs-ink` | `#16181D` | headings, dark hero/header, map chrome |
+| `--cs-slate` | `#4A5560` | body text on light |
+| `--cs-pine` | `#1F4D46` | secondary / "climate" accent, links on light |
+| `--cs-sage` | `#9DBFB1` | subtle secondary, chart gridlines |
+| `--cs-sand` | `#F6F3EE` | page background (warm off-white) |
+| `--cs-line` | `#E3DED6` | borders, dividers |
+
+Köppen zone colors remain data (editable per zone). Carbon choropleth moves to a sand → orange → deep-red sequential scale that echoes the brand. Optional dark mode for the map-heavy pages.
+
+## 5. Maps
+
+### Decision (2026-09-28)
+- **Map library: Leaflet 1.9** (as on the old site) — proven with this exact data (~5,500 Köppen polygons, 267 carbon regions), simplest to maintain, provider-neutral (tile source is one URL). Used from vanilla ES modules, no jQuery.
+- **Tiles & address search: Mapbox** under a new Arcadis-owned account (shared mailbox). Style copied from the old personal account (`mdoll/cknkn6oz71ru317nvrvefoghs`).
+- **The Mapbox token never reaches the browser:**
+  - Tiles are served through our endpoint `GET /map/tiles/{z}/{x}/{y}` which forwards to the Mapbox Static Tiles API (short-lived HTTP caching per Mapbox headers; no persistent tile storage).
+  - Address search goes through `GET /api/v1/geocode?q=`.
+  - Token lives in server config (IIS environment variable), and is also URL-restricted in the Mapbox dashboard.
+- **Cost:** expected to stay inside Mapbox's free tier (100,000 temporary geocoding requests/month; tile requests have their own free allowance — confirm on mapbox.com/pricing when the account is created). A payment card may be required on the account; nothing is charged within the free tier.
+
+### Plugins / replacements
+| Old | New |
+|---|---|
+| `leaflet-omnivore` (deprecated) for TopoJSON | `topojson-client` → GeoJSON → `L.geoJSON` (canvas renderer for the Köppen layer) |
+| `leaflet-geosearch` with Mapbox key in the browser | Small custom search box (vanilla JS) calling `/api/v1/geocode`; 300 ms debounce, minimum 3 characters |
+| `leaflet.locatecontrol` | Kept (vanilla, no jQuery) |
+| Hard-coded token in JS | Tile proxy + server config |
+
+### Geocoding rules
+- Use **temporary** geocoding only: results are displayed (fly the map to the address), **never stored**. Storing geocoded coordinates (e.g. saved project addresses) is "permanent" geocoding under Mapbox terms — no free tier (~$5 / 1,000). Revisit if saved projects are ever added.
+- Server-side safeguards on `/api/v1/geocode` and the tile proxy: per-IP rate limit plus a configurable **daily request cap**, with an admin email when 80% of the cap is reached.
+
+### Point lookup
+Server-side lat/lng → Köppen zone + carbon region via NetTopologySuite, so the API can answer "what zone is this location in" without the browser.
+
+### Alternatives considered (for reference)
+MapLibre GL JS (vector, GPU; more complex than we need at zoom 2–8), Mapbox GL JS (proprietary licence, billed per map load, locks us to Mapbox), OpenFreeMap (free, no SLA, no geocoder), Esri (possible via Arcadis enterprise licence), Azure Maps (pay-as-you-go). Switching tile provider later with Leaflet = change the proxy's upstream URL.
+
+## 6. Carbon importer
+
+1. Admin uploads CSV and picks (or auto-detects by header) a **source profile**: Ember-Countries, Ember-US-States, CER-Canada (profiles are config, new ones addable).
+2. Parse with CsvHelper (handles quoted commas, BOM, encodings).
+3. Validate: numeric value, unit = gCO2/kWh (or convert), year in range, variable = CO2 intensity.
+4. Match each row → `CarbonRegion` by code, then alias, then normalized name. Aggregates (World, EU…) stored but flagged `Aggregate`.
+5. **Preview screen**: new / changed (old → new value) / unchanged / unmatched / invalid. Unmatched rows can be mapped to a region inline (creates an alias for next time) or ignored.
+6. Commit in a transaction → new `CarbonIntensity` rows (history kept), batch record, audit entry, email summary to admins.
+7. Rollback a batch from the import history screen.
+8. Later (optional): scheduled pull from Ember's API instead of manual CSV.
+
+## 7. API (v1)
+
+Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External callers must send `X-Api-Key`** (keys issued in Admin, stored hashed); the site's own pages are authorized same-origin.
+
+- `GET /api/v1/climate-zones` · `GET /api/v1/climate-zones/{slug}` (with strategies)
+- `GET /api/v1/design-strategies` · `GET /api/v1/design-strategies/{slug}` (conflicts, reference projects)
+- `GET /api/v1/carbon/regions?type=&continent=` · `GET /api/v1/carbon/regions/{code}` (current + history)
+- `POST /api/v1/carbon/calculate` — { eui, euiUnit, area, areaUnit, regionCode | gridIntensity } → results + equivalencies
+- `GET /api/v1/lookup?lat=&lng=` → Köppen zone + carbon region + intensity
+- `GET /api/v1/geocode?q=` → proxied Mapbox search (temporary geocoding; rate-limited + daily cap)
+- `GET /api/v1/sponsors`
+
+## 8. Email
+
+`IEmailService` abstraction with templated Razor emails. Provider: **Mailjet** (production, account pending); SMTP to Mailpit for development. Uses: contact form → site admins; import completed/failed; account emails (invite, password reset, lockout). Outbound queue with retry (background `IHostedService` + table).
+
+## 9. Admin & security
+
+- Area `Admin`, `[Authorize(Policy = "AdminArea")]` on everything; roles **Admin** (users, settings, imports) and **Editor** (content).
+- ASP.NET Core Identity local accounts now; **public registration disabled**; users invited by an Admin; lockout, strong passwords, optional TOTP 2FA.
+- SSO later: add Microsoft Entra ID via `Microsoft.Identity.Web` as an additional scheme mapped to the same `ApplicationUser`/roles — designed-for now (claims-based policies, no hard-coded role checks in views).
+- Anti-forgery on all posts, HTML sanitization, upload validation (type sniffing, size limits, SVG sanitization), security headers (CSP), secrets in User Secrets / Key Vault — **nothing in JS or appsettings committed**.
+- Admin screens: Dashboard · Climate zones · Zone groups · Diagrams · Design strategies (+ conflicts matrix, reference projects) · Carbon regions/aliases · Carbon imports · Equivalency factors · Sponsors · Content blocks · Media library · Contact messages · Users · Audit log.
+
+## 10. Decisions & open questions
+
+### Decided (2026-09-28)
+- **Hosting:** Arcadis on-prem **IIS + SQL Server**. → Media on local disk / file share behind `IFileStorage`; secrets via IIS environment variables (not committed appsettings); email via SMTP relay (see open Q); Data Protection keys persisted to a folder/SQL so logins survive app-pool recycles.
+- **Strategy conflicts:** always **symmetric**. Saving A↔B writes both rows; migration unions the old one-directional data.
+- **API access:** **API key required** for all external callers. The site's own pages call the API with same-origin cookie/antiforgery auth. Admin screen to issue, name, rotate and revoke keys; keys stored hashed; per-key rate limits and usage logging.
+
+- **Maps:** **Mapbox** under a new Arcadis-owned account (shared mailbox), style copied from the old personal account, token URL-restricted to our domains and read from server config. Rendered with **Leaflet**; tiles and address search proxied through our server so the token never reaches the browser. Temporary geocoding only (results not stored). See §5.
+- **Email:** **Mailjet** (account to be set up later). Build `IEmailService` now with a Mailjet implementation + SMTP/Mailpit for development.
+- **Rich-text editor:** **Quill 2**; HTML sanitized server-side.
+- **jQuery:** stays installed; not used by new code in most cases.
+- **Data:** no seeding — the DataTool initializes/imports data on demand (§3.3).
+- **Working style:** step-by-step walkthrough; each step is explained and reviewed before the next.
+- **Sponsors:** own page **and** a logo strip in the footer on every page (per-sponsor `ShowInFooter` toggle, date-bounded visibility).
+- **Naming:** keep **A-U_ClimateScout**; new projects follow as `A-U_ClimateScout.Core`, `.Infrastructure`, `.DataTool`.
+
+### Open
+- Official Arcadis brand guideline/logo files
+
+---
+
+## 11. Step-by-step checklist
+
+### Phase 0 — Decisions & setup
+- [ ] Answer open questions (§10)
+- [ ] Confirm palette against Arcadis brand guidelines; obtain official logo files
+- [ ] Create Arcadis-owned Mapbox account; copy style `mdoll/cknkn6oz71ru317nvrvefoghs`; issue URL-restricted token
+- [ ] Set up Mailjet account (later)
+
+### Phase 1 — Platform setup (walkthrough, one step at a time)
+- [x] 1.1 Add `A-U_ClimateScout.Core` and `A-U_ClimateScout.Infrastructure` class libraries; wire project references; build
+- [x] 1.2 Add `A-U_ClimateScout.DataTool` console and `tests/` projects (xUnit); build + run empty tests (Web.Tests builds once 1.3 fixes the web project)
+- [ ] 1.3 Move `ApplicationDbContext` + Identity into Infrastructure; `AddCore()` / `AddInfrastructure()` composition; retire Copilot models/seeder and the template's Identity migration
+- [ ] 1.4 Configuration: strongly-typed options (Mapbox, Email, Storage, ApiKeys); connection string + secrets via User Secrets (dev) / IIS env vars (prod)
+- [ ] 1.5 Cross-cutting: Serilog, global exception handling + ProblemDetails, health checks, `.editorconfig`, analyzers
+- [ ] 1.6 Front-end pipeline: Bootstrap 5.3 SCSS build, palette tokens, LibMan for Chart.js / Leaflet / topojson-client / locate control / Quill (jQuery kept)
+- [ ] 1.7 Layout shell: new `_Layout` (ClimateScout branding, no CRTKL), header/nav, footer placeholder, Admin area skeleton locked behind `[Authorize]`, public registration disabled
+
+### Phase 2 — Domain & database
+- [ ] Entities + EF configurations (§3.2)
+- [ ] Create database from a fresh initial migration (`DataTool db migrate`)
+- [ ] Identity: `ApplicationUser`, roles; first Admin via `DataTool init admin`
+- [ ] Unit tests for conflict rules and calculator
+
+### Phase 3 — DataTool importers (WordPress + media + carbon)
+- [ ] `import wordpress` reads `climatescout-*.sqlite`: zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
+- [ ] Fix encoding (mojibake), fix known data errors, strip CRTKL references
+- [ ] Download all 149 attachments (rewrite `climatescout.crtkl.com` → `climatescout.arcadis.com`) into media storage; create `MediaAsset` rows
+- [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
+- [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
+- [ ] Import the three new CSVs through the real importer (proves the importer)
+- [ ] Verification report: counts & spot checks vs old site
+
+### Phase 4 — Public site
+- [ ] Layout: header/nav, footer (Arcadis, no CRTKL)
+- [ ] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
+- [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box, locate control
+- [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
+- [ ] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state, print view
+- [ ] Strategy page: content, image, reference projects with lightbox (vanilla), 2030 Palette link
+- [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
+- [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
+- [ ] About, Sponsors, Contact pages
+- [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs
+- [ ] Accessibility & responsive pass; print stylesheet
+
+### Phase 5 — Admin area
+- [ ] Admin layout + dashboard
+- [ ] CRUD: zone groups, zones, diagrams, strategies (conflicts matrix, zone assignment, reference projects)
+- [ ] CRUD: sponsors (logo upload, tier, dates, ShowInFooter, drag-to-reorder), content blocks, equivalency factors, carbon regions & aliases
+- [ ] Media library (upload, alt text, replace)
+- [ ] Users & roles (invite, disable, reset)
+- [ ] Audit log viewer
+
+### Phase 6 — Carbon importer
+- [ ] Source profiles + header auto-detection
+- [ ] Parse/validate/match pipeline with unit tests using the three sample CSVs
+- [ ] Preview/diff screen with inline alias mapping
+- [ ] Commit, history, rollback
+- [ ] Import-complete email
+
+### Phase 7 — API
+- [ ] v1 endpoints (§7) with DTOs, OpenAPI + Scalar
+- [ ] API key auth handler, admin key management (issue/rotate/revoke, hashed), per-key rate limits & usage log
+- [ ] Output caching, CORS policy
+- [ ] Server-side point lookup (NetTopologySuite)
+- [ ] Geocode proxy + tile proxy: per-IP rate limit, configurable daily cap, 80%-of-cap admin email
+- [ ] Integration tests for contracts
+
+### Phase 8 — Email
+- [ ] `IEmailService` + Mailjet sender (+ SMTP/Mailpit for dev), Razor templates, outbox + retry
+- [ ] Contact form (with anti-spam: honeypot + rate limit / Turnstile)
+- [ ] Account emails (invite, reset)
+
+### Phase 9 — Hardening & launch
+- [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS environment variables
+- [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails)
+- [ ] UAT with PDD team; content review
+- [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
+- [ ] Decommission WordPress after sign-off
+
+### Later
+- [ ] Microsoft Entra ID SSO for admin
+- [ ] Scheduled Ember API pull
+- [ ] Additional climate classifications (ASHRAE) if needed

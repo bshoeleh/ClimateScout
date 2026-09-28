@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/A-U_ClimateScout.Core.Tests/A-U_ClimateScout.Core.Tests.csproj" />
+    <Project Path="tests/A-U_ClimateScout.Web.Tests/A-U_ClimateScout.Web.Tests.csproj" />
+  </Folder>
+  <Project Path="A-U_ClimateScout.Core/A-U_ClimateScout.Core.csproj" />
+  <Project Path="A-U_ClimateScout.DataTool/A-U_ClimateScout.DataTool.csproj" />
+  <Project Path="A-U_ClimateScout.Infrastructure/A-U_ClimateScout.Infrastructure.csproj" />
   <Project Path="A-U_ClimateScout/A-U_ClimateScout.csproj" Id="5592c0d4-9f4f-444a-bd9b-f18460391dbf" />
  
 </Solution>  

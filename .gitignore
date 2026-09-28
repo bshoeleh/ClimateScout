@@ -5,3 +5,7 @@
 /A-U_ClimateScout/obj
 /A-U_ClimateScout/bin/Debug/net10.0
 /.vs
+
+# Build output for all projects
+[Bb]in/
+[Oo]bj/
