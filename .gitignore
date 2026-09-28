@@ -9,3 +9,6 @@
 # Build output for all projects
 [Bb]in/
 [Oo]bj/
+
+# Serilog log files
+logs/

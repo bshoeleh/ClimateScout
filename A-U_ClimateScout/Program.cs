@@ -2,6 +2,7 @@ using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // e.g. CS__ConnectionStrings__DefaultConnection. The prefix is removed and "__" becomes ":".
 // Added last so these override appsettings.json and User Secrets.
 builder.Configuration.AddEnvironmentVariables(prefix: "CS__");
+
+// Logging: Serilog replaces the built-in loggers. What gets logged and where
+// (console + daily rolling files) is configured in the "Serilog" section of appsettings.json.
+builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Configuration(builder.Configuration)
+    .ReadFrom.Services(services));
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -36,6 +43,10 @@ else
 }
 
 app.UseHttpsRedirection();
+
+// One summary log line per request: method, path, status code, duration.
+app.UseSerilogRequestLogging();
+
 app.UseRouting();
 
 app.UseAuthorization();
