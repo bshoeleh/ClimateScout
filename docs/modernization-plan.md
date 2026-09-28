@@ -48,11 +48,13 @@ Rebuild ClimateScout (currently WordPress + ACF + custom theme) as an ASP.NET Co
 
 ## 3. Target architecture
 
-### 3.1 Solution layout
+### 3.1 Solution layout (flat — decided 2026-09-28)
+
+One web project plus one test project. Separation of concerns is kept by **folder convention**, not by separate projects.
 
 ```
 A-U_ClimateScout.slnx
-A-U_ClimateScout/                   ASP.NET Core MVC web project (existing; public site, Admin area, API)
+A-U_ClimateScout/                   ASP.NET Core MVC web project (public site, Admin area, API, data commands)
   Areas/
     Admin/
       Controllers/                  lean: validate → call service → return view
@@ -60,6 +62,16 @@ A-U_ClimateScout/                   ASP.NET Core MVC web project (existing; publ
       ViewModels/
   Controllers/                      public MVC controllers
   Controllers/Api/V1/               API controllers ([ApiController], versioned)
+  Data/
+    ApplicationDbContext.cs
+    Configurations/                 IEntityTypeConfiguration<T> per entity
+    Migrations/
+  Identity/                         ApplicationUser
+  Models/                           entities (ClimateZone, DesignStrategy, Sponsor, CarbonIntensity …)
+  Services/                         all business logic: ClimateZoneService, CarbonCalculator, CarbonImportService,
+                                    SponsorService, ContentService, EmailService, FileStorage, ApiKeyService …
+  Importing/                        CSV parsers per source profile, WordPress import (used by admin + data commands)
+  Tools/                            data commands (see §3.3)
   ViewModels/
   Views/
     Shared/Components/              view components (nav, footer, sponsor strip)
@@ -67,36 +79,28 @@ A-U_ClimateScout/                   ASP.NET Core MVC web project (existing; publ
     css/  (app.css built from SCSS)
     js/   (ES modules: map.js, zone-diagram.js, calculator.js, carbon-chart.js, admin/*.js)
     geo/  (koppen.json, carbon-regions.geojson)
-    lib/  (bootstrap 5, chart.js, leaflet, topojson-client, leaflet.locatecontrol, quill — via LibMan)
-  Program.cs                        composition root only (calls AddCore / AddInfrastructure)
-A-U_ClimateScout.Core/              domain: entities, enums, DTOs, service interfaces, business rules
-  Entities/
-  Services/                         IClimateZoneService, IDesignStrategyService, ICarbonService,
-                                    ICarbonCalculator, ICarbonImportService, ISponsorService,
-                                    IContentService, IEmailService, IFileStorage, IApiKeyService …
-  Calculations/                     CarbonCalculator (pure, unit-tested)
-A-U_ClimateScout.Infrastructure/    EF Core, migrations, service implementations, email, storage, CSV
-  Data/
-    ApplicationDbContext.cs
-    Configurations/                 IEntityTypeConfiguration<T> per entity
-    Migrations/
-    Initialization/                 idempotent initializers used by the DataTool (no HasData seeding)
-  Services/
-  Importing/                        CSV parsers per source profile (CsvHelper)
-  Email/                            MailjetEmailSender (+ SMTP sender for dev/Mailpit)
-  Storage/                          LocalFileStorage (disk / file share)
-A-U_ClimateScout.DataTool/         console tool, re-runnable any time (see §3.3)
+    lib/  (bootstrap 5, jquery (kept), chart.js, leaflet, topojson-client, leaflet.locatecontrol, quill — via LibMan)
+  Program.cs                        startup; service registration grouped in extension methods
 tests/
-  A-U_ClimateScout.Core.Tests/      calculator, conflict rules, import matching
-  A-U_ClimateScout.Web.Tests/       integration tests (WebApplicationFactory, API contracts, admin auth)
+  A-U_ClimateScout.Tests/           xUnit: unit tests (calculator, conflict rules, import matching)
+                                    + integration tests (in-memory app: API contracts, admin lockout)
 docs/
 ```
 
-Namespaces stay `A_U_ClimateScout.*` (e.g. `A_U_ClimateScout.Core.Services`).
+Namespaces follow folders: `A_U_ClimateScout.Services`, `A_U_ClimateScout.Data`, `A_U_ClimateScout.Identity` …
+
+Rules: controllers never touch `DbContext` — they call `Services/`; services return view models/DTOs/results; validation via DataAnnotations (FluentValidation if needed); a `Result<T>` pattern for expected failures.
 
 ### 3.3 Data initialization (no seeding)
 
-The database schema comes from EF migrations only. **No `HasData` seeding and no startup seeder.** Data is loaded by `A-U_ClimateScout.DataTool`, a console app whose commands are idempotent and can be run at any point, against any environment:
+The database schema comes from EF migrations only. **No `HasData` seeding and no startup seeder.** Data is loaded by **data commands built into the web app**: starting the app with the `tool` argument runs a command and exits instead of starting the website:
+
+```
+dotnet A-U_ClimateScout.dll tool <command> [options]      (deployed, on the IIS server)
+dotnet run --project A-U_ClimateScout -- tool <command>   (development)
+```
+
+Commands are idempotent and can be run at any point, against any environment (same connection string as the site):
 
 | Command | Does |
 |---|---|
@@ -108,9 +112,7 @@ The database schema comes from EF migrations only. **No `HasData` seeding and no
 | `import carbon --file … --profile …` | same import pipeline the Admin screen uses |
 | `import geo …` | load carbon-region geometry/aliases |
 
-Every command reports created / updated / skipped counts and supports `--dry-run`. The admin screens call the same Infrastructure services, so there's one code path.
-
-Rules: controllers never touch `DbContext`; services return DTOs/results; validation via FluentValidation or DataAnnotations; `Result<T>` pattern for expected failures.
+Every command reports created / updated / skipped counts and supports `--dry-run`. The admin screens call the same services, so there's one code path.
 
 ### 3.2 Data model (first cut)
 
@@ -237,10 +239,10 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - **Email:** **Mailjet** (account to be set up later). Build `IEmailService` now with a Mailjet implementation + SMTP/Mailpit for development.
 - **Rich-text editor:** **Quill 2**; HTML sanitized server-side.
 - **jQuery:** stays installed; not used by new code in most cases.
-- **Data:** no seeding — the DataTool initializes/imports data on demand (§3.3).
+- **Data:** no seeding — data commands built into the app initialize/import data on demand (§3.3).
 - **Working style:** step-by-step walkthrough; each step is explained and reviewed before the next.
 - **Sponsors:** own page **and** a logo strip in the footer on every page (per-sponsor `ShowInFooter` toggle, date-bounded visibility).
-- **Naming:** keep **A-U_ClimateScout**; new projects follow as `A-U_ClimateScout.Core`, `.Infrastructure`, `.DataTool`.
+- **Structure:** keep the name **A-U_ClimateScout**; **flat** — single web project + one test project `tests/A-U_ClimateScout.Tests`; separation by folders (§3.1). (A Core/Infrastructure/DataTool split was tried and dropped as overkill for this size.)
 
 ### Open
 - Official Arcadis brand guideline/logo files
@@ -256,9 +258,9 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Set up Mailjet account (later)
 
 ### Phase 1 — Platform setup (walkthrough, one step at a time)
-- [x] 1.1 Add `A-U_ClimateScout.Core` and `A-U_ClimateScout.Infrastructure` class libraries; wire project references; build
-- [x] 1.2 Add `A-U_ClimateScout.DataTool` console and `tests/` projects (xUnit); build + run empty tests (Web.Tests builds once 1.3 fixes the web project)
-- [ ] 1.3 Move `ApplicationDbContext` + Identity into Infrastructure; `AddCore()` / `AddInfrastructure()` composition; retire Copilot models/seeder and the template's Identity migration
+- [x] 1.1 Project structure: single web project + `tests/A-U_ClimateScout.Tests` (flat; Copilot models/seeder moved to `xfer/copilot-reference`)
+- [x] 1.2 Test project set up and running (`dotnet test` / Test Explorer)
+- [ ] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
 - [ ] 1.4 Configuration: strongly-typed options (Mapbox, Email, Storage, ApiKeys); connection string + secrets via User Secrets (dev) / IIS env vars (prod)
 - [ ] 1.5 Cross-cutting: Serilog, global exception handling + ProblemDetails, health checks, `.editorconfig`, analyzers
 - [ ] 1.6 Front-end pipeline: Bootstrap 5.3 SCSS build, palette tokens, LibMan for Chart.js / Leaflet / topojson-client / locate control / Quill (jQuery kept)
@@ -266,11 +268,11 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 2 — Domain & database
 - [ ] Entities + EF configurations (§3.2)
-- [ ] Create database from a fresh initial migration (`DataTool db migrate`)
-- [ ] Identity: `ApplicationUser`, roles; first Admin via `DataTool init admin`
+- [ ] Create database from a fresh initial migration (`tool db migrate`)
+- [ ] Identity: `ApplicationUser`, roles; first Admin via `tool init admin`
 - [ ] Unit tests for conflict rules and calculator
 
-### Phase 3 — DataTool importers (WordPress + media + carbon)
+### Phase 3 — Data command importers (WordPress + media + carbon)
 - [ ] `import wordpress` reads `climatescout-*.sqlite`: zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
 - [ ] Fix encoding (mojibake), fix known data errors, strip CRTKL references
 - [ ] Download all 149 attachments (rewrite `climatescout.crtkl.com` → `climatescout.arcadis.com`) into media storage; create `MediaAsset` rows

@@ -16,9 +16,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\A-U_ClimateScout.Core\A-U_ClimateScout.Core.csproj" />
-    <ProjectReference Include="..\A-U_ClimateScout.Infrastructure\A-U_ClimateScout.Infrastructure.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace A_U_ClimateScout.Web.Tests;
+﻿namespace A_U_ClimateScout.Tests;
 
 public class UnitTest1
 {
