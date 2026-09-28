@@ -1694,6 +1694,3 @@ new { ClimateScoutClimateZonesId = idOffset + 37, DesignStrategiesId = 50 },
 new { ClimateScoutClimateZonesId = idOffset + 37, DesignStrategiesId = 212 },
 new { ClimateScoutClimateZonesId = idOffset + 37, DesignStrategiesId = 211 });
 
-- *************************************************************************************************************************************************************************************************************************};
- 
-modelBuilder.Entity<DesignStrategy>().HasData(designStrategies);

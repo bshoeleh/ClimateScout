@@ -1,0 +1,13 @@
+Country,Province,Year,Variable,Unit,Value
+Canada,Alberta,2022,CO2 intensity,gCO2/kWh,470
+Canada,British Columbia,2022,CO2 intensity,gCO2/kWh,14
+Canada,Manitoba,2022,CO2 intensity,gCO2/kWh,1.3
+Canada,New Brunswick,2022,CO2 intensity,gCO2/kWh,330
+Canada,Newfoundland and Labrador,2022,CO2 intensity,gCO2/kWh,17
+Canada,Northwest Territories,2022,CO2 intensity,gCO2/kWh,180
+Canada,Nova Scotia,2022,CO2 intensity,gCO2/kWh,660
+Canada,Nunavut,2022,CO2 intensity,gCO2/kWh,780
+Canada,Ontario,2022,CO2 intensity,gCO2/kWh,35
+Canada,Prince Edward Island,2022,CO2 intensity,gCO2/kWh,2
+Canada,Quebec,2022,CO2 intensity,gCO2/kWh,1.2
+Canada,Saskatchewan,2022,CO2 intensity,gCO2/kWh,630
