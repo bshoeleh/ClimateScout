@@ -1,0 +1,51 @@
+# EditorConfig for ClimateScout: editor/formatting rules shared by everyone working on the repo.
+# Visual Studio, VS Code and Rider read this automatically. https://editorconfig.org
+root = true
+
+# All files
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# JSON, project and XML files use 2-space indents (matches the templates)
+[*.{json,csproj,slnx,props,targets,xml,config,yml,yaml}]
+indent_size = 2
+
+# Markdown: trailing spaces can be meaningful (line breaks)
+[*.md]
+trim_trailing_whitespace = false
+
+# C# code style
+[*.cs]
+# Namespaces: block style  namespace X { ... }  (matches existing code)
+csharp_style_namespace_declarations = block_scoped:suggestion
+
+# 'using' lines at the top of the file, System.* first
+csharp_using_directive_placement = outside_namespace:suggestion
+dotnet_sort_system_directives_first = true
+
+# Braces on their own line; always use braces for if/for/while bodies
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:suggestion
+
+# 'var' for local variables (matches existing code)
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Don't write 'this.' unless needed
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+
+# Naming: private fields are _camelCase (e.g. _dbContext)
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
