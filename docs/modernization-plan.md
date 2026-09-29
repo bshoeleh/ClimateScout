@@ -1,16 +1,16 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phase 1 (platform setup), step 1.7**
+Status: **IN PROGRESS — Phase 1 complete; next Phase 2 (domain & database)**
 Last updated: 2026-09-29
 
 ## ▶ Where we left off (2026-09-29)
 
-**Last code commit:** `dfa9179 Add brand stylesheet, Fira Sans and light/dark theme switch`.
+**Last code commit:** `7d26c6a Add layout shell: branding, navigation, footer, Admin area and error pages`.
 
-**Done so far:** 1.1–1.6 complete. The site now uses the brand palette and Fira Sans, with light and dark themes and a Light / Dark / Auto menu in the navbar (decisions in §4.1).
+**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11.
 
-**Next up — step 1.7, layout shell:** new `_Layout` with ClimateScout branding (the title and navbar brand still say `A_U_ClimateScout`), header/nav redesign (the theme menu is plain text for now and could become an icon), footer placeholder, Admin area skeleton behind `[Authorize]`, public registration disabled.
-- Note: there is no scoped CSS any more (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />` — the bundle name uses the assembly name, with a hyphen.
+**Next up — Phase 2, domain & database:** entities and EF configurations (§3.2), a fresh initial migration, roles, and the first Admin account via `tool init admin`, which also makes the signed-in Admin flow testable. Unit tests for the conflict rules and calculator also come in this phase. The user is new to unit testing, so explain them step by step.
+- Note: there is no scoped CSS (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />`. The bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail when we get there.
 
@@ -291,7 +291,20 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [x] change 4: fresh `wwwroot/css/site.css` — palette (§4.1) via Bootstrap CSS variables, Fira Sans, base styles, light + dark themes
   - [x] change 5: `_Layout` links Fira Sans; no-flash theme script in `<head>`; `wwwroot/js/theme.js`; Light / Dark / Auto navbar menu; theme-aware navbar classes; template `_Layout.cshtml.css` removed
   - [x] change 6: build, run, verify in both themes; commit `dfa9179`
-- [ ] 1.7 Layout shell: new `_Layout` (ClimateScout branding, no CRTKL), header/nav, footer placeholder, Admin area skeleton locked behind `[Authorize]`, public registration disabled
+- [x] 1.7 Layout shell (commit `7d26c6a`)
+  - [x] change 1: branding — interim logo PNGs from the old theme (`wwwroot/img/brand/logo-on-light.png` / `logo-on-dark.png`, swapped by theme); titles "Page · Arcadis ClimateScout®"
+  - [x] change 2: navbar — Climate Zones (`/`), Carbon, Sponsors, About, Contact at final URLs with current-page highlight; icon-only theme menu (inline SVG sprite, Bootstrap Icons); signed-in user menu
+  - [x] change 3: footer placeholder — "© {year} Arcadis" (no trademark wording until Arcadis confirms it), Contact, Arcadis privacy, Arcadis.com, Staff sign-in; template Privacy page removed
+  - [x] change 4: Admin area skeleton — `Identity/Policies.cs` (roles + `AdminArea` policy), `AdminController` base class with `[Area("Admin")]` + `[Authorize(Policy = AdminArea)]`, placeholder dashboard at `/admin`
+  - [x] change 5: public registration disabled — `Register` and `RegisterConfirmation` overridden to return 404
+  - [x] change 6: styled error pages — `ErrorController` at `/error/{code}`, status-code re-execute, `NotFound` and `Error` views
+  - [x] change 7: build, run, verify, commit
+  - Follow-ups:
+    - The Identity sign-in page still shows "Register as a new user" (it leads to the 404). Remove it when the Identity pages are restyled (Phase 5).
+    - On re-executed 404 pages the navbar sees `/error/404`, so no menu item is highlighted. This is expected; real pages highlight correctly.
+    - Signed-in Admin link and access-denied flow are untested until `tool init admin` exists (Phase 2).
+    - Close off automatic account creation through external sign-in when Entra ID is added (§9).
+    - Swap in the official Arcadis logo files (SVG) when they arrive.
 
 ### Phase 2 — Domain & database
 - [ ] Entities + EF configurations (§3.2)
