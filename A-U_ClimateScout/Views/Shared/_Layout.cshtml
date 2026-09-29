@@ -5,13 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - A_U_ClimateScout</title>
     <script type="importmap"></script>
+    <script>
+        // Set the theme before anything renders, so dark-mode visitors never see a white flash.
+        (() => {
+            let stored = null;
+            try { stored = localStorage.getItem("cs-theme"); } catch { }
+            const theme = stored === "light" || stored === "dark"
+                ? stored
+                : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.setAttribute("data-bs-theme", theme);
+        })();
+    </script>
+    <link rel="stylesheet" href="~/lib/fira-sans/latin-400.css" />
+    <link rel="stylesheet" href="~/lib/fira-sans/latin-400-italic.css" />
+    <link rel="stylesheet" href="~/lib/fira-sans/latin-500.css" />
+    <link rel="stylesheet" href="~/lib/fira-sans/latin-700.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/A_U_ClimateScout.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">A_U_ClimateScout</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -21,10 +35,23 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <button class="btn btn-link nav-link dropdown-toggle" type="button" id="theme-menu"
+                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Colour theme">
+                                Theme: <span id="theme-label">Auto</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="theme-menu">
+                                <li><button class="dropdown-item" type="button" data-cs-theme-value="light">Light</button></li>
+                                <li><button class="dropdown-item" type="button" data-cs-theme-value="dark">Dark</button></li>
+                                <li><button class="dropdown-item" type="button" data-cs-theme-value="auto">Auto</button></li>
+                            </ul>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -45,6 +72,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

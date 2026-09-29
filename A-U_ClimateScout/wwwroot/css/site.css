@@ -1,0 +1,174 @@
+/*
+ * ClimateScout site styles
+ * Loaded after bootstrap.min.css. Sets the brand palette and base styles by
+ * overriding Bootstrap 5.3 CSS variables; page-specific styling lives elsewhere.
+ */
+
+/* ---------- 1. Brand palette ---------- */
+
+:root {
+    --cs-orange: #E4610F;
+    --cs-orange-dark: #C4520C;
+    --cs-orange-darker: #A94609;
+    --cs-orange-darkest: #8E3A07;
+    --cs-orange-soft: #FBE7DA;
+    --cs-ink: #16181D;
+    --cs-slate: #4A5560;
+    --cs-pine: #1F4D46;
+    --cs-pine-dark: #163833;
+    --cs-sage: #9DBFB1;
+    --cs-sand: #F6F3EE;
+    --cs-line: #E3DED6;
+
+    --cs-font-sans: "Fira Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------- 2. Bootstrap theme variables ---------- */
+
+:root,
+[data-bs-theme="light"] {
+    --bs-primary: var(--cs-orange);
+    --bs-primary-rgb: 228, 97, 15;
+    --bs-primary-text-emphasis: var(--cs-orange-darker);
+    --bs-primary-bg-subtle: var(--cs-orange-soft);
+    --bs-primary-border-subtle: #F4C3A3;
+
+    --bs-body-font-family: var(--cs-font-sans);
+    --bs-body-color: var(--cs-slate);
+    --bs-body-color-rgb: 74, 85, 96;
+    --bs-body-bg: var(--cs-sand);
+    --bs-body-bg-rgb: 246, 243, 238;
+    --bs-emphasis-color: var(--cs-ink);
+    --bs-heading-color: var(--cs-ink);
+
+    --bs-tertiary-bg: #FFFFFF;
+    --bs-tertiary-bg-rgb: 255, 255, 255;
+
+    --bs-link-color: var(--cs-pine);
+    --bs-link-color-rgb: 31, 77, 70;
+    --bs-link-hover-color: var(--cs-pine-dark);
+    --bs-link-hover-color-rgb: 22, 56, 51;
+
+    --bs-border-color: var(--cs-line);
+    --bs-focus-ring-color: rgba(228, 97, 15, 0.25);
+}
+
+/* ---------- 2b. Dark theme (html[data-bs-theme="dark"], set by theme.js) ---------- */
+
+[data-bs-theme="dark"] {
+    --bs-body-color: #D5D9DE;
+    --bs-body-color-rgb: 213, 217, 222;
+    --bs-body-bg: var(--cs-ink);
+    --bs-body-bg-rgb: 22, 24, 29;
+    --bs-emphasis-color: var(--cs-sand);
+    --bs-heading-color: var(--cs-sand);
+    --bs-secondary-color: rgba(213, 217, 222, 0.75);
+
+    --bs-secondary-bg: #1F2228;
+    --bs-secondary-bg-rgb: 31, 34, 40;
+    --bs-tertiary-bg: #262A31;
+    --bs-tertiary-bg-rgb: 38, 42, 49;
+
+    --bs-primary-text-emphasis: #F0A06E;
+    --bs-primary-bg-subtle: #3A1F0E;
+    --bs-primary-border-subtle: #7A3A12;
+
+    --bs-link-color: var(--cs-sage);
+    --bs-link-color-rgb: 157, 191, 177;
+    --bs-link-hover-color: #BFD6CC;
+    --bs-link-hover-color-rgb: 191, 214, 204;
+
+    --bs-border-color: #30343B;
+}
+
+/* ---------- 3. Base elements ---------- */
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Keeps the footer at the bottom on short pages. */
+body > .container {
+    flex: 1 0 auto;
+}
+
+/* Lets a long brand name wrap on narrow screens instead of overflowing. */
+a.navbar-brand {
+    white-space: normal;
+    word-break: break-all;
+}
+
+.box-shadow {
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+}
+
+::selection {
+    background-color: var(--cs-orange-soft);
+    color: var(--cs-ink);
+}
+
+/* ---------- 4. Bootstrap components (compiled colours not covered by the variables above) ---------- */
+
+/* Buttons use the darker orange so white labels meet WCAG AA contrast (4.5 : 1). */
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--cs-orange-dark);
+    --bs-btn-border-color: var(--cs-orange-dark);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--cs-orange-darker);
+    --bs-btn-hover-border-color: var(--cs-orange-darker);
+    --bs-btn-focus-shadow-rgb: 228, 97, 15;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--cs-orange-darkest);
+    --bs-btn-active-border-color: var(--cs-orange-darkest);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: var(--cs-orange-dark);
+    --bs-btn-disabled-border-color: var(--cs-orange-dark);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--cs-orange-darker);
+    --bs-btn-border-color: var(--cs-orange-dark);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--cs-orange-dark);
+    --bs-btn-hover-border-color: var(--cs-orange-dark);
+    --bs-btn-focus-shadow-rgb: 228, 97, 15;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--cs-orange-darker);
+    --bs-btn-active-border-color: var(--cs-orange-darker);
+    --bs-btn-disabled-color: var(--cs-orange-darker);
+    --bs-btn-disabled-border-color: var(--cs-orange-dark);
+}
+
+/* On ink, the darker orange is too dim for text; the brand orange passes (about 5 : 1). */
+[data-bs-theme="dark"] .btn-outline-primary {
+    --bs-btn-color: var(--cs-orange);
+    --bs-btn-disabled-color: var(--cs-orange);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: #F1B087;
+    box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color);
+}
+
+.form-check-input:checked {
+    background-color: var(--cs-orange);
+    border-color: var(--cs-orange);
+}
+
+.dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--cs-orange-dark);
+}
+
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--cs-orange-dark);
+}
