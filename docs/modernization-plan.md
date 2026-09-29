@@ -1,7 +1,22 @@
 # ClimateScout Modernization Plan
 
-Status: **DRAFT — decisions recorded in section 10; awaiting go-ahead**
+Status: **IN PROGRESS — Phase 1 (platform setup), step 1.6**
 Last updated: 2026-09-28
+
+## ▶ Where we left off (2026-09-28)
+
+**Last code commit:** `9cdf1e4 Manage front-end libraries with LibMan (restore on build)`.
+
+**Done so far:** 1.1–1.5 complete; 1.6 changes 1–3 complete (old CSS moved to `xfer/reference/css/`, `libman.json` + restore-on-build, template `wwwroot/lib` removed).
+
+**Next up — step 1.6, change 4:** create a fresh `wwwroot/css/site.css`:
+- palette from §4.1 as CSS custom properties + Bootstrap 5.3 CSS variable overrides (`--bs-primary`, links, buttons, focus ring, body bg/text)
+- Fira Sans as the site font (link `~/lib/fira-sans/latin-400.css`, `latin-400-italic.css`, `latin-500.css`, `latin-700.css` in `_Layout`)
+- base styles only (no page redesign — that's 1.7)
+- then change 5: `_Layout` links the Fira Sans CSS (`site.css` is already linked), and change 6: build + run + show result
+- until change 4 is done, `/css/site.css` returns 404 and pages render with plain Bootstrap (expected)
+
+**Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail when we get there.
 
 ---
 
@@ -76,7 +91,7 @@ A-U_ClimateScout/                   ASP.NET Core MVC web project (public site, A
   Views/
     Shared/Components/              view components (nav, footer, sponsor strip)
   wwwroot/
-    css/  (app.css built from SCSS)
+    css/  (site.css — our styles on top of bootstrap.min.css; no SCSS build)
     js/   (ES modules: map.js, zone-diagram.js, calculator.js, carbon-chart.js, admin/*.js)
     geo/  (koppen.json, carbon-regions.geojson)
     lib/  (bootstrap 5, jquery (kept), chart.js, leaflet, topojson-client, leaflet.locatecontrol, quill — via LibMan)
@@ -141,7 +156,7 @@ Every command reports created / updated / skipped counts and supports `--dry-run
 
 ## 4. Front end
 
-- **Bootstrap 5.3** (SCSS, custom theme variables). Vanilla ES modules for our code; Bootstrap's own JS for tooltips/tabs/modals.
+- **Bootstrap 5.3** — ready-made `bootstrap.min.css` + our own `site.css` that themes it through Bootstrap's CSS variables (no SCSS/Sass build). Vanilla ES modules for our code; Bootstrap's own JS for tooltips/tabs/modals.
 - **jQuery policy:** jQuery, jquery-validation and jquery-validation-unobtrusive **stay in the project** (template/Identity pages use them) but new code doesn't depend on them unless there's a clear reason.
 - Client validation: the template's jquery-validation-unobtrusive is fine for standard forms; custom interactive widgets are vanilla JS.
 - Rich-text editing in admin: Quill 2 (BSD) or TinyMCE (needs licence key) — see Q. All saved HTML sanitized server-side (`HtmlSanitizer`).
@@ -243,6 +258,9 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - **Data:** no seeding — data commands built into the app initialize/import data on demand (§3.3).
 - **Working style:** step-by-step walkthrough; each step is explained and reviewed before the next.
 - **Sponsors:** own page **and** a logo strip in the footer on every page (per-sponsor `ShowInFooter` toggle, date-bounded visibility).
+- **Styling:** Bootstrap 5.3.8 `bootstrap.min.css` + our own `site.css` using CSS variables — **no SCSS** (decided 2026-09-28).
+- **Front-end libraries:** all managed by **LibMan** (`libman.json`, provider jsDelivr, exact versions), **restored on build** via `Microsoft.Web.LibraryManager.Build`; `wwwroot/lib/` is not committed. Pinned: Bootstrap 5.3.8, jQuery 3.7.1 (not 4.x — unobtrusive validation requires 3.x), jquery-validation 1.22.1, jquery-validation-unobtrusive 4.0.0, Chart.js 4.5.1, Leaflet 1.9.4, topojson-client 3.1.0, leaflet.locatecontrol 0.90.1, Quill 2.0.3.
+- **Font:** **Fira Sans** (closest free match to Arcadis's FS Elliot Pro), **self-hosted** via LibMan (`@fontsource/fira-sans` 5.3.0: 400, 400 italic, 500, 700, Latin) — no calls to Google at runtime. Swap to FS Elliot Pro later if licensed font files become available.
 - **Structure:** keep the name **A-U_ClimateScout**; **flat** — single web project + one test project `tests/A-U_ClimateScout.Tests`; separation by folders (§3.1). (A Core/Infrastructure/DataTool split was tried and dropped as overkill for this size.)
 
 ### Open
@@ -264,7 +282,13 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
 - [x] 1.4 Configuration: connection string in User Secrets (dev); production reads `CS__`-prefixed environment variables. Typed settings classes (Mapbox, Email, Storage, ApiKeys) are deferred — each is added with the feature that uses it (Phases 3–8).
 - [x] 1.5 Cross-cutting: `.editorconfig` (code style as suggestions) and Serilog (console + daily rolling files in `logs/`, 30-day retention, per-request line). Deferred: styled error pages (1.7), API ProblemDetails (Phase 7), `/health` check (Phase 2 / deployment), analyzers (revisit once there is real code).
-- [ ] 1.6 Front-end pipeline: Bootstrap 5.3 SCSS build, palette tokens, LibMan for Chart.js / Leaflet / topojson-client / locate control / Quill (jQuery kept)
+- [ ] 1.6 Front-end setup (in progress)
+  - [x] change 1: move GreenIQ `site.css` and old toggle CSS to `xfer/reference/css/`
+  - [x] change 2: `libman.json` — all front-end libraries at pinned versions (jsDelivr)
+  - [x] change 3: `Microsoft.Web.LibraryManager.Build` restores on build; `wwwroot/lib/` git-ignored; template libs removed
+  - [ ] change 4: fresh `wwwroot/css/site.css` — palette (§4.1) via Bootstrap CSS variables, Fira Sans, base styles
+  - [ ] change 5: `_Layout` links the Fira Sans CSS files
+  - [ ] change 6: build, run, verify, show result; tick 1.6; commit
 - [ ] 1.7 Layout shell: new `_Layout` (ClimateScout branding, no CRTKL), header/nav, footer placeholder, Admin area skeleton locked behind `[Authorize]`, public registration disabled
 
 ### Phase 2 — Domain & database
