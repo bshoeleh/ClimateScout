@@ -1,5 +1,6 @@
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
+using A_U_ClimateScout.Tools;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -20,7 +21,10 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sql =>
+        // Generate SQL that SQL Server 2019 (compatibility level 150) understands. Raise this once the
+        // production server's version is confirmed (plan §10).
+        sql.UseCompatibilityLevel(150)));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -35,6 +39,13 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Data commands (plan §3.3): "tool …" runs one command against the same configuration and database
+// as the site, then exits without starting the web server.
+if (args is ["tool", ..])
+{
+    return await ToolRunner.RunAsync(app.Services, args[1..]);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -77,4 +88,5 @@ app.MapControllerRoute(
 app.MapRazorPages()
    .WithStaticAssets();
 
-app.Run();
+await app.RunAsync();
+return 0;
