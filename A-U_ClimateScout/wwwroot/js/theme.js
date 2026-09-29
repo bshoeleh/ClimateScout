@@ -24,8 +24,12 @@
         const theme = preference === "auto" ? (darkQuery.matches ? "dark" : "light") : preference;
         document.documentElement.setAttribute("data-bs-theme", theme);
 
+        const name = preference[0].toUpperCase() + preference.slice(1);
         const label = document.getElementById("theme-label");
-        if (label) label.textContent = preference[0].toUpperCase() + preference.slice(1);
+        if (label) label.textContent = `Theme: ${name}`;
+
+        const icon = document.getElementById("theme-icon");
+        if (icon) icon.setAttribute("href", `#cs-icon-${preference}`);
 
         document.querySelectorAll("[data-cs-theme-value]").forEach((item) => {
             const active = item.dataset.csThemeValue === preference;

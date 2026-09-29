@@ -26,6 +26,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Who may use the Admin area. Views and controllers check the policy, never role names,
+// so Entra ID sign-in can be added later without touching them (plan §9).
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.AdminArea, policy => policy.RequireRole(Roles.Admin, Roles.Editor));
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -37,10 +43,14 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/error/500");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// Error responses without a body (404, 403 …) re-run the pipeline at /error/{code}
+// so visitors see a styled page; the original status code is kept.
+app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.UseHttpsRedirection();
 
@@ -52,6 +62,12 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// Areas first, so /admin reaches the Admin area's Dashboard controller.
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}")
+    .WithStaticAssets();
 
 app.MapControllerRoute(
     name: "default",

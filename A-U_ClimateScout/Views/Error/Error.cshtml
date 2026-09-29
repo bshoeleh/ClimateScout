@@ -1,0 +1,14 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+<div class="py-5 text-center">
+    <p class="display-1 fw-bold text-primary mb-2">@Context.Response.StatusCode</p>
+    <h1 class="h3">Something went wrong</h1>
+    <p class="text-body-secondary mb-4">The problem has been logged. Please try again in a moment.</p>
+    <a class="btn btn-primary" href="~/">Go to the home page</a>
+    @if (Model?.ShowRequestId == true)
+    {
+        <p class="small text-body-secondary mt-4 mb-0">Reference: <code>@Model.RequestId</code></p>
+    }
+</div>

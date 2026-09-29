@@ -99,10 +99,27 @@ body > .container {
     flex: 1 0 auto;
 }
 
-/* Lets a long brand name wrap on narrow screens instead of overflowing. */
-a.navbar-brand {
-    white-space: normal;
-    word-break: break-all;
+/* Brand logo: one image per theme; shrinks on narrow screens. */
+.cs-logo {
+    display: block;
+    max-width: 60vw;
+    height: auto;
+}
+
+.cs-logo-on-dark,
+[data-bs-theme="dark"] .cs-logo-on-light {
+    display: none;
+}
+
+[data-bs-theme="dark"] .cs-logo-on-dark {
+    display: block;
+}
+
+/* Inline SVG icons (see the sprite in _Layout): sized to the text, drawn in its colour. */
+.cs-icon {
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
 }
 
 .box-shadow {

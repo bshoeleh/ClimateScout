@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - A_U_ClimateScout</title>
+    <title>@(ViewData["Title"] is string title ? $"{title} · " : "")Arcadis ClimateScout®</title>
     <script type="importmap"></script>
     <script>
         // Set the theme before anything renders, so dark-mode visitors never see a white flash.
@@ -24,33 +24,64 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        // Public menu. Paths match the old site's URLs (plan §6); pages not built yet show the 404 page.
+        // Sections: other paths that belong to the item, so it stays highlighted on those pages.
+        var navItems = new (string Text, string Path, string[] Sections)[]
+        {
+            ("Climate Zones", "/", ["/zone", "/design-strategy"]),
+            ("Carbon", "/carbon", ["/carbon-comparison"]),
+            ("Sponsors", "/sponsors", []),
+            ("About", "/about", []),
+            ("Contact", "/contact", []),
+        };
+        var currentPath = Context.Request.Path.Value?.TrimEnd('/') is { Length: > 0 } path ? path : "/";
+
+        bool IsCurrent(string itemPath, string[] sections) =>
+            string.Equals(currentPath, itemPath, StringComparison.OrdinalIgnoreCase)
+            || sections.Any(s => string.Equals(currentPath, s, StringComparison.OrdinalIgnoreCase)
+                                 || currentPath.StartsWith(s + "/", StringComparison.OrdinalIgnoreCase));
+    }
+    @* Icons from Bootstrap Icons 1.13.1 (MIT), defined once and shown with <use href="#…">. *@
+    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+        <symbol id="cs-icon-light" viewBox="0 0 16 16"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/></symbol>
+        <symbol id="cs-icon-dark" viewBox="0 0 16 16"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/></symbol>
+        <symbol id="cs-icon-auto" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 0 8 1zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/></symbol>
+    </svg>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm bg-body-tertiary border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">A_U_ClimateScout</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom box-shadow mb-4" aria-label="Main">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/brand/logo-on-light.png" class="cs-logo cs-logo-on-light" width="329" height="23" alt="Arcadis ClimateScout®" />
+                    <img src="~/img/brand/logo-on-dark.png" class="cs-logo cs-logo-on-dark" width="332" height="23" alt="Arcadis ClimateScout®" />
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"
+                        aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="main-nav">
+                    <ul class="navbar-nav me-auto ms-lg-4">
+                        @foreach (var item in navItems)
+                        {
+                            var current = IsCurrent(item.Path, item.Sections);
+                            <li class="nav-item">
+                                <a class="nav-link @(current ? "active" : null)" href="@Url.Content("~" + item.Path)"
+                                   aria-current="@(current ? "page" : null)">@item.Text</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         <li class="nav-item dropdown">
-                            <button class="btn btn-link nav-link dropdown-toggle" type="button" id="theme-menu"
-                                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Colour theme">
-                                Theme: <span id="theme-label">Auto</span>
+                            <button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center gap-2" type="button"
+                                    id="theme-menu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg class="cs-icon" aria-hidden="true"><use id="theme-icon" href="#cs-icon-auto"></use></svg>
+                                <span class="d-lg-none" aria-hidden="true">Theme</span>
+                                <span class="visually-hidden" id="theme-label">Theme: Auto</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="theme-menu">
-                                <li><button class="dropdown-item" type="button" data-cs-theme-value="light">Light</button></li>
-                                <li><button class="dropdown-item" type="button" data-cs-theme-value="dark">Dark</button></li>
-                                <li><button class="dropdown-item" type="button" data-cs-theme-value="auto">Auto</button></li>
+                                <li><button class="dropdown-item d-flex align-items-center gap-2" type="button" data-cs-theme-value="light"><svg class="cs-icon" aria-hidden="true"><use href="#cs-icon-light"></use></svg>Light</button></li>
+                                <li><button class="dropdown-item d-flex align-items-center gap-2" type="button" data-cs-theme-value="dark"><svg class="cs-icon" aria-hidden="true"><use href="#cs-icon-dark"></use></svg>Dark</button></li>
+                                <li><button class="dropdown-item d-flex align-items-center gap-2" type="button" data-cs-theme-value="auto"><svg class="cs-icon" aria-hidden="true"><use href="#cs-icon-auto"></use></svg>Auto</button></li>
                             </ul>
                         </li>
                     </ul>
@@ -65,9 +96,21 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top bg-body-tertiary text-body-secondary small mt-5 py-4">
         <div class="container">
-            &copy; 2026 - A_U_ClimateScout - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            @* Sponsor logo strip goes here (Phase 4: footer sponsor view component). *@
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                <div>&copy; @DateTime.UtcNow.Year Arcadis</div>
+                <ul class="list-inline mb-0">
+                    <li class="list-inline-item"><a href="~/contact">Contact</a></li>
+                    <li class="list-inline-item"><a href="https://www.arcadis.com/en/privacy">Privacy</a></li>
+                    <li class="list-inline-item"><a href="https://www.arcadis.com/">Arcadis.com</a></li>
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <li class="list-inline-item"><a asp-area="Identity" asp-page="/Account/Login">Staff sign-in</a></li>
+                    }
+                </ul>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
