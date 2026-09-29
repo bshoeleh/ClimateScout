@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "bootstrap@5.3.8",
+      "destination": "wwwroot/lib/bootstrap/",
+      "files": [
+        "dist/css/bootstrap.min.css",
+        "dist/css/bootstrap.min.css.map",
+        "dist/js/bootstrap.bundle.min.js",
+        "dist/js/bootstrap.bundle.min.js.map"
+      ]
+    },
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/lib/jquery/",
+      "files": [ "dist/jquery.min.js", "dist/jquery.min.map" ]
+    },
+    {
+      "library": "jquery-validation@1.22.1",
+      "destination": "wwwroot/lib/jquery-validation/",
+      "files": [ "dist/jquery.validate.min.js", "dist/additional-methods.min.js" ]
+    },
+    {
+      "library": "jquery-validation-unobtrusive@4.0.0",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/",
+      "files": [ "dist/jquery.validate.unobtrusive.min.js" ]
+    },
+    {
+      "library": "chart.js@4.5.1",
+      "destination": "wwwroot/lib/chart.js/",
+      "files": [ "dist/chart.umd.min.js" ]
+    },
+    {
+      "library": "leaflet@1.9.4",
+      "destination": "wwwroot/lib/leaflet/",
+      "files": [
+        "dist/leaflet.js",
+        "dist/leaflet.css",
+        "dist/images/layers.png",
+        "dist/images/layers-2x.png",
+        "dist/images/marker-icon.png",
+        "dist/images/marker-icon-2x.png",
+        "dist/images/marker-shadow.png"
+      ]
+    },
+    {
+      "library": "topojson-client@3.1.0",
+      "destination": "wwwroot/lib/topojson-client/",
+      "files": [ "dist/topojson-client.min.js" ]
+    },
+    {
+      "library": "leaflet.locatecontrol@0.90.1",
+      "destination": "wwwroot/lib/leaflet.locatecontrol/",
+      "files": [ "dist/L.Control.Locate.min.js", "dist/L.Control.Locate.min.css" ]
+    },
+    {
+      "library": "quill@2.0.3",
+      "destination": "wwwroot/lib/quill/",
+      "files": [ "dist/quill.js", "dist/quill.snow.css" ]
+    },
+    {
+      "library": "@fontsource/fira-sans@5.3.0",
+      "destination": "wwwroot/lib/fira-sans/",
+      "files": [
+        "latin-400.css", "latin-400-italic.css", "latin-500.css", "latin-700.css",
+        "files/fira-sans-latin-400-normal.woff2",
+        "files/fira-sans-latin-400-italic.woff2",
+        "files/fira-sans-latin-500-normal.woff2",
+        "files/fira-sans-latin-700-normal.woff2"
+      ]
+    }
+  ]
+}

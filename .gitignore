@@ -12,3 +12,6 @@
 
 # Serilog log files
 logs/
+
+# Front-end libraries: restored from libman.json on build
+A-U_ClimateScout/wwwroot/lib/
