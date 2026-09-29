@@ -1,20 +1,16 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phase 1 (platform setup), step 1.6**
-Last updated: 2026-09-28
+Status: **IN PROGRESS — Phase 1 (platform setup), step 1.7**
+Last updated: 2026-09-29
 
-## ▶ Where we left off (2026-09-28)
+## ▶ Where we left off (2026-09-29)
 
-**Last code commit:** `9cdf1e4 Manage front-end libraries with LibMan (restore on build)`.
+**Last code commit:** `dfa9179 Add brand stylesheet, Fira Sans and light/dark theme switch`.
 
-**Done so far:** 1.1–1.5 complete; 1.6 changes 1–3 complete (old CSS moved to `xfer/reference/css/`, `libman.json` + restore-on-build, template `wwwroot/lib` removed).
+**Done so far:** 1.1–1.6 complete. The site now uses the brand palette and Fira Sans, with light and dark themes and a Light / Dark / Auto menu in the navbar (decisions in §4.1).
 
-**Next up — step 1.6, change 4:** create a fresh `wwwroot/css/site.css`:
-- palette from §4.1 as CSS custom properties + Bootstrap 5.3 CSS variable overrides (`--bs-primary`, links, buttons, focus ring, body bg/text)
-- Fira Sans as the site font (link `~/lib/fira-sans/latin-400.css`, `latin-400-italic.css`, `latin-500.css`, `latin-700.css` in `_Layout`)
-- base styles only (no page redesign — that's 1.7)
-- then change 5: `_Layout` links the Fira Sans CSS (`site.css` is already linked), and change 6: build + run + show result
-- until change 4 is done, `/css/site.css` returns 404 and pages render with plain Bootstrap (expected)
+**Next up — step 1.7, layout shell:** new `_Layout` with ClimateScout branding (the title and navbar brand still say `A_U_ClimateScout`), header/nav redesign (the theme menu is plain text for now and could become an icon), footer placeholder, Admin area skeleton behind `[Authorize]`, public registration disabled.
+- Note: there is no scoped CSS any more (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />` — the bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail when we get there.
 
@@ -177,7 +173,13 @@ Every command reports created / updated / skipped counts and supports `--dry-run
 | `--cs-sand` | `#F6F3EE` | page background (warm off-white) |
 | `--cs-line` | `#E3DED6` | borders, dividers |
 
-Köppen zone colors remain data (editable per zone). Carbon choropleth moves to a sand → orange → deep-red sequential scale that echoes the brand. Optional dark mode for the map-heavy pages.
+Köppen zone colors remain data (editable per zone). Carbon choropleth moves to a sand → orange → deep-red sequential scale that echoes the brand.
+
+**Decisions (2026-09-29, implemented in `wwwroot/css/site.css`):**
+- **Accessibility (WCAG AA):** white text on `#E4610F` is only ~3.5 : 1, so primary buttons, active dropdown items and nav pills use `--cs-orange-dark` `#C4520C` (hover `#A94609`, pressed `#8E3A07`). Outline-button text is `#A94609` on light. Brand orange stays for accents, focus rings and checkboxes; use `text-primary` only for large text on light backgrounds (~3.2 : 1 on sand).
+- **Light navbar / panels:** `--bs-tertiary-bg` is white.
+- **Dark mode (site-wide):** Bootstrap 5.3 `data-bs-theme="dark"` with our palette — ink `#16181D` page, `#1F2228` / `#262A31` panels, `#D5D9DE` text, sand headings, sage `#9DBFB1` links, `#30343B` borders; brand orange as text passes (~5 : 1).
+- **Theme selection:** follows the OS by default; a Light / Dark / Auto menu in the navbar overrides it, saved in `localStorage` (`cs-theme`). An inline `<head>` script applies it before first paint. Maps will need a dark Mapbox tile style (Phase 4+).
 
 ## 5. Maps
 
@@ -282,13 +284,13 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
 - [x] 1.4 Configuration: connection string in User Secrets (dev); production reads `CS__`-prefixed environment variables. Typed settings classes (Mapbox, Email, Storage, ApiKeys) are deferred — each is added with the feature that uses it (Phases 3–8).
 - [x] 1.5 Cross-cutting: `.editorconfig` (code style as suggestions) and Serilog (console + daily rolling files in `logs/`, 30-day retention, per-request line). Deferred: styled error pages (1.7), API ProblemDetails (Phase 7), `/health` check (Phase 2 / deployment), analyzers (revisit once there is real code).
-- [ ] 1.6 Front-end setup (in progress)
+- [x] 1.6 Front-end setup
   - [x] change 1: move GreenIQ `site.css` and old toggle CSS to `xfer/reference/css/`
   - [x] change 2: `libman.json` — all front-end libraries at pinned versions (jsDelivr)
   - [x] change 3: `Microsoft.Web.LibraryManager.Build` restores on build; `wwwroot/lib/` git-ignored; template libs removed
-  - [ ] change 4: fresh `wwwroot/css/site.css` — palette (§4.1) via Bootstrap CSS variables, Fira Sans, base styles
-  - [ ] change 5: `_Layout` links the Fira Sans CSS files
-  - [ ] change 6: build, run, verify, show result; tick 1.6; commit
+  - [x] change 4: fresh `wwwroot/css/site.css` — palette (§4.1) via Bootstrap CSS variables, Fira Sans, base styles, light + dark themes
+  - [x] change 5: `_Layout` links Fira Sans; no-flash theme script in `<head>`; `wwwroot/js/theme.js`; Light / Dark / Auto navbar menu; theme-aware navbar classes; template `_Layout.cshtml.css` removed
+  - [x] change 6: build, run, verify in both themes; commit `dfa9179`
 - [ ] 1.7 Layout shell: new `_Layout` (ClimateScout branding, no CRTKL), header/nav, footer placeholder, Admin area skeleton locked behind `[Authorize]`, public registration disabled
 
 ### Phase 2 — Domain & database
