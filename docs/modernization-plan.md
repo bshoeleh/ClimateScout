@@ -252,6 +252,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - **Configuration & secrets:** development values live in **User Secrets** (never in committed files). Production reads **environment variables prefixed `CS__`** (ClimateScout), set per IIS site: `CS__ConnectionStrings__DefaultConnection`, `CS__Mapbox__AccessToken`, … — the prefix is stripped and `__` becomes `:`. `CS__` values override everything else. Exception: `ASPNETCORE_ENVIRONMENT` keeps its standard name (read by the framework before our code). Unprefixed variables are still read by the framework default, but `CS__` is the documented convention.
 - **Strategy conflicts:** always **symmetric**. Saving A↔B writes both rows; migration unions the old one-directional data.
 - **Carbon calculator (2026-09-30):** EUI and area must be **> 0** (rejected otherwise — a 0 is almost always a typo); grid intensity may be **0** (fully renewable grid) but not negative. Grid intensity is **g CO2e/kWh only** — the old page's g/kBTU and g/GJ branches were never offered and set the wrong factor, so they are not ported. EUI units: kBtu/ft², kWh/m², GJ/m²; area: ft², m².
+- **WordPress import (2026-09-30):** our own zone slugs use **hyphens** (`cfa_humid-subtropical` → `cfa-humid-subtropical`); old underscore links redirect (Phase 4). **External URLs** (e.g. 2030palette.org) are imported unchanged. Reference project "description" holds a place name, so it goes into `ReferenceProject.Location`; sector is empty in the old data. **`import media` runs before `import wordpress`**; each `MediaAsset` keeps its old WordPress attachment ID so strategies and reference projects can link to their images.
 - **API access:** **API key required** for all external callers. The site's own pages call the API with same-origin cookie/antiforgery auth. Admin screen to issue, name, rotate and revoke keys; keys stored hashed; per-key rate limits and usage logging.
 
 - **Maps:** **Mapbox** under a new Arcadis-owned account (shared mailbox), style copied from the old personal account, token URL-restricted to our domains and read from server config. Rendered with **Leaflet**; tiles and address search proxied through our server so the token never reaches the browser. Temporary geocoding only (results not stored). See §5.
@@ -319,9 +320,9 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - Candidate tests not yet written: negative inputs, GJ/m² EUI, equivalencies (tonnes → trees, gallons, from `EquivalencyFactors`).
 
 ### Phase 3 — Data command importers (WordPress + media + carbon)
+- [ ] Download all 149 attachments (rewrite `climatescout.crtkl.com` → `climatescout.arcadis.com`) into media storage; create `MediaAsset` rows, keeping the old WordPress attachment ID (runs **before** `import wordpress`, which links images by that ID)
 - [ ] `import wordpress` reads `climatescout-*.sqlite`: zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
 - [ ] Fix encoding (mojibake), fix known data errors, strip CRTKL references
-- [ ] Download all 149 attachments (rewrite `climatescout.crtkl.com` → `climatescout.arcadis.com`) into media storage; create `MediaAsset` rows
 - [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
 - [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
 - [ ] Import the three new CSVs through the real importer (proves the importer)
@@ -337,7 +338,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
 - [ ] About, Sponsors, Contact pages
-- [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs
+- [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
 - [ ] Accessibility & responsive pass; print stylesheet
 
 ### Phase 5 — Admin area
