@@ -6,5 +6,8 @@ namespace A_U_ClimateScout.Identity
     // so we can add our own fields later without changing every place that references the user type.
     public class ApplicationUser : IdentityUser
     {
+        // Set when a password was issued to the user (tool init admin); the user must choose their own
+        // password before using the site. Cleared by AppUserManager after a password change or reset.
+        public bool MustChangePassword { get; set; }
     }
 }

@@ -29,6 +29,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
+    .AddUserManager<AppUserManager>()
+    .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>()   // after AddRoles, which registers its own
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Who may use the Admin area. Views and controllers check the policy, never role names,
@@ -71,6 +73,9 @@ app.UseSerilogRequestLogging();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Users with a one-time password (tool init admin) must choose their own before using the site.
+app.UseMustChangePassword();
 
 app.MapStaticAssets();
 
