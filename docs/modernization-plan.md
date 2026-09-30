@@ -9,7 +9,7 @@ Last updated: 2026-09-30
 
 **Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root.
 
-**Next up — Phase 3, data command importers:** start with `import wordpress` (zones, groups, strategies, zone↔strategy links, conflicts via `StrategyConflictRules`, reference projects, content).
+**Next up — Phase 3, data command importers:** old images are already in `wwwroot/img/media/` with `Data/Import/media-map.csv`. Next is `import wordpress` (media rows from the CSV, zones, groups, strategies, zone↔strategy links, conflicts via `StrategyConflictRules`, reference projects, content).
 - Note: there is no scoped CSS (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />`. The bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail. Tests: the user decides the test cases (normal / nothing / repeats / invalid / boundaries / guarantees) and writes the tests; the reviewer explains and reviews, and doesn't add tests unprompted.
@@ -118,8 +118,7 @@ Commands are idempotent and can be run at any point, against any environment (sa
 | `db migrate` | apply pending migrations |
 | `init reference` | create/update lookup data (roles, zone groups, diagrams, equivalency factors, carbon sources) |
 | `init admin --email …` | create/reset the first Admin user |
-| `import wordpress --sqlite … [--dry-run]` | import zones, strategies, conflicts, reference projects, content from the old WP database |
-| `import media --from-sqlite …` | download old WP images into media storage |
+| `import wordpress --sqlite … [--dry-run]` | import zones, strategies, conflicts, reference projects, content from the old WP database; creates `MediaAsset` rows from `Data/Import/media-map.csv` |
 | `import carbon --file … --profile …` | same import pipeline the Admin screen uses |
 | `import geo …` | load carbon-region geometry/aliases |
 
@@ -252,7 +251,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - **Configuration & secrets:** development values live in **User Secrets** (never in committed files). Production reads **environment variables prefixed `CS__`** (ClimateScout), set per IIS site: `CS__ConnectionStrings__DefaultConnection`, `CS__Mapbox__AccessToken`, … — the prefix is stripped and `__` becomes `:`. `CS__` values override everything else. Exception: `ASPNETCORE_ENVIRONMENT` keeps its standard name (read by the framework before our code). Unprefixed variables are still read by the framework default, but `CS__` is the documented convention.
 - **Strategy conflicts:** always **symmetric**. Saving A↔B writes both rows; migration unions the old one-directional data.
 - **Carbon calculator (2026-09-30):** EUI and area must be **> 0** (rejected otherwise — a 0 is almost always a typo); grid intensity may be **0** (fully renewable grid) but not negative. Grid intensity is **g CO2e/kWh only** — the old page's g/kBTU and g/GJ branches were never offered and set the wrong factor, so they are not ported. EUI units: kBtu/ft², kWh/m², GJ/m²; area: ft², m².
-- **WordPress import (2026-09-30):** our own zone slugs use **hyphens** (`cfa_humid-subtropical` → `cfa-humid-subtropical`); old underscore links redirect (Phase 4). **External URLs** (e.g. 2030palette.org) are imported unchanged. Reference project "description" holds a place name, so it goes into `ReferenceProject.Location`; sector is empty in the old data. **`import media` runs before `import wordpress`**; all 149 images are imported into `wwwroot/img/media/` (committed to git) under clean flat names (lowercase, non-alphanumerics → `-`, no year/month folders); `StoragePath` = clean name, and `import wordpress` links images by cleaning the old path the same way — no extra column needed. Same clean name + identical contents → one file; different contents → `-2` suffix.
+- **WordPress import (2026-09-30):** our own zone slugs use **hyphens** (`cfa_humid-subtropical` → `cfa-humid-subtropical`); old underscore links redirect (Phase 4). **External URLs** (e.g. 2030palette.org) are imported unchanged. Reference project "description" holds a place name, so it goes into `ReferenceProject.Location`; sector is empty in the old data. **Media:** all 149 old images were downloaded once by a script (not an app command) into `wwwroot/img/media/{projects,strategies,other}/` (committed to git) under clean flat names (lowercase, non-alphanumerics → `-`, no year/month folders). `Data/Import/media-map.csv` records WordPress ID → `StoragePath` (plus title, alt text, size); `import wordpress` creates the `MediaAsset` rows from it and links images through it — no extra column, no data in migrations. Identical duplicates share one file (Chadstone 107/165 → 148 files).
 - **API access:** **API key required** for all external callers. The site's own pages call the API with same-origin cookie/antiforgery auth. Admin screen to issue, name, rotate and revoke keys; keys stored hashed; per-key rate limits and usage logging.
 
 - **Maps:** **Mapbox** under a new Arcadis-owned account (shared mailbox), style copied from the old personal account, token URL-restricted to our domains and read from server config. Rendered with **Leaflet**; tiles and address search proxied through our server so the token never reaches the browser. Temporary geocoding only (results not stored). See §5.
@@ -320,8 +319,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - Candidate tests not yet written: negative inputs, GJ/m² EUI, equivalencies (tonnes → trees, gallons, from `EquivalencyFactors`).
 
 ### Phase 3 — Data command importers (WordPress + media + carbon)
-- [ ] `import media`: download **all 149** attachments, used or not (rewrite `climatescout.crtkl.com` → `climatescout.arcadis.com`), into `wwwroot/img/media/` (**committed to git**) with clean flat names — lowercase, non-alphanumerics → `-`, year/month folders dropped (`2021/01/cool-roof@2x-1.png` → `cool-roof-2x-1.png`); create `MediaAsset` rows with `StoragePath` = the clean name. If two images clean to the same name: identical contents → stored once; different → the second gets `-2`. (Only case today: Chadstone 107/165, confirmed identical → 148 files.) Runs **before** `import wordpress`, which finds each image by cleaning its old path the same way.
-- [ ] `import wordpress` reads `climatescout-*.sqlite`: zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
+- [x] Media: one-time scripted download of **all 149** attachments from `climatescout.arcadis.com` into `wwwroot/img/media/` — `projects/` (74 attachments → 73 files), `strategies/` (27), `other/` (48, unused on the old site but kept) — with clean flat names (`2021/01/cool-roof@2x-1.png` → `strategies/cool-roof-2x-1.png`). Log: `Data/Import/media-map.csv` (WordPressId, OldPath, Folder, StoragePath, Title, AltText, Width, Height). Chadstone 107/165 are identical → one file (148 files, ~52 MB).
+- [ ] `import wordpress` reads `climatescout-*.sqlite`: `MediaAsset` rows from `media-map.csv`, zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
 - [ ] Fix encoding (mojibake), fix known data errors, strip CRTKL references
 - [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
 - [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
@@ -345,7 +344,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Admin layout + dashboard
 - [ ] CRUD: zone groups, zones, diagrams, strategies (conflicts matrix, zone assignment, reference projects)
 - [ ] CRUD: sponsors (logo upload, tier, dates, ShowInFooter, drag-to-reorder), content blocks, equivalency factors, carbon regions & aliases
-- [ ] Media library (upload, alt text, replace)
+- [ ] Media library (upload, alt text, replace). Uploads go to `img/media/projects/`, `strategies/` or `other/` automatically from what is being edited — no folder prompt.
 - [ ] Users & roles (invite, disable, reset)
 - [ ] Audit log viewer
 
@@ -371,7 +370,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 9 — Hardening & launch
 - [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
-- [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails)
+- [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
 - [ ] Decommission WordPress after sign-off
