@@ -1,15 +1,21 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phases 1–2 complete; next Phase 3 (data command importers)**
+Status: **IN PROGRESS — Phases 1–2 complete; Phase 3 (data command importers) started — media done, next `import wordpress`**
 Last updated: 2026-09-30
 
-## ▶ Where we left off (2026-09-30)
+## ▶ Where we left off (2026-09-30, end of day)
 
-**Last code commit:** `2967d66 Add carbon calculator with unit tests`.
+**Last commit:** `873bf4c Add old site images and media map for the WordPress import`. Working tree clean.
 
-**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root.
+**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`).
 
-**Next up — Phase 3, data command importers:** old images are already in `wwwroot/img/media/` with `Data/Import/media-map.csv`. Next is `import wordpress` (media rows from the CSV, zones, groups, strategies, zone↔strategy links, conflicts via `StrategyConflictRules`, reference projects, content).
+**Next up — Phase 3, `import wordpress`**, built in small steps, each proposed and approved:
+1. Command skeleton `tool import wordpress --sqlite <path> [--dry-run]` + `MediaAsset` rows from `media-map.csv` (simplest part first). Decide how the CSV ships with the published app (one `.csproj` setting, e.g. copy to output/publish) so the import can run on the server.
+2. Zones (split `Cfa_Humid Subtropical` into code + name; hyphen slugs), linked to the existing zone groups and diagrams.
+3. Strategies, zone↔strategy links, conflicts (PHP-serialized → `StrategyConflictRules.MakeSymmetric`), reference projects (description → `Location`), images via the CSV.
+4. Content pages (About, Grid Carbon Intensity, Carbon Comparison) → `ContentBlocks`; then the data clean-up line (mojibake, known errors, CRTKL references).
+- The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it).
+- Small pure parsing helpers (e.g. PHP-serialized conflicts, code/name split) are candidates for the user to write tests for.
 - Note: there is no scoped CSS (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />`. The bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail. Tests: the user decides the test cases (normal / nothing / repeats / invalid / boundaries / guarantees) and writes the tests; the reviewer explains and reviews, and doesn't add tests unprompted.
