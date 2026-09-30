@@ -1,15 +1,15 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phase 1 complete; next Phase 2 (domain & database)**
-Last updated: 2026-09-29
+Status: **IN PROGRESS — Phase 1 complete; Phase 2 (domain & database) nearly done — unit tests remain**
+Last updated: 2026-09-30
 
-## ▶ Where we left off (2026-09-29)
+## ▶ Where we left off (2026-09-30)
 
-**Last code commit:** `7d26c6a Add layout shell: branding, navigation, footer, Admin area and error pages`.
+**Last code commit:** `3fce944 Add tool init reference/admin commands and forced password change for issued passwords`.
 
-**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11.
+**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end.
 
-**Next up — Phase 2, domain & database:** entities and EF configurations (§3.2), a fresh initial migration, roles, and the first Admin account via `tool init admin`, which also makes the signed-in Admin flow testable. Unit tests for the conflict rules and calculator also come in this phase. The user is new to unit testing, so explain them step by step.
+**Next up — Phase 2, last item:** unit tests for the conflict rules and the calculator. This starts with creating a test project, which is the user's first. The user is new to unit testing, so explain each step in detail.
 - Note: there is no scoped CSS (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />`. The bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail when we get there.
@@ -302,14 +302,17 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - Follow-ups:
     - The Identity sign-in page still shows "Register as a new user" (it leads to the 404). Remove it when the Identity pages are restyled (Phase 5).
     - On re-executed 404 pages the navbar sees `/error/404`, so no menu item is highlighted. This is expected; real pages highlight correctly.
-    - Signed-in Admin link and access-denied flow are untested until `tool init admin` exists (Phase 2).
+    - ~~Signed-in Admin link untested~~ — verified in Phase 2 with `tool init admin`.
+    - Access-denied flow (signed-in, not Admin) is still untested; needs a non-Admin account (Phase 5 user management).
     - Close off automatic account creation through external sign-in when Entra ID is added (§9).
     - Swap in the official Arcadis logo files (SVG) when they arrive.
 
 ### Phase 2 — Domain & database
-- [ ] Entities + EF configurations (§3.2)
-- [ ] Create database from a fresh initial migration (`tool db migrate`)
-- [ ] Identity: `ApplicationUser`, roles; first Admin via `tool init admin`
+- [x] Entities + EF configurations (§3.2) — `afb54b5`
+- [x] Create database from a fresh initial migration (`tool db migrate`) — `afb54b5`
+- [x] Identity: `ApplicationUser`, roles; first Admin via `tool init admin` — `3fce944`
+  - Also `tool init reference` (roles, zone groups, diagrams, equivalency factors, carbon sources; only adds missing rows).
+  - Issued passwords are one-time: `MustChangePassword` forces a password change at first sign-in. Verified end to end.
 - [ ] Unit tests for conflict rules and calculator
 
 ### Phase 3 — Data command importers (WordPress + media + carbon)
