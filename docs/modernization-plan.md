@@ -380,6 +380,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
 - [ ] Decommission WordPress after sign-off
+- [ ] **Owner's final fixes** — data gaps found during the import, left as on the old site and fixed by hand in Admin before launch:
+  - [ ] Am Tropical Monsoon: set its diagram (none on the old site; the other tropical zones use Hot-Humid). The import logs a warning for it.
 
 ### Later
 - [ ] Microsoft Entra ID SSO for admin

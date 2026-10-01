@@ -2,6 +2,7 @@ using System.CommandLine;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Models;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic.FileIO;
 
@@ -42,7 +43,11 @@ namespace A_U_ClimateScout.Tools
                     return 1;
                 }
 
+                await using var wordPress = new SqliteConnection($"Data Source={file.FullName};Mode=ReadOnly");
+                await wordPress.OpenAsync(cancellationToken);
+
                 var mediaByWordPressId = await ImportMediaAsync(db, environment, logger, isDryRun, cancellationToken);
+                await ImportZonesAsync(db, wordPress, logger, isDryRun, cancellationToken);
 
                 if (!isDryRun)
                 {
@@ -106,6 +111,83 @@ namespace A_U_ClimateScout.Tools
                 rows.Count, files.Count, isDryRun ? "would create" : "created", created, files.Count - created);
             return mediaByWordPressId;
         }
+
+        // ClimateZone rows for the 31 Köppen sub-zones (child terms of the old "climate-zone" taxonomy).
+        // Groups (A–E) and diagrams already exist from "tool init reference"; zones are linked to them
+        // by the group's code and the diagram's slug. Existing zones (same Köppen code) are skipped.
+        private static async Task ImportZonesAsync(ApplicationDbContext db, SqliteConnection wordPress,
+            ILogger logger, bool isDryRun, CancellationToken cancellationToken)
+        {
+            var groups = await db.ClimateZoneGroups.ToDictionaryAsync(g => g.Code, StringComparer.OrdinalIgnoreCase, cancellationToken);
+            var diagrams = await db.Diagrams.ToDictionaryAsync(d => d.Slug, StringComparer.OrdinalIgnoreCase, cancellationToken);
+            var existing = (await db.ClimateZones.Select(z => z.KoppenCode).ToListAsync(cancellationToken))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            using var command = wordPress.CreateCommand();
+            command.CommandText = $"""
+                select t.name, t.slug,
+                       {TermMeta("t.term_id", "climate-code")}, {TermMeta("t.term_id", "body")},
+                       {TermMeta("t.term_id", "heading-color")}, {TermMeta("t.term_id", "map_id")},
+                       {TermMeta("t.term_id", "diagram")}, {TermMeta("tt.parent", "climate-code")}
+                from wp_terms t
+                join wp_term_taxonomy tt on tt.term_id = t.term_id
+                where tt.taxonomy = 'climate-zone' and tt.parent <> 0
+                order by t.name
+                """;
+
+            var total = 0;
+            var created = 0;
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                total++;
+                var code = reader.GetString(2);
+                if (existing.Contains(code))
+                {
+                    continue;
+                }
+
+                var name = reader.GetString(0);
+                var diagramSlug = reader.IsDBNull(6) ? "" : reader.GetString(6);
+                if (diagramSlug == "")
+                {
+                    // Am Tropical Monsoon has none on the old site; imported as is, fixed by hand (plan §11, owner's final fixes).
+                    logger.LogWarning("Zone {Code} has no diagram on the old site; set it in Admin.", code);
+                }
+
+                var mapId = int.TryParse(reader.IsDBNull(5) ? "" : reader.GetString(5), out var id) ? id : (int?)null;
+                if (mapId is null)
+                {
+                    // As has none: the Köppen map's 30 classes don't include it, so it has a page but no map area.
+                    logger.LogInformation("Zone {Code} has no map ID (not a class on the Köppen map).", code);
+                }
+
+                var zone = new ClimateZone
+                {
+                    KoppenCode = code,
+                    Name = name[(name.IndexOf('_') + 1)..],            // "Cfa_Humid Subtropical" → "Humid Subtropical"
+                    Slug = reader.GetString(1).Replace('_', '-'),       // our slugs use hyphens (plan §10)
+                    DescriptionHtml = reader.GetString(3),
+                    Color = reader.GetString(4).ToUpperInvariant(),     // #c7ff4f → #C7FF4F
+                    MapId = mapId,
+                    Diagram = diagramSlug == "" ? null : diagrams[diagramSlug],
+                    Group = groups[reader.GetString(7)],
+                    SortOrder = total,                                  // alphabetical by code, as on the old site
+                };
+                if (!isDryRun)
+                {
+                    db.ClimateZones.Add(zone);
+                }
+                created++;
+            }
+
+            logger.LogInformation("Zones: {Verb} {Created}, skipped {Skipped} (already present).",
+                isDryRun ? "would create" : "created", created, total - created);
+        }
+
+        // SQL for one WordPress term field, e.g. the "climate-code" of the zone or of its parent group.
+        private static string TermMeta(string termId, string key) =>
+            $"(select meta_value from wp_termmeta where term_id = {termId} and meta_key = '{key}')";
 
         // Columns: WordPressId, OldPath, Folder, StoragePath, Title, AltText, Width, Height.
         // TextFieldParser handles quoted values with commas, e.g. "Gateway, The".
