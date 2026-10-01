@@ -387,6 +387,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Clerestories and Skylights: add its 2030 Palette link (none on the old site).
   - [ ] East-West Shading: fix its 2030 Palette link (points to earth-sheltering).
   - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
+  - [ ] Stack Ventilation → reference project "NCI Tower Competition": add its location (empty on the old site).
 
 ### Later
 - [ ] Microsoft Entra ID SSO for admin
