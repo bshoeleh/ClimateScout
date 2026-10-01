@@ -9,7 +9,7 @@ Last updated: 2026-10-01
 
 **Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`). `tool import wordpress --sqlite <file> [--dry-run]` (all in `Tools/ImportCommands.cs`) imports media rows, 31 zones, 27 strategies, 627 zone links, 74 reference projects, 112 conflict rows and 7 content blocks; it is safe to re-run and logs every data gap as a warning. The dev database holds the imported data.
 
-**Next up — Phase 3, remaining lines:** import the 4 diagram SVGs (and check every strategy has a `ds-{slug}` layer in the diagrams it is used with), then carbon geometry (`import geo`), then the verification report. Check the old data for gaps first, then propose code.
+**Next up — Phase 3, remaining lines:** diagrams are done (SVGs linked, layer check in every import). Next: carbon geometry (`import geo`), then the verification report. Check the old data for gaps first, then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -326,7 +326,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Media: one-time scripted download of **all 149** attachments from `climatescout.arcadis.com` into `wwwroot/img/media/` — `projects/` (74 attachments → 73 files), `strategies/` (27), `other/` (48, unused on the old site but kept) — with clean flat names (`2021/01/cool-roof@2x-1.png` → `strategies/cool-roof-2x-1.png`). Log: `Data/Import/media-map.csv` (WordPressId, OldPath, Folder, StoragePath, Title, AltText, Width, Height). Chadstone 107/165 are identical → one file (148 files, ~52 MB).
 - [x] `import wordpress` reads `climatescout-*.sqlite`: `MediaAsset` rows from `media-map.csv`, zones, strategies, zone↔strategy links, conflicts, reference projects, content pages → 7 `ContentBlocks` (`about.body`, `carbon.map.note`, `carbon.comparison.learn-more`, `carbon.calculator.intro/result-intro/result-after/disclaimers`). Zone groups come from `tool init reference`; the old carbon sources (EPA 2021 etc.) and the test-only Home page are not imported.
 - [x] Clean-up during import: WordPress line breaks → `<p>` paragraphs, `<acronym>` → `<abbr>`, "CallisonRTKL" → "Arcadis" in page text, stale conflict IDs dropped. No mojibake in the source (°, ’, – are stored correctly). Known data errors are not auto-fixed — they are logged and listed under Phase 9 "Owner's final fixes". Project descriptions are left as they are.
-- [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
+- [x] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with — SVGs from the old theme (`ClimateApp_*_white.svg`, the files the live site served) copied to `wwwroot/img/media/diagrams/{slug}.svg` and linked by `import wordpress`; the layer check runs after every import (4 missing layers → owner's final fixes). The older `xfer/_ClimateScoutSVGTemperate.cshtml` (19 layers) is outdated and not used.
 - [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
 - [ ] Verification report: counts & spot checks vs old site
 
@@ -375,16 +375,17 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 9 — Hardening & launch
 - [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
-- [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web
+- [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web; optimise the 4 diagram SVGs (0.5–0.9 MB each, Illustrator exports) with an SVG optimiser, keeping the `ds-*` ids
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
 - [ ] Decommission WordPress after sign-off
 - [ ] **Owner's final fixes** — data gaps found during the import, left as on the old site and fixed by hand in Admin before launch:
-  - [ ] Am Tropical Monsoon: set its diagram (none on the old site; the other tropical zones use Hot-Humid). The import logs a warning for it.
+  - [ ] Am Tropical Monsoon: choose its diagram. It has none set; the old site fell back to Hot-Dry, the other tropical zones use Hot-Humid (both diagrams have all of Am's strategy layers). The import logs a warning for it.
   - [ ] Clerestories and Skylights: add its 2030 Palette link (none on the old site).
   - [ ] East-West Shading: fix its 2030 Palette link (points to earth-sheltering).
   - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
   - [ ] Stack Ventilation → reference project "NCI Tower Competition": add its location (empty on the old site).
+  - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 
 ### Later

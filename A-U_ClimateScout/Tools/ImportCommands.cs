@@ -53,12 +53,14 @@ namespace A_U_ClimateScout.Tools
                 var zonesByCode = await ImportZonesAsync(db, wordPress, logger, isDryRun, cancellationToken);
                 await ImportStrategiesAsync(db, wordPress, logger, zonesByCode, mediaByWordPressId, isDryRun, cancellationToken);
                 await ImportContentAsync(db, wordPress, logger, isDryRun, cancellationToken);
+                await ImportDiagramsAsync(db, environment, logger, isDryRun, cancellationToken);
 
                 if (!isDryRun)
                 {
                     await db.SaveChangesAsync(cancellationToken);
                 }
 
+                await CheckDiagramLayersAsync(db, environment, logger, cancellationToken);
                 return 0;
             });
             return command;
@@ -383,6 +385,71 @@ namespace A_U_ClimateScout.Tools
             logger.LogInformation("Content blocks: {Verb} {Created}, skipped {Skipped} (already present).",
                 isDryRun ? "would create" : "created", created, blocks.Length - created);
         }
+
+        // Links each of the 4 diagrams (created by "tool init reference") to its SVG in wwwroot/img/media/diagrams/{slug}.svg,
+        // copied from the old theme. Diagrams that already have an SVG are left alone.
+        private static async Task ImportDiagramsAsync(ApplicationDbContext db, IWebHostEnvironment environment,
+            ILogger logger, bool isDryRun, CancellationToken cancellationToken)
+        {
+            var diagrams = await db.Diagrams.Where(d => d.SvgAssetId == null).ToListAsync(cancellationToken);
+            foreach (var diagram in diagrams)
+            {
+                var storagePath = $"diagrams/{diagram.Slug}.svg";
+                var info = new FileInfo(Path.Combine(environment.WebRootPath, "img", "media", storagePath));
+                if (!info.Exists)
+                {
+                    throw new FileNotFoundException($"Diagram {diagram.Slug} has no SVG file.", info.FullName);
+                }
+
+                var asset = await db.MediaAssets.FirstOrDefaultAsync(m => m.StoragePath == storagePath, cancellationToken)
+                    ?? new MediaAsset
+                    {
+                        FileName = info.Name,
+                        ContentType = "image/svg+xml",
+                        StoragePath = storagePath,
+                        SizeBytes = info.Length,
+                        AltText = $"{diagram.Name} building diagram",
+                        UploadedAt = DateTimeOffset.UtcNow,
+                    };
+                if (!isDryRun)
+                {
+                    diagram.SvgAsset = asset;
+                }
+            }
+
+            logger.LogInformation("Diagrams: {Verb} {Linked} SVGs, skipped {Skipped} (already linked).",
+                isDryRun ? "would link" : "linked", diagrams.Count, await db.Diagrams.CountAsync(cancellationToken) - diagrams.Count);
+        }
+
+        // Checks every diagram SVG has a ds-{slug} layer for each strategy used by the zones showing that diagram;
+        // the zone page toggles these layers. Runs on the saved data, so it reflects later edits in Admin too.
+        // Missing layers need new artwork (plan §11, owner's final fixes).
+        private static async Task CheckDiagramLayersAsync(ApplicationDbContext db, IWebHostEnvironment environment,
+            ILogger logger, CancellationToken cancellationToken)
+        {
+            var diagrams = await db.Diagrams.Include(d => d.SvgAsset).Where(d => d.SvgAsset != null).ToListAsync(cancellationToken);
+            var used = await db.ClimateZoneStrategies
+                .Where(l => l.Zone.DiagramId != null)
+                .Select(l => new { DiagramId = l.Zone.DiagramId!.Value, l.Strategy.Slug, l.Zone.KoppenCode })
+                .ToListAsync(cancellationToken);
+
+            var missingCount = 0;
+            foreach (var diagram in diagrams)
+            {
+                var svg = await File.ReadAllTextAsync(Path.Combine(environment.WebRootPath, "img", "media", diagram.SvgAsset!.StoragePath), cancellationToken);
+                var layers = DiagramLayer.Matches(svg).Select(m => m.Groups[1].Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                foreach (var missing in used.Where(u => u.DiagramId == diagram.Id && !layers.Contains(u.Slug)).GroupBy(u => u.Slug))
+                {
+                    logger.LogWarning("Diagram {Diagram} has no layer for strategy {Slug} (used by zones {Zones}); it needs artwork.",
+                        diagram.Slug, missing.Key, string.Join(", ", missing.Select(m => m.KoppenCode).Order()));
+                    missingCount++;
+                }
+            }
+
+            logger.LogInformation("Diagram layers: checked {Diagrams} diagrams, {Missing} missing layers.", diagrams.Count, missingCount);
+        }
+
+        private static readonly Regex DiagramLayer = new("id=\"ds-([^\"]+)\"");
 
         // Old WordPress text has no <p> tags: WordPress added them when showing the page, one paragraph per line.
         // Wraps each plain-text line in <p>, leaves lines that start with a block tag (<h2>, <ul>, <li> …) as they are,
