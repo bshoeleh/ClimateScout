@@ -19,7 +19,92 @@ namespace A_U_ClimateScout.Tools
             return new Command("import", "Import data from outside sources.")
             {
                 CreateWordPress(services),
+                CreateGeo(services),
             };
+        }
+
+        // tool import geo [--dry-run]
+        // Carbon regions (countries, US states, Canadian provinces, aggregates) and the other names the carbon CSVs
+        // use for them, from Data/Import/carbon-regions.csv and carbon-region-aliases.csv (plan Phase 3).
+        // The map outlines are in wwwroot/geo/carbon-regions.geojson, keyed by the same codes. Existing rows are skipped.
+        private static Command CreateGeo(IServiceProvider services)
+        {
+            var dryRun = new Option<bool>("--dry-run") { Description = "Report what would be created without saving." };
+            var command = new Command("geo", "Create carbon regions and their aliases.") { dryRun };
+            command.SetAction(async (parseResult, cancellationToken) =>
+            {
+                using var scope = services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var environment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+                var isDryRun = parseResult.GetValue(dryRun);
+
+                // Canadian values come from the Canada Energy Regulator, everything else from Ember.
+                var sources = await db.CarbonDataSources.ToDictionaryAsync(s => s.Name, StringComparer.OrdinalIgnoreCase, cancellationToken);
+                if (!sources.TryGetValue("Ember", out var ember) || !sources.TryGetValue("Canada Energy Regulator", out var canada))
+                {
+                    logger.LogError("The carbon data sources don't exist yet. Run \"tool init reference\" first.");
+                    return 1;
+                }
+
+                // Columns: Code, Name, Type, Parent, Continent, ShowOnMap, DataSources. Countries come first,
+                // so a state's or province's parent (US, CA) is always created before it.
+                var regions = await db.CarbonRegions.ToDictionaryAsync(r => r.Code, StringComparer.OrdinalIgnoreCase, cancellationToken);
+                var regionRows = ReadCsv(environment.ContentRootPath, "carbon-regions.csv");
+                var regionsCreated = 0;
+                foreach (var fields in regionRows)
+                {
+                    if (regions.ContainsKey(fields[0]))
+                    {
+                        continue;
+                    }
+
+                    var type = Enum.Parse<CarbonRegionType>(fields[2]);
+                    var region = new CarbonRegion
+                    {
+                        Code = fields[0],
+                        Name = fields[1],
+                        RegionType = type,
+                        ParentRegion = fields[3] == "" ? null : regions[fields[3]],
+                        Continent = EmptyToNull(fields[4]),
+                        ShowOnMap = fields[5] == "yes",
+                        PreferredSource = type == CarbonRegionType.Province ? canada : ember,
+                    };
+                    if (!isDryRun)
+                    {
+                        db.CarbonRegions.Add(region);
+                    }
+                    regions[region.Code] = region;
+                    regionsCreated++;
+                }
+
+                // Columns: Code, Alias, Source.
+                var existingAliases = (await db.CarbonRegionAliases.Select(a => a.Alias).ToListAsync(cancellationToken))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var aliasRows = ReadCsv(environment.ContentRootPath, "carbon-region-aliases.csv");
+                var aliasesCreated = 0;
+                foreach (var fields in aliasRows.Where(f => !existingAliases.Contains(f[1])))
+                {
+                    if (!isDryRun)
+                    {
+                        db.CarbonRegionAliases.Add(new CarbonRegionAlias { Region = regions[fields[0]], Alias = fields[1], Source = fields[2] });
+                    }
+                    aliasesCreated++;
+                }
+
+                if (!isDryRun)
+                {
+                    await db.SaveChangesAsync(cancellationToken);
+                }
+
+                var verb = isDryRun ? "would create" : "created";
+                logger.LogInformation("Carbon regions: {Verb} {Created}, skipped {Skipped} (already present).",
+                    verb, regionsCreated, regionRows.Count - regionsCreated);
+                logger.LogInformation("Region aliases: {Verb} {Created}, skipped {Skipped} (already present).",
+                    verb, aliasesCreated, aliasRows.Count - aliasesCreated);
+                return 0;
+            });
+            return command;
         }
 
         // tool import wordpress --sqlite <path> [--dry-run]
@@ -506,9 +591,20 @@ namespace A_U_ClimateScout.Tools
 
         // Columns: WordPressId, OldPath, Folder, StoragePath, Title, AltText, Width, Height.
         // TextFieldParser handles quoted values with commas, e.g. "Gateway, The".
-        private static List<MediaMapRow> ReadMediaMap(string contentRootPath)
+        private static List<MediaMapRow> ReadMediaMap(string contentRootPath) =>
+            ReadCsv(contentRootPath, "media-map.csv")
+                .Select(fields => new MediaMapRow(
+                    int.Parse(fields[0]),
+                    fields[3],
+                    string.IsNullOrWhiteSpace(fields[5]) ? null : fields[5],
+                    int.TryParse(fields[6], out var width) ? width : null,
+                    int.TryParse(fields[7], out var height) ? height : null))
+                .ToList();
+
+        // Reads a CSV from Data/Import (header skipped). TextFieldParser handles quoted values with commas.
+        private static List<string[]> ReadCsv(string contentRootPath, string fileName)
         {
-            using var parser = new TextFieldParser(Path.Combine(contentRootPath, "Data", "Import", "media-map.csv"))
+            using var parser = new TextFieldParser(Path.Combine(contentRootPath, "Data", "Import", fileName))
             {
                 TextFieldType = FieldType.Delimited,
                 HasFieldsEnclosedInQuotes = true,
@@ -516,15 +612,10 @@ namespace A_U_ClimateScout.Tools
             parser.SetDelimiters(",");
             parser.ReadFields();   // header
 
-            var rows = new List<MediaMapRow>();
+            var rows = new List<string[]>();
             while (parser.ReadFields() is { } fields)
             {
-                rows.Add(new MediaMapRow(
-                    int.Parse(fields[0]),
-                    fields[3],
-                    string.IsNullOrWhiteSpace(fields[5]) ? null : fields[5],
-                    int.TryParse(fields[6], out var width) ? width : null,
-                    int.TryParse(fields[7], out var height) ? height : null));
+                rows.Add(fields);
             }
             return rows;
         }

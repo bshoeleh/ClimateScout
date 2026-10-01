@@ -1,0 +1,294 @@
+Code,Name,Type,Parent,Continent,ShowOnMap,DataSources
+AE,United Arab Emirates,Country,,Asia,yes,Ember-Countries
+AF,Afghanistan,Country,,Asia,yes,Ember-Countries
+AG,Antigua and Barbuda,Country,,North America,yes,Ember-Countries
+AL,Albania,Country,,Europe,yes,Ember-Countries
+AM,Armenia,Country,,Asia,yes,Ember-Countries
+AO,Angola,Country,,Africa,yes,Ember-Countries
+AR,Argentina,Country,,South America,yes,Ember-Countries
+AS,American Samoa,Country,,Oceania,yes,Ember-Countries
+AT,Austria,Country,,Europe,yes,Ember-Countries
+AU,Australia,Country,,Oceania,yes,Ember-Countries
+AW,Aruba,Country,,North America,yes,Ember-Countries
+AZ,Azerbaijan,Country,,Asia,yes,Ember-Countries
+BA,Bosnia and Herzegovina,Country,,Europe,yes,Ember-Countries
+BB,Barbados,Country,,North America,yes,Ember-Countries
+BD,Bangladesh,Country,,Asia,yes,Ember-Countries
+BE,Belgium,Country,,Europe,yes,Ember-Countries
+BF,Burkina Faso,Country,,Africa,yes,Ember-Countries
+BG,Bulgaria,Country,,Europe,yes,Ember-Countries
+BH,Bahrain,Country,,Asia,yes,Ember-Countries
+BI,Burundi,Country,,Africa,yes,Ember-Countries
+BJ,Benin,Country,,Africa,yes,Ember-Countries
+BM,Bermuda,Country,,North America,no,Ember-Countries
+BN,Brunei Darussalam,Country,,Asia,yes,Ember-Countries
+BO,Bolivia,Country,,South America,yes,Ember-Countries
+BR,Brazil,Country,,South America,yes,Ember-Countries
+BS,Bahamas,Country,,North America,yes,Ember-Countries
+BT,Bhutan,Country,,Asia,yes,Ember-Countries
+BW,Botswana,Country,,Africa,yes,Ember-Countries
+BY,Belarus,Country,,Europe,yes,Ember-Countries
+BZ,Belize,Country,,North America,yes,Ember-Countries
+CA,Canada,Country,,North America,no,Ember-Countries
+CD,Democratic Republic of the Congo,Country,,Africa,yes,Ember-Countries
+CF,Central African Republic,Country,,Africa,yes,Ember-Countries
+CG,Congo,Country,,Africa,yes,Ember-Countries
+CH,Switzerland,Country,,Europe,yes,Ember-Countries
+CI,Côte d'Ivoire,Country,,Africa,yes,Ember-Countries
+CK,Cook Islands,Country,,Oceania,yes,Ember-Countries
+CL,Chile,Country,,South America,yes,Ember-Countries
+CM,Cameroon,Country,,Africa,yes,Ember-Countries
+CN,China,Country,,Asia,yes,Ember-Countries
+CO,Colombia,Country,,South America,yes,Ember-Countries
+CR,Costa Rica,Country,,North America,yes,Ember-Countries
+CU,Cuba,Country,,North America,yes,Ember-Countries
+CV,Cabo Verde,Country,,Africa,yes,Ember-Countries
+CY,Cyprus,Country,,Asia,yes,Ember-Countries
+CZ,Czechia,Country,,Europe,yes,Ember-Countries
+DE,Germany,Country,,Europe,yes,Ember-Countries
+DJ,Djibouti,Country,,Africa,yes,Ember-Countries
+DK,Denmark,Country,,Europe,yes,Ember-Countries
+DM,Dominica,Country,,North America,yes,Ember-Countries
+DO,Dominican Republic,Country,,North America,yes,Ember-Countries
+DZ,Algeria,Country,,Africa,yes,Ember-Countries
+EC,Ecuador,Country,,South America,yes,Ember-Countries
+EE,Estonia,Country,,Europe,yes,Ember-Countries
+EG,Egypt,Country,,Africa,yes,Ember-Countries
+EH,Western Sahara,Country,,Africa,no,Ember-Countries
+ER,Eritrea,Country,,Africa,yes,Ember-Countries
+ES,Spain,Country,,Europe,yes,Ember-Countries
+ET,Ethiopia,Country,,Africa,yes,Ember-Countries
+FI,Finland,Country,,Europe,yes,Ember-Countries
+FJ,Fiji,Country,,Oceania,yes,Ember-Countries
+FK,Falkland Islands,Country,,South America,yes,Ember-Countries
+FO,Faroe Islands,Country,,Europe,yes,Ember-Countries
+FR,France,Country,,Europe,yes,Ember-Countries
+GA,Gabon,Country,,Africa,yes,Ember-Countries
+GB,United Kingdom,Country,,Europe,yes,Ember-Countries
+GD,Grenada,Country,,North America,yes,Ember-Countries
+GE,Georgia,Country,,Asia,yes,Ember-Countries
+GF,French Guiana,Country,,South America,no,Ember-Countries
+GH,Ghana,Country,,Africa,yes,Ember-Countries
+GI,Gibraltar,Country,,Europe,no,Ember-Countries
+GL,Greenland,Country,,North America,yes,Ember-Countries
+GM,Gambia,Country,,Africa,yes,Ember-Countries
+GN,Guinea,Country,,Africa,yes,Ember-Countries
+GP,Guadeloupe,Country,,North America,no,Ember-Countries
+GQ,Equatorial Guinea,Country,,Africa,yes,Ember-Countries
+GR,Greece,Country,,Europe,yes,Ember-Countries
+GT,Guatemala,Country,,North America,yes,Ember-Countries
+GU,Guam,Country,,Oceania,yes,Ember-Countries
+GW,Guinea-Bissau,Country,,Africa,yes,Ember-Countries
+GY,Guyana,Country,,South America,yes,Ember-Countries
+HK,Hong Kong,Country,,Asia,yes,Ember-Countries
+HN,Honduras,Country,,North America,yes,Ember-Countries
+HR,Croatia,Country,,Europe,yes,Ember-Countries
+HT,Haiti,Country,,North America,yes,Ember-Countries
+HU,Hungary,Country,,Europe,yes,Ember-Countries
+ID,Indonesia,Country,,Asia,yes,Ember-Countries
+IE,Ireland,Country,,Europe,yes,Ember-Countries
+IL,Israel,Country,,Asia,yes,Ember-Countries
+IN,India,Country,,Asia,yes,Ember-Countries
+IQ,Iraq,Country,,Asia,yes,Ember-Countries
+IR,Iran,Country,,Asia,yes,Ember-Countries
+IS,Iceland,Country,,Europe,yes,Ember-Countries
+IT,Italy,Country,,Europe,yes,Ember-Countries
+JM,Jamaica,Country,,North America,yes,Ember-Countries
+JO,Jordan,Country,,Asia,yes,Ember-Countries
+JP,Japan,Country,,Asia,yes,Ember-Countries
+KE,Kenya,Country,,Africa,yes,Ember-Countries
+KG,Kyrgyzstan,Country,,Asia,yes,Ember-Countries
+KH,Cambodia,Country,,Asia,yes,Ember-Countries
+KI,Kiribati,Country,,Oceania,yes,Ember-Countries
+KM,Comoros,Country,,Africa,yes,Ember-Countries
+KN,Saint Kitts and Nevis,Country,,North America,yes,Ember-Countries
+KP,North Korea,Country,,Asia,yes,Ember-Countries
+KR,South Korea,Country,,Asia,yes,Ember-Countries
+KW,Kuwait,Country,,Asia,yes,Ember-Countries
+KY,Cayman Islands,Country,,North America,yes,Ember-Countries
+KZ,Kazakhstan,Country,,Asia,yes,Ember-Countries
+LA,Laos,Country,,Asia,yes,Ember-Countries
+LB,Lebanon,Country,,Asia,yes,Ember-Countries
+LC,Saint Lucia,Country,,North America,yes,Ember-Countries
+LK,Sri Lanka,Country,,Asia,yes,Ember-Countries
+LR,Liberia,Country,,Africa,yes,Ember-Countries
+LS,Lesotho,Country,,Africa,yes,Ember-Countries
+LT,Lithuania,Country,,Europe,yes,Ember-Countries
+LU,Luxembourg,Country,,Europe,yes,Ember-Countries
+LV,Latvia,Country,,Europe,yes,Ember-Countries
+LY,Libya,Country,,Africa,yes,Ember-Countries
+MA,Morocco,Country,,Africa,yes,Ember-Countries
+MD,Moldova,Country,,Europe,yes,Ember-Countries
+ME,Montenegro,Country,,Europe,yes,Ember-Countries
+MG,Madagascar,Country,,Africa,yes,Ember-Countries
+MK,North Macedonia,Country,,Europe,yes,Ember-Countries
+ML,Mali,Country,,Africa,yes,Ember-Countries
+MM,Myanmar,Country,,Asia,yes,Ember-Countries
+MN,Mongolia,Country,,Asia,yes,Ember-Countries
+MO,Macao,Country,,Asia,yes,Ember-Countries
+MQ,Martinique,Country,,North America,no,Ember-Countries
+MR,Mauritania,Country,,Africa,yes,Ember-Countries
+MS,Montserrat,Country,,North America,yes,Ember-Countries
+MT,Malta,Country,,Europe,yes,Ember-Countries
+MU,Mauritius,Country,,Africa,no,Ember-Countries
+MV,Maldives,Country,,Asia,no,Ember-Countries
+MW,Malawi,Country,,Africa,yes,Ember-Countries
+MX,Mexico,Country,,North America,yes,Ember-Countries
+MY,Malaysia,Country,,Asia,yes,Ember-Countries
+MZ,Mozambique,Country,,Africa,yes,Ember-Countries
+NA,Namibia,Country,,Africa,yes,Ember-Countries
+NC,New Caledonia,Country,,Oceania,yes,Ember-Countries
+NE,Niger,Country,,Africa,yes,Ember-Countries
+NG,Nigeria,Country,,Africa,yes,Ember-Countries
+NI,Nicaragua,Country,,North America,yes,Ember-Countries
+NL,Netherlands,Country,,Europe,yes,Ember-Countries
+NO,Norway,Country,,Europe,yes,Ember-Countries
+NP,Nepal,Country,,Asia,yes,Ember-Countries
+NR,Nauru,Country,,Oceania,yes,Ember-Countries
+NU,Niue,Country,,Oceania,no,Ember-Countries
+NZ,New Zealand,Country,,Oceania,yes,Ember-Countries
+OM,Oman,Country,,Asia,yes,Ember-Countries
+PA,Panama,Country,,North America,yes,Ember-Countries
+PE,Peru,Country,,South America,yes,Ember-Countries
+PF,French Polynesia,Country,,Oceania,yes,Ember-Countries
+PG,Papua New Guinea,Country,,Oceania,yes,Ember-Countries
+PH,Philippines,Country,,Asia,yes,Ember-Countries
+PK,Pakistan,Country,,Asia,yes,Ember-Countries
+PL,Poland,Country,,Europe,yes,Ember-Countries
+PM,Saint Pierre and Miquelon,Country,,North America,yes,Ember-Countries
+PR,Puerto Rico,Country,,North America,no,Ember-Countries
+PS,Palestine,Country,,Asia,yes,Ember-Countries
+PT,Portugal,Country,,Europe,yes,Ember-Countries
+PY,Paraguay,Country,,South America,yes,Ember-Countries
+QA,Qatar,Country,,Asia,yes,Ember-Countries
+RE,Reunion,Country,,Africa,no,Ember-Countries
+RO,Romania,Country,,Europe,yes,Ember-Countries
+RS,Serbia,Country,,Europe,yes,Ember-Countries
+RU,Russia,Country,,Europe,yes,Ember-Countries
+RW,Rwanda,Country,,Africa,yes,Ember-Countries
+SA,Saudi Arabia,Country,,Asia,yes,Ember-Countries
+SB,Solomon Islands,Country,,Oceania,yes,Ember-Countries
+SC,Seychelles,Country,,Africa,no,Ember-Countries
+SD,Sudan,Country,,Africa,yes,Ember-Countries
+SE,Sweden,Country,,Europe,yes,Ember-Countries
+SG,Singapore,Country,,Asia,yes,Ember-Countries
+SH,"Saint Helena, Ascension and Tristan da Cunha",Country,,Africa,no,Ember-Countries
+SI,Slovenia,Country,,Europe,yes,Ember-Countries
+SK,Slovakia,Country,,Europe,yes,Ember-Countries
+SL,Sierra Leone,Country,,Africa,yes,Ember-Countries
+SN,Senegal,Country,,Africa,yes,Ember-Countries
+SO,Somalia,Country,,Africa,yes,Ember-Countries
+SR,Suriname,Country,,South America,yes,Ember-Countries
+SS,South Sudan,Country,,Africa,yes,Ember-Countries
+ST,São Tomé and Principe,Country,,Africa,yes,Ember-Countries
+SV,El Salvador,Country,,North America,yes,Ember-Countries
+SY,Syria,Country,,Asia,yes,Ember-Countries
+SZ,Eswatini,Country,,Africa,yes,Ember-Countries
+TC,Turks and Caicos Islands,Country,,North America,yes,Ember-Countries
+TD,Chad,Country,,Africa,yes,Ember-Countries
+TG,Togo,Country,,Africa,yes,Ember-Countries
+TH,Thailand,Country,,Asia,yes,Ember-Countries
+TJ,Tajikistan,Country,,Asia,yes,Ember-Countries
+TL,Timor-Leste,Country,,Asia,no,Ember-Countries
+TM,Turkmenistan,Country,,Asia,yes,Ember-Countries
+TN,Tunisia,Country,,Africa,yes,Ember-Countries
+TO,Tonga,Country,,Oceania,yes,Ember-Countries
+TR,Turkey,Country,,Asia,yes,Ember-Countries
+TT,Trinidad and Tobago,Country,,North America,yes,Ember-Countries
+TW,Taiwan,Country,,Asia,yes,Ember-Countries
+TZ,Tanzania,Country,,Africa,yes,Ember-Countries
+UA,Ukraine,Country,,Europe,yes,Ember-Countries
+UG,Uganda,Country,,Africa,yes,Ember-Countries
+US,United States,Country,,North America,no,Ember-Countries; Ember-US-States
+UY,Uruguay,Country,,South America,yes,Ember-Countries
+UZ,Uzbekistan,Country,,Asia,yes,Ember-Countries
+VC,Saint Vincent and the Grenadines,Country,,North America,yes,Ember-Countries
+VE,Venezuela,Country,,South America,yes,Ember-Countries
+VG,British Virgin Islands,Country,,North America,yes,Ember-Countries
+VI,United States Virgin Islands,Country,,North America,yes,Ember-Countries
+VN,Vietnam,Country,,Asia,yes,Ember-Countries
+VU,Vanuatu,Country,,Oceania,yes,Ember-Countries
+WS,Samoa,Country,,Oceania,yes,Ember-Countries
+XK,Kosovo,Country,,Europe,yes,Ember-Countries
+YE,Yemen,Country,,Asia,yes,Ember-Countries
+ZA,South Africa,Country,,Africa,yes,Ember-Countries
+ZM,Zambia,Country,,Africa,yes,Ember-Countries
+ZW,Zimbabwe,Country,,Africa,yes,Ember-Countries
+US-AK,Alaska,State,US,North America,yes,Ember-US-States
+US-AL,Alabama,State,US,North America,yes,Ember-US-States
+US-AR,Arkansas,State,US,North America,yes,Ember-US-States
+US-AZ,Arizona,State,US,North America,yes,Ember-US-States
+US-CA,California,State,US,North America,yes,Ember-US-States
+US-CO,Colorado,State,US,North America,yes,Ember-US-States
+US-CT,Connecticut,State,US,North America,yes,Ember-US-States
+US-DC,District of Columbia,State,US,North America,yes,Ember-US-States
+US-DE,Delaware,State,US,North America,yes,Ember-US-States
+US-FL,Florida,State,US,North America,yes,Ember-US-States
+US-GA,Georgia,State,US,North America,yes,Ember-US-States
+US-HI,Hawaii,State,US,North America,yes,Ember-US-States
+US-IA,Iowa,State,US,North America,yes,Ember-US-States
+US-ID,Idaho,State,US,North America,yes,Ember-US-States
+US-IL,Illinois,State,US,North America,yes,Ember-US-States
+US-IN,Indiana,State,US,North America,yes,Ember-US-States
+US-KS,Kansas,State,US,North America,yes,Ember-US-States
+US-KY,Kentucky,State,US,North America,yes,Ember-US-States
+US-LA,Louisiana,State,US,North America,yes,Ember-US-States
+US-MA,Massachusetts,State,US,North America,yes,Ember-US-States
+US-MD,Maryland,State,US,North America,yes,Ember-US-States
+US-ME,Maine,State,US,North America,yes,Ember-US-States
+US-MI,Michigan,State,US,North America,yes,Ember-US-States
+US-MN,Minnesota,State,US,North America,yes,Ember-US-States
+US-MO,Missouri,State,US,North America,yes,Ember-US-States
+US-MS,Mississippi,State,US,North America,yes,Ember-US-States
+US-MT,Montana,State,US,North America,yes,Ember-US-States
+US-NC,North Carolina,State,US,North America,yes,Ember-US-States
+US-ND,North Dakota,State,US,North America,yes,Ember-US-States
+US-NE,Nebraska,State,US,North America,yes,Ember-US-States
+US-NH,New Hampshire,State,US,North America,yes,Ember-US-States
+US-NJ,New Jersey,State,US,North America,yes,Ember-US-States
+US-NM,New Mexico,State,US,North America,yes,Ember-US-States
+US-NV,Nevada,State,US,North America,yes,Ember-US-States
+US-NY,New York,State,US,North America,yes,Ember-US-States
+US-OH,Ohio,State,US,North America,yes,Ember-US-States
+US-OK,Oklahoma,State,US,North America,yes,Ember-US-States
+US-OR,Oregon,State,US,North America,yes,Ember-US-States
+US-PA,Pennsylvania,State,US,North America,yes,Ember-US-States
+US-PR,Puerto Rico,State,US,North America,yes,Ember-US-States
+US-RI,Rhode Island,State,US,North America,yes,Ember-US-States
+US-SC,South Carolina,State,US,North America,yes,Ember-US-States
+US-SD,South Dakota,State,US,North America,yes,Ember-US-States
+US-TN,Tennessee,State,US,North America,yes,Ember-US-States
+US-TX,Texas,State,US,North America,yes,Ember-US-States
+US-UT,Utah,State,US,North America,yes,Ember-US-States
+US-VA,Virginia,State,US,North America,yes,Ember-US-States
+US-VT,Vermont,State,US,North America,yes,Ember-US-States
+US-WA,Washington,State,US,North America,yes,Ember-US-States
+US-WI,Wisconsin,State,US,North America,yes,Ember-US-States
+US-WV,West Virginia,State,US,North America,yes,Ember-US-States
+US-WY,Wyoming,State,US,North America,yes,Ember-US-States
+CA-AB,Alberta,Province,CA,North America,yes,CER-Canada
+CA-BC,British Columbia,Province,CA,North America,yes,CER-Canada
+CA-MB,Manitoba,Province,CA,North America,yes,CER-Canada
+CA-NB,New Brunswick,Province,CA,North America,yes,CER-Canada
+CA-NL,Newfoundland and Labrador,Province,CA,North America,yes,CER-Canada
+CA-NS,Nova Scotia,Province,CA,North America,yes,CER-Canada
+CA-NT,Northwest Territories,Province,CA,North America,yes,CER-Canada
+CA-NU,Nunavut,Province,CA,North America,yes,CER-Canada
+CA-ON,Ontario,Province,CA,North America,yes,CER-Canada
+CA-PE,Prince Edward Island,Province,CA,North America,yes,CER-Canada
+CA-QC,Quebec,Province,CA,North America,yes,CER-Canada
+CA-SK,Saskatchewan,Province,CA,North America,yes,CER-Canada
+CA-YT,Yukon,Province,CA,North America,yes,
+AGG-AFRICA,Africa,Aggregate,,,no,Ember-Countries
+AGG-ASEAN,ASEAN,Aggregate,,,no,Ember-Countries
+AGG-ASIA,Asia,Aggregate,,,no,Ember-Countries
+AGG-EU,EU,Aggregate,,,no,Ember-Countries
+AGG-EUROPE,Europe,Aggregate,,,no,Ember-Countries
+AGG-G20,G20,Aggregate,,,no,Ember-Countries
+AGG-G7,G7,Aggregate,,,no,Ember-Countries
+AGG-LATAM,Latin America and Caribbean,Aggregate,,,no,Ember-Countries
+AGG-MIDDLE-EAST,Middle East,Aggregate,,,no,Ember-Countries
+AGG-NORTH-AMERICA,North America,Aggregate,,,no,Ember-Countries
+AGG-OCEANIA,Oceania,Aggregate,,,no,Ember-Countries
+AGG-OECD,OECD,Aggregate,,,no,Ember-Countries
+AGG-WORLD,World,Aggregate,,,no,Ember-Countries

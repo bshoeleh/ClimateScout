@@ -1,0 +1,33 @@
+Code,Alias,Source
+BA,Bosnia Herzegovina,Ember-Countries
+BS,Bahamas (the),Ember-Countries
+CD,Congo (the Democratic Republic of the),Ember-Countries
+CF,Central African Republic (the),Ember-Countries
+CG,Congo (the),Ember-Countries
+CI,Cote d'Ivoire,Ember-Countries
+CK,Cook Islands (the),Ember-Countries
+DO,Dominican Republic (the),Ember-Countries
+FK,Falkland Islands (the) [Malvinas],Ember-Countries
+FO,Faroe Islands (the),Ember-Countries
+GM,Gambia (the),Ember-Countries
+IR,Iran (Islamic Republic of),Ember-Countries
+KM,Comoros (the),Ember-Countries
+KP,Korea (the Democratic People's Republic of),Ember-Countries
+KY,Cayman Islands (the),Ember-Countries
+LA,Lao People's Democratic Republic (the),Ember-Countries
+NE,Niger (the),Ember-Countries
+PH,Philippines (the),Ember-Countries
+PS,"Palestine, State of",Ember-Countries
+RU,Russian Federation (the),Ember-Countries
+SD,Sudan (the),Ember-Countries
+ST,Sao Tome and Principe,Ember-Countries
+SY,Syrian Arab Republic (the),Ember-Countries
+TC,Turks and Caicos Islands (the),Ember-Countries
+TZ,"Tanzania, the United Republic of",Ember-Countries
+US,US Total,Ember-US-States
+US,United States of America,Ember-Countries
+VE,Venezuela (Bolivarian Republic of),Ember-Countries
+VG,Virgin Islands (British),Ember-Countries
+VI,Virgin Islands (U.S.),Ember-Countries
+VN,Viet Nam,Ember-Countries
+US-DC,"Washington, D.C.",Ember-US-States
