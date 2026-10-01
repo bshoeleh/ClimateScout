@@ -217,14 +217,15 @@ MapLibre GL JS (vector, GPU; more complex than we need at zoom 2–8), Mapbox GL
 
 ## 6. Carbon importer
 
-1. Admin uploads CSV and picks (or auto-detects by header) a **source profile**: Ember-Countries, Ember-US-States, CER-Canada (profiles are config, new ones addable).
-2. Parse with CsvHelper (handles quoted commas, BOM, encodings).
+1. Admin uploads a **CSV or Excel (`.xlsx`, first sheet)** file and picks (or auto-detects by header) a **source profile**: Ember-Countries, Ember-US-States, CER-Canada (profiles are config, new ones addable).
+2. Parse with CsvHelper (handles quoted commas, BOM, encodings) or ClosedXML for `.xlsx`; both feed the same validate/match/preview pipeline.
 3. Validate: numeric value, unit = gCO2/kWh (or convert), year in range, variable = CO2 intensity.
 4. Match each row → `CarbonRegion` by code, then alias, then normalized name. Aggregates (World, EU…) stored but flagged `Aggregate`.
 5. **Preview screen**: new / changed (old → new value) / unchanged / unmatched / invalid. Unmatched rows can be mapped to a region inline (creates an alias for next time) or ignored.
 6. Commit in a transaction → new `CarbonIntensity` rows (history kept), batch record, audit entry, email summary to admins.
 7. Rollback a batch from the import history screen.
-8. Later (optional): scheduled pull from Ember's API instead of manual CSV.
+8. **Download current data** (decided 2026-10-01): Admin exports the current carbon values as `.xlsx` in exactly the upload layout, so the routine update is download → edit in Excel → upload → review preview → commit.
+9. Later (optional): scheduled pull from Ember's API instead of manual CSV.
 
 ## 7. API (v1)
 
@@ -355,7 +356,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Audit log viewer
 
 ### Phase 6 — Carbon importer
-- [ ] Source profiles + header auto-detection
+- [ ] Source profiles + header auto-detection; accept `.csv` and `.xlsx` (ClosedXML)
+- [ ] "Download current data" as `.xlsx` in the upload layout (round-trip editing in Excel)
 - [ ] Parse/validate/match pipeline with unit tests using the three sample CSVs
 - [ ] Preview/diff screen with inline alias mapping
 - [ ] Commit, history, rollback
@@ -382,6 +384,9 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Decommission WordPress after sign-off
 - [ ] **Owner's final fixes** — data gaps found during the import, left as on the old site and fixed by hand in Admin before launch:
   - [ ] Am Tropical Monsoon: set its diagram (none on the old site; the other tropical zones use Hot-Humid). The import logs a warning for it.
+  - [ ] Clerestories and Skylights: add its 2030 Palette link (none on the old site).
+  - [ ] East-West Shading: fix its 2030 Palette link (points to earth-sheltering).
+  - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
 
 ### Later
 - [ ] Microsoft Entra ID SSO for admin
