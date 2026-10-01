@@ -189,3 +189,42 @@ body > .container {
 .nav-pills {
     --bs-nav-pills-link-active-bg: var(--cs-orange-dark);
 }
+
+/* ---------- Zone pages ---------- */
+/* --cs-zone-bg / --cs-zone-fg come from the generated /css/zones.css (class cs-zone-{code}; the colours are data). */
+.cs-zone-label {
+    display: inline-block;
+    padding: .25rem .75rem;
+    border-radius: .25rem;
+    background-color: var(--cs-zone-bg, var(--cs-line));
+    color: var(--cs-zone-fg, var(--cs-ink));
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.cs-strategy-card {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    height: 100%;
+    padding: .5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
+}
+
+.cs-strategy-card:hover,
+.cs-strategy-card:focus-visible {
+    border-color: var(--cs-orange);
+}
+
+.cs-strategy-card img {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
