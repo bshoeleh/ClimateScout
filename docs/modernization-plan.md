@@ -1,6 +1,6 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phases 1–2 complete; Phase 3 (data command importers): media and `import wordpress` done, next diagram SVGs**
+Status: **IN PROGRESS — Phases 1–3 complete; next Phase 4 (public site)**
 Last updated: 2026-10-01
 
 ## ▶ Where we left off (2026-10-01)
@@ -9,7 +9,9 @@ Last updated: 2026-10-01
 
 **Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`). `tool import wordpress --sqlite <file> [--dry-run]` (all in `Tools/ImportCommands.cs`) imports media rows, 31 zones, 27 strategies, 627 zone links, 74 reference projects, 112 conflict rows and 7 content blocks; it is safe to re-run and logs every data gap as a warning. The dev database holds the imported data.
 
-**Next up — Phase 3, last line:** the verification report (counts & spot checks vs the old site). Diagrams and carbon regions are done: `dotnet run -- tool import geo` creates the 293 regions and 32 aliases. Check the old data for gaps first, then propose code.
+**Phase 3 complete:** `tool import wordpress` + `tool import geo` load everything; `docs/import-verification.md` shows 25/25 checks passed.
+
+**Next up — Phase 4, public site:** start with the zone and strategy pages (they only need the imported data). The maps (home climate map, carbon map) need the Arcadis Mapbox account from Phase 0 for tiles; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -328,7 +330,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Clean-up during import: WordPress line breaks → `<p>` paragraphs, `<acronym>` → `<abbr>`, "CallisonRTKL" → "Arcadis" in page text, stale conflict IDs dropped. No mojibake in the source (°, ’, – are stored correctly). Known data errors are not auto-fixed — they are logged and listed under Phase 9 "Owner's final fixes". Project descriptions are left as they are.
 - [x] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with — SVGs from the old theme (`ClimateApp_*_white.svg`, the files the live site served) copied to `wwwroot/img/media/diagrams/{slug}.svg` and linked by `import wordpress`; the layer check runs after every import (4 missing layers → owner's final fixes). The older `xfer/_ClimateScoutSVGTemperate.cshtml` (19 layers) is outdated and not used.
 - [x] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases — one-time script from the old `carbon_map_data_compiled.js` (267 shapes): 264 shapes kept (US, CA and the PR country shape hidden as on the old site; Puerto Rico is drawn as the `US-PR` state), coordinates rounded to 4 decimals, values dropped (0.48 MB). `Data/Import/carbon-regions.csv` (293 regions: 215 countries `FR`, 52 states `US-AL`, 13 provinces/territories `CA-AB`, 13 aggregates `AGG-WORLD`/`AGG-LATAM`…) and `carbon-region-aliases.csv` (32 names the Ember/CER files use, e.g. `RU` ← "Russian Federation (the)"). `tool import geo [--dry-run]` creates them; preferred source CER for Canada, Ember otherwise. Yukon has a shape but no data; 13 small places have data but no shape (Bermuda, Maldives, Réunion …).
-- [ ] Verification report: counts & spot checks vs old site
+- [x] Verification report: counts & spot checks vs old site — `docs/import-verification.md`: every row compared (not a sample) against the old WordPress database, image folder and carbon CSVs; 25 of 25 checks passed, no differences. Known gaps are listed there and under Phase 9.
 
 ### Phase 4 — Public site
 - [ ] Layout: header/nav, footer (Arcadis, no CRTKL)
