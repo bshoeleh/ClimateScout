@@ -1,21 +1,18 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phases 1–2 complete; Phase 3 (data command importers) started — media done, next `import wordpress`**
-Last updated: 2026-09-30
+Status: **IN PROGRESS — Phases 1–2 complete; Phase 3 (data command importers): media and `import wordpress` done, next diagram SVGs**
+Last updated: 2026-10-01
 
-## ▶ Where we left off (2026-09-30, end of day)
+## ▶ Where we left off (2026-10-01)
 
-**Last commit:** `873bf4c Add old site images and media map for the WordPress import`. Working tree clean.
+**Last commit:** see `git log` — `import wordpress` finished (content blocks + paragraph conversion).
 
-**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`).
+**Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`). `tool import wordpress --sqlite <file> [--dry-run]` (all in `Tools/ImportCommands.cs`) imports media rows, 31 zones, 27 strategies, 627 zone links, 74 reference projects, 112 conflict rows and 7 content blocks; it is safe to re-run and logs every data gap as a warning. The dev database holds the imported data.
 
-**Next up — Phase 3, `import wordpress`**, built in small steps, each proposed and approved:
-1. Command skeleton `tool import wordpress --sqlite <path> [--dry-run]` + `MediaAsset` rows from `media-map.csv` (simplest part first). Decide how the CSV ships with the published app (one `.csproj` setting, e.g. copy to output/publish) so the import can run on the server.
-2. Zones (split `Cfa_Humid Subtropical` into code + name; hyphen slugs), linked to the existing zone groups and diagrams.
-3. Strategies, zone↔strategy links, conflicts (PHP-serialized → `StrategyConflictRules.MakeSymmetric`), reference projects (description → `Location`), images via the CSV.
-4. Content pages (About, Grid Carbon Intensity, Carbon Comparison) → `ContentBlocks`; then the data clean-up line (mojibake, known errors, CRTKL references).
-- The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it).
-- Small pure parsing helpers (e.g. PHP-serialized conflicts, code/name split) are candidates for the user to write tests for.
+**Next up — Phase 3, remaining lines:** import the 4 diagram SVGs (and check every strategy has a `ds-{slug}` layer in the diagrams it is used with), then carbon geometry (`import geo`), then the verification report. Check the old data for gaps first, then propose code.
+- The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
+- Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
+- `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
 - Note: there is no scoped CSS (`_Layout.cshtml.css` was removed along with its `<link>`). If a view needs scoped CSS later, re-add `<link rel="stylesheet" href="~/A-U_ClimateScout.styles.css" />`. The bundle name uses the assembly name, with a hyphen.
 
 **Working agreement:** walkthrough style — propose each file/command with explanation, wait for OK, then do it, verify, and show the result. Commit at checkpoints with a descriptive message (no AI attribution). User is new to unit testing — explain tests in detail. Tests: the user decides the test cases (normal / nothing / repeats / invalid / boundaries / guarantees) and writes the tests; the reviewer explains and reviews, and doesn't add tests unprompted.
@@ -327,8 +324,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 3 — Data command importers (WordPress + media + carbon)
 - [x] Media: one-time scripted download of **all 149** attachments from `climatescout.arcadis.com` into `wwwroot/img/media/` — `projects/` (74 attachments → 73 files), `strategies/` (27), `other/` (48, unused on the old site but kept) — with clean flat names (`2021/01/cool-roof@2x-1.png` → `strategies/cool-roof-2x-1.png`). Log: `Data/Import/media-map.csv` (WordPressId, OldPath, Folder, StoragePath, Title, AltText, Width, Height). Chadstone 107/165 are identical → one file (148 files, ~52 MB).
-- [ ] `import wordpress` reads `climatescout-*.sqlite`: `MediaAsset` rows from `media-map.csv`, zones, groups, strategies, zone↔strategy links, conflicts, reference projects, content pages, carbon sources
-- [ ] Fix encoding (mojibake), fix known data errors, strip CRTKL references
+- [x] `import wordpress` reads `climatescout-*.sqlite`: `MediaAsset` rows from `media-map.csv`, zones, strategies, zone↔strategy links, conflicts, reference projects, content pages → 7 `ContentBlocks` (`about.body`, `carbon.map.note`, `carbon.comparison.learn-more`, `carbon.calculator.intro/result-intro/result-after/disclaimers`). Zone groups come from `tool init reference`; the old carbon sources (EPA 2021 etc.) and the test-only Home page are not imported.
+- [x] Clean-up during import: WordPress line breaks → `<p>` paragraphs, `<acronym>` → `<abbr>`, "CallisonRTKL" → "Arcadis" in page text, stale conflict IDs dropped. No mojibake in the source (°, ’, – are stored correctly). Known data errors are not auto-fixed — they are logged and listed under Phase 9 "Owner's final fixes". Project descriptions are left as they are.
 - [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
 - [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
 - [ ] Import the three new CSVs through the real importer (proves the importer)
@@ -388,6 +385,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] East-West Shading: fix its 2030 Palette link (points to earth-sheltering).
   - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
   - [ ] Stack Ventilation → reference project "NCI Tower Competition": add its location (empty on the old site).
+  - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 
 ### Later
 - [ ] Microsoft Entra ID SSO for admin

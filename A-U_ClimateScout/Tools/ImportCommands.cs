@@ -52,6 +52,7 @@ namespace A_U_ClimateScout.Tools
                 var mediaByWordPressId = await ImportMediaAsync(db, environment, logger, isDryRun, cancellationToken);
                 var zonesByCode = await ImportZonesAsync(db, wordPress, logger, isDryRun, cancellationToken);
                 await ImportStrategiesAsync(db, wordPress, logger, zonesByCode, mediaByWordPressId, isDryRun, cancellationToken);
+                await ImportContentAsync(db, wordPress, logger, isDryRun, cancellationToken);
 
                 if (!isDryRun)
                 {
@@ -171,7 +172,7 @@ namespace A_U_ClimateScout.Tools
                     KoppenCode = code,
                     Name = name[(name.IndexOf('_') + 1)..],            // "Cfa_Humid Subtropical" → "Humid Subtropical"
                     Slug = reader.GetString(1).Replace('_', '-'),       // our slugs use hyphens (plan §10)
-                    DescriptionHtml = reader.GetString(3),
+                    DescriptionHtml = ToHtml(reader.GetString(3)),
                     Color = reader.GetString(4).ToUpperInvariant(),     // #c7ff4f → #C7FF4F
                     MapId = mapId,
                     Diagram = diagramSlug == "" ? null : diagrams[diagramSlug],
@@ -256,7 +257,7 @@ namespace A_U_ClimateScout.Tools
                 {
                     Name = row[1]!,
                     Slug = slug,
-                    BodyHtml = EmptyToNull(row[3]),
+                    BodyHtml = ToHtml(row[3]),
                     Summary = EmptyToNull(row[4]),
                     Palette2030Url = palette2030Url,
                     ImageAsset = Media(row[6]),
@@ -274,6 +275,13 @@ namespace A_U_ClimateScout.Tools
                 for (var p = 0; p < projectCount; p++)
                 {
                     string? Field(string name) => EmptyToNull(projectFields.GetValueOrDefault((wordPressId, $"reference_projects_{p}_{name}")));
+                    if (Field("url")?.Contains("callisonrtkl.com", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        // Kept as is; they redirect to a generic Arcadis page (plan §11, owner's final fixes).
+                        logger.LogWarning("Strategy {Slug}, project {Project}: link points to callisonrtkl.com ({Url}); replace it with the arcadis.com project page.",
+                            slug, Field("name"), Field("url"));
+                    }
+
                     strategy.ReferenceProjects.Add(new ReferenceProject
                     {
                         Name = Field("name")!,
@@ -321,6 +329,80 @@ namespace A_U_ClimateScout.Tools
             logger.LogInformation("Strategies: {Verb} {Created}, skipped {Skipped} (already present); {Links} zone links, {Projects} reference projects, {Conflicts} conflict rows.",
                 verb, created, rows.Count - created, links, projects, conflictsAdded);
         }
+
+        // ContentBlock rows for the editable page text: the About page, the carbon map note and the carbon
+        // comparison page with its calculator fields. The old Home page (test cards only) is not imported.
+        // CallisonRTKL becomes Arcadis; existing blocks (same key) are skipped.
+        private static async Task ImportContentAsync(ApplicationDbContext db, SqliteConnection wordPress,
+            ILogger logger, bool isDryRun, CancellationToken cancellationToken)
+        {
+            var existing = (await db.ContentBlocks.Select(c => c.Key).ToListAsync(cancellationToken)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var pages = (await ReadRowsAsync(wordPress, $"""
+                    select p.post_name, p.post_content, {PostMeta("calculator_intro")}, {PostMeta("calculator_result_intro")},
+                           {PostMeta("calculator_result_after")}, {PostMeta("disclaimers")}
+                    from wp_posts p
+                    where p.post_type = 'page' and p.post_status = 'publish'
+                    """, cancellationToken))
+                .ToDictionary(r => r[0]!, StringComparer.OrdinalIgnoreCase);
+            var comparison = pages["carbon-comparison"];
+
+            (string Key, string Title, string? Text)[] blocks =
+            [
+                ("about.body", "About page", pages["about"][1]),
+                ("carbon.map.note", "Carbon map – note under the map", pages["carbon"][1]),
+                ("carbon.comparison.learn-more", "Carbon comparison – Learn more", comparison[1]),
+                ("carbon.calculator.intro", "Carbon calculator – introduction", comparison[2]),
+                ("carbon.calculator.result-intro", "Carbon calculator – text above the result", comparison[3]),
+                ("carbon.calculator.result-after", "Carbon calculator – text after the result", comparison[4]),
+                ("carbon.calculator.disclaimers", "Carbon calculator – disclaimers", comparison[5]),
+            ];
+
+            var created = 0;
+            foreach (var (key, title, text) in blocks)
+            {
+                if (existing.Contains(key))
+                {
+                    continue;
+                }
+
+                var html = (ToHtml(text) ?? "")
+                    .Replace("CallisonRTKL’s", "Arcadis’")
+                    .Replace("CallisonRTKL", "Arcadis");
+                if (OldBrand.IsMatch(html))
+                {
+                    logger.LogWarning("Content {Key} still mentions the old company name; reword it in Admin.", key);
+                }
+
+                if (!isDryRun)
+                {
+                    db.ContentBlocks.Add(new ContentBlock { Key = key, Title = title, Html = html, UpdatedAt = DateTimeOffset.UtcNow });
+                }
+                created++;
+            }
+
+            logger.LogInformation("Content blocks: {Verb} {Created}, skipped {Skipped} (already present).",
+                isDryRun ? "would create" : "created", created, blocks.Length - created);
+        }
+
+        // Old WordPress text has no <p> tags: WordPress added them when showing the page, one paragraph per line.
+        // Wraps each plain-text line in <p>, leaves lines that start with a block tag (<h2>, <ul>, <li> …) as they are,
+        // and replaces the outdated <acronym> tag with <abbr>.
+        private static string? ToHtml(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return null;
+            }
+
+            var lines = text.Replace("\r\n", "\n").Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var html = string.Join("\n", lines.Select(line => BlockTag.IsMatch(line) ? line : $"<p>{line}</p>"));
+            return html.Replace("<acronym", "<abbr").Replace("</acronym>", "</abbr>");
+        }
+
+        private static readonly Regex BlockTag =
+            new(@"^</?(h[1-6]|p|div|ul|ol|li|table|thead|tbody|tr|td|th|blockquote|figure|hr|img)\b", RegexOptions.IgnoreCase);
+
+        private static readonly Regex OldBrand = new(@"callison|crtkl", RegexOptions.IgnoreCase);
 
         // SQL for one WordPress term field, e.g. the "climate-code" of the zone or of its parent group.
         private static string TermMeta(string termId, string key) =>
