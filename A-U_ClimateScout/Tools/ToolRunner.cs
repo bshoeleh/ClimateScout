@@ -11,6 +11,7 @@ namespace A_U_ClimateScout.Tools
             var root = new RootCommand("ClimateScout data commands (plan §3.3).");
             root.Subcommands.Add(DbCommands.Create(services));
             root.Subcommands.Add(InitCommands.Create(services));
+            root.Subcommands.Add(ImportCommands.Create(services));
             return await root.Parse(args).InvokeAsync();
         }
     }

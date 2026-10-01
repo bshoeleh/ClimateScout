@@ -19,4 +19,9 @@
     <PackageReference Include="System.CommandLine" Version="2.0.12" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Data files read by "tool import …"; published so imports can run on the server. -->
+    <None Update="Data\Import\**\*.csv" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
