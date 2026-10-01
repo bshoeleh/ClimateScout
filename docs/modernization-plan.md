@@ -328,7 +328,6 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Clean-up during import: WordPress line breaks → `<p>` paragraphs, `<acronym>` → `<abbr>`, "CallisonRTKL" → "Arcadis" in page text, stale conflict IDs dropped. No mojibake in the source (°, ’, – are stored correctly). Known data errors are not auto-fixed — they are logged and listed under Phase 9 "Owner's final fixes". Project descriptions are left as they are.
 - [ ] Import 4 diagram SVGs; verify every strategy slug has a `ds-{slug}` layer in each diagram it's used with
 - [ ] Convert carbon geometry to `wwwroot/geo/carbon-regions.geojson` keyed by ISO code; `import geo` loads `CarbonRegion` + aliases
-- [ ] Import the three new CSVs through the real importer (proves the importer)
 - [ ] Verification report: counts & spot checks vs old site
 
 ### Phase 4 — Public site
@@ -359,6 +358,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Preview/diff screen with inline alias mapping
 - [ ] Commit, history, rollback
 - [ ] Import-complete email
+- [ ] Import the three new CSVs (`xfer/carbondata`) through the real importer (proves the importer; moved here from Phase 3)
 
 ### Phase 7 — API
 - [ ] v1 endpoints (§7) with DTOs, OpenAPI + Scalar
