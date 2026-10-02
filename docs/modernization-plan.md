@@ -13,7 +13,9 @@ Last updated: 2026-10-02
 
 **Phase 4 in progress:** zone pages done — description, zone colours from the database (`626d855`), and the interactive building diagram with strategy toggles, conflict disabling and shareable `#slug,slug` URLs (`ae917fb`). Checked by hand on Cfa; every layer works. Zones without a diagram (Am) show the page without the diagram band.
 
-**Next up:** strategy pages (`/design-strategy/{slug}`): content, image, reference projects with a vanilla lightbox, 2030 Palette link. After that, the zone page print view. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
+Strategy pages done: `/design-strategy/{slug}` with zone chips, reference projects and a `<dialog>` photo lightbox, plus the `/design-strategy` list.
+
+**Next up:** zone page print view (print only the selected strategies), then the home climate map once a tile source is chosen. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -341,7 +343,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
 - [ ] Zone page print view (print only the selected strategies, as the old site did)
-- [ ] Strategy page: content, image, reference projects with lightbox (vanilla), 2030 Palette link
+- [x] Strategy page: content, image, zone chips, reference projects with lightbox (vanilla `<dialog>`), 2030 Palette link; list page at `/design-strategy`
 - [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
 - [ ] About, Sponsors, Contact pages
@@ -390,6 +392,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] East-West Shading: fix its 2030 Palette link (points to earth-sheltering).
   - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
   - [ ] Stack Ventilation → reference project "NCI Tower Competition": add its location (empty on the old site).
+  - [ ] Form for Heating → reference project "Add Lenovo Campus Global Headquarters": remove the leftover "Add " from the name.
+  - [ ] Indirect Gain Sunspace → reference project "SCLogic Office Fitout tional Airport Terminal 2": fix the name (text pasted in by mistake).
   - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
   - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.

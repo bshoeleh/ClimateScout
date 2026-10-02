@@ -1,0 +1,29 @@
+@model List<A_U_ClimateScout.Models.DesignStrategy>
+@{
+    ViewData["Title"] = "Design strategies";
+}
+
+<div class="container py-4 py-lg-5">
+    <h1>Design strategies</h1>
+    <p class="col-lg-8 lead">
+        Passive design strategies for buildings. Each climate zone page shows the ones that suit its climate.
+    </p>
+
+    <div class="row g-3 mt-2">
+        @foreach (var strategy in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <a class="cs-strategy-card cs-strategy-link" href="~/design-strategy/@strategy.Slug">
+                    @if (strategy.ImageAsset is not null)
+                    {
+                        <img src="~/img/media/@strategy.ImageAsset.StoragePath" alt="" width="64" height="64" loading="lazy" />
+                    }
+                    <span>
+                        <span class="cs-strategy-name d-block">@strategy.Name</span>
+                        <span class="cs-strategy-summary">@strategy.Summary</span>
+                    </span>
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,109 @@
+@using A_U_ClimateScout.Controllers
+@model A_U_ClimateScout.Models.DesignStrategy
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+@section Styles {
+    @* Zone colours for the zone chips come from the database (ZoneController.Stylesheet). *@
+    <link rel="stylesheet" href="~/css/zones.css" />
+}
+
+<div class="container py-4 py-lg-5">
+    <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="~/design-strategy">Design strategies</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+    <div class="row g-4 align-items-start">
+        <div class="col-md-7 col-lg-8">
+            <h1>@Model.Name</h1>
+            @Html.Raw(Model.BodyHtml)
+        </div>
+        @if (Model.ImageAsset is not null)
+        {
+            <div class="col-md-5 col-lg-4 text-center">
+                <img class="cs-strategy-illustration" src="~/img/media/@Model.ImageAsset.StoragePath"
+                     alt="@Model.Name illustration" width="@Model.ImageAsset.Width" height="@Model.ImageAsset.Height" />
+            </div>
+        }
+    </div>
+
+    @if (Model.Zones.Count > 0)
+    {
+        <section class="mt-4" aria-labelledby="zones-heading">
+            <h2 id="zones-heading" class="h5 text-uppercase">Climate zones that use this strategy</h2>
+            <ul class="list-unstyled d-flex flex-wrap gap-2 mt-3">
+                @foreach (var zone in Model.Zones.Select(l => l.Zone))
+                {
+                    <li>
+                        <a class="cs-zone-label @ZoneController.CssClass(zone.KoppenCode)" href="~/zone/@zone.Slug"
+                           title="@zone.Name">@zone.KoppenCode</a>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>
+
+@if (Model.ReferenceProjects.Count > 0)
+{
+    <section class="container pb-5" aria-labelledby="projects-heading">
+        <h2 id="projects-heading" class="h5 text-uppercase">Reference projects</h2>
+        <div class="row g-4 mt-1">
+            @foreach (var project in Model.ReferenceProjects)
+            {
+                var name = project.Name.Trim();
+                <div class="col-sm-6 col-lg-4">
+                    <article class="cs-project">
+                        @if (project.ImageAsset is not null)
+                        {
+                            var src = Url.Content($"~/img/media/{project.ImageAsset.StoragePath}");
+                            <button type="button" class="cs-project-photo" data-lightbox="@src" data-caption="@name"
+                                    aria-label="Enlarge photo of @name">
+                                <img src="@src" alt="@name" loading="lazy" />
+                            </button>
+                        }
+                        <h3 class="h6 mt-2 mb-1">
+                            @if (string.IsNullOrEmpty(project.Url))
+                            {
+                                @name
+                            }
+                            else
+                            {
+                                <a href="@project.Url" rel="noopener">@name</a>
+                            }
+                        </h3>
+                        @if (!string.IsNullOrEmpty(project.Location))
+                        {
+                            <p class="small text-body-secondary mb-0">@project.Location</p>
+                        }
+                    </article>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (!string.IsNullOrEmpty(Model.Palette2030Url))
+{
+    <section class="cs-palette-band">
+        <div class="container py-5">
+            <h2 class="h5 text-uppercase">2030 Palette</h2>
+            <a class="cs-palette-link" href="@Model.Palette2030Url" rel="noopener">
+                Learn more about @Model.Name at the 2030 Palette <span aria-hidden="true">→</span>
+            </a>
+        </div>
+    </section>
+}
+
+<dialog class="cs-lightbox" data-lightbox-dialog aria-label="Project photo">
+    <form method="dialog"><button class="btn-close btn-close-white" aria-label="Close"></button></form>
+    <img alt="" />
+    <p class="cs-lightbox-caption"></p>
+</dialog>
+
+@section Scripts {
+    <script type="module" src="~/js/lightbox.js" asp-append-version="true"></script>
+}

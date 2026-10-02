@@ -280,6 +280,13 @@ body > .container {
     object-fit: contain;
 }
 
+.cs-strategy-summary {
+    display: block;
+    margin-top: .25rem;
+    color: var(--bs-secondary-color);
+    font-size: .875rem;
+}
+
 .cs-strategy-card.is-disabled .cs-strategy-link {
     opacity: .55;
 }
@@ -322,4 +329,102 @@ body > .container {
     margin: 0;
     color: var(--bs-secondary-color);
     font-size: .8125rem;
+}
+
+/* ---------- Strategy pages ---------- */
+.cs-strategy-illustration {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+}
+
+/* Zone chips link to the zone pages (the colours come from /css/zones.css). */
+a.cs-zone-label {
+    text-decoration: none;
+}
+
+a.cs-zone-label:hover,
+a.cs-zone-label:focus-visible {
+    box-shadow: 0 0 0 2px var(--bs-body-bg), 0 0 0 4px var(--cs-zone-bg, var(--cs-line));
+}
+
+/* Reference project photo: a button that opens the lightbox; photos are cropped to one shape so cards line up. */
+.cs-project-photo {
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: .5rem;
+    background: var(--bs-tertiary-bg);
+    aspect-ratio: 4 / 3;
+    cursor: zoom-in;
+}
+
+.cs-project-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .3s ease;
+}
+
+.cs-project-photo:hover img,
+.cs-project-photo:focus-visible img {
+    transform: scale(1.03);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cs-project-photo img {
+        transition: none;
+    }
+}
+
+/* 2030 Palette band: black like the old site. */
+.cs-palette-band {
+    background-color: #000;
+    color: #fff;
+}
+
+.cs-palette-link {
+    color: #fff;
+    font-size: 1.25rem;
+    text-decoration-color: var(--cs-orange);
+    text-underline-offset: .25em;
+}
+
+.cs-palette-link:hover,
+.cs-palette-link:focus-visible {
+    color: var(--cs-orange-soft);
+}
+
+/* Lightbox: the browser's <dialog>, opened by lightbox.js. */
+.cs-lightbox {
+    max-width: min(95vw, 1400px);
+    padding: 1rem;
+    border: 0;
+    border-radius: .5rem;
+    background-color: #000;
+    color: #fff;
+}
+
+.cs-lightbox::backdrop {
+    background-color: rgb(0 0 0 / .8);
+}
+
+.cs-lightbox img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+    margin: 0 auto;
+}
+
+.cs-lightbox form {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: .5rem;
+}
+
+.cs-lightbox-caption {
+    margin: .75rem 0 0;
+    text-align: center;
 }
