@@ -1,0 +1,152 @@
+@using System.Globalization
+@using A_U_ClimateScout.Models
+@using A_U_ClimateScout.Services
+@model CarbonComparisonViewModel
+@{
+    ViewData["Title"] = Model.Selected is null ? "Carbon comparison" : $"Carbon comparison: {Model.Selected.Name}";
+    string? Block(string key) => Model.Blocks.TryGetValue(key, out var html) && !string.IsNullOrWhiteSpace(html) ? html : null;
+
+    // Location list groups: countries by continent, then US states, Canadian provinces, and the world/regional averages.
+    string GroupOf(CarbonComparisonRegion r) => r.Type switch
+    {
+        CarbonRegionType.State => "United States",
+        CarbonRegionType.Province => "Canada",
+        CarbonRegionType.Aggregate => "World and regional averages",
+        _ => r.Continent ?? "Other countries",
+    };
+    var listGroups = Model.Regions.GroupBy(GroupOf)
+        .OrderBy(g => g.Key switch { "United States" => 1, "Canada" => 2, "World and regional averages" => 3, _ => 0 })
+        .ThenBy(g => g.Key)
+        .ToList();
+}
+
+<div class="container py-4 py-lg-5">
+    <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="~/carbon">Carbon map</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Carbon comparison</li>
+        </ol>
+    </nav>
+    <h1>Carbon comparison</h1>
+
+    @if (Model.Selected is { } selected)
+    {
+        <div class="cs-carbon-location mt-3">
+            <div class="small text-uppercase">@selected.Name · grid carbon intensity</div>
+            <div class="cs-carbon-location-value">@selected.Value.ToString("N0") <span class="fs-6">g CO₂e/kWh</span></div>
+            <div class="small">
+                @selected.Year ·
+                @if (selected.SourceUrl is not null)
+                {
+                    <a href="@selected.SourceUrl" rel="noopener">@selected.Source</a>
+                }
+                else
+                {
+                    @selected.Source
+                }
+            </div>
+        </div>
+    }
+    else if (Model.NoDataRegionName is not null)
+    {
+        <div class="alert alert-secondary mt-3">
+            There is no grid carbon intensity for @Model.NoDataRegionName in our data yet. Choose another location, or enter a value in the calculator.
+        </div>
+    }
+
+    <div class="row g-5 mt-0">
+        <section class="col-lg-6">
+            @Html.Raw(Block("carbon.calculator.intro"))
+
+            <form id="carbon-calculator" class="cs-calculator mt-3" novalidate>
+                <div class="mb-3">
+                    <label for="calc-region" class="form-label">Location</label>
+                    <select id="calc-region" name="regionCode" class="form-select">
+                        <option value="">Enter my own grid intensity</option>
+                        @foreach (var group in listGroups)
+                        {
+                            <optgroup label="@group.Key">
+                                @foreach (var region in group)
+                                {
+                                    <option value="@region.Code" selected="@(region.Code == Model.Selected?.Code)">@region.Name</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="calc-grid" class="form-label">Grid carbon intensity</label>
+                    <div class="input-group has-validation">
+                        <input id="calc-grid" name="gridIntensity" type="number" class="form-control" min="0" max="2000" step="any"
+                               inputmode="decimal" required value="@Model.Selected?.Value.ToString("0.###", CultureInfo.InvariantCulture)" />
+                        <span class="input-group-text">g CO₂e/kWh</span>
+                        <div class="invalid-feedback" data-error-for="gridIntensity regionCode"></div>
+                    </div>
+                    <div class="form-text">Filled in from the location; you can change it to a local figure.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="calc-eui" class="form-label">Energy use intensity (EUI)</label>
+                    <div class="input-group has-validation">
+                        <input id="calc-eui" name="eui" type="number" class="form-control" min="0" step="any" inputmode="decimal" required />
+                        <select name="euiUnit" class="form-select cs-unit-select" aria-label="EUI unit">
+                            <option value="@EuiUnit.KbtuPerSquareFoot">kBtu/ft²·yr</option>
+                            <option value="@EuiUnit.KwhPerSquareMetre">kWh/m²·yr</option>
+                            <option value="@EuiUnit.GigajoulesPerSquareMetre">GJ/m²·yr</option>
+                        </select>
+                        <div class="invalid-feedback" data-error-for="eui"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="calc-area" class="form-label">Floor area</label>
+                    <div class="input-group has-validation">
+                        <input id="calc-area" name="area" type="number" class="form-control" min="0" step="any" inputmode="decimal" required />
+                        <select name="areaUnit" class="form-select cs-unit-select" aria-label="Area unit">
+                            <option value="@AreaUnit.SquareFeet">ft²</option>
+                            <option value="@AreaUnit.SquareMetres">m²</option>
+                        </select>
+                        <div class="invalid-feedback" data-error-for="area"></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Calculate</button>
+                <p class="text-danger small mt-2 mb-0" data-form-error hidden></p>
+            </form>
+
+            <div id="carbon-result" class="cs-calculator mt-3" hidden>
+                @Html.Raw(Block("carbon.calculator.result-intro"))
+                <p class="small text-body-secondary" data-result="grid"></p>
+                <h3 class="h6 text-uppercase mt-4">Operational carbon intensity</h3>
+                <p><strong data-result="kgPerSquareMetre"></strong> kg CO₂e/m²·yr · <strong data-result="lbPerSquareFoot"></strong> lb CO₂e/ft²·yr</p>
+                <h3 class="h6 text-uppercase mt-4">Total operational carbon</h3>
+                <p class="mb-1"><strong class="fs-4" data-result="totalTonnes"></strong> metric tons CO₂e per year</p>
+                <p class="small text-body-secondary"><span data-result="totalKg"></span> kg · <span data-result="totalLb"></span> lb</p>
+                <ul class="list-unstyled" data-result="equivalencies"></ul>
+                <button type="button" class="btn btn-outline-secondary" data-calculate-again>Calculate again</button>
+                @Html.Raw(Block("carbon.calculator.result-after"))
+            </div>
+        </section>
+
+        <section class="col-lg-6" aria-labelledby="compare-heading">
+            <h2 id="compare-heading" class="h4">Compare grid carbon intensity</h2>
+            <div class="cs-zone-filter mt-3" role="group" aria-label="Regions to compare" data-chart-groups></div>
+            <div class="cs-carbon-chart mt-3">
+                <canvas id="carbon-chart" role="img" aria-label="Bar chart of grid carbon intensity for the chosen regions"></canvas>
+            </div>
+        </section>
+    </div>
+
+    @if (Block("carbon.comparison.learn-more") is { } learnMore)
+    {
+        <section class="mt-5">@Html.Raw(learnMore)</section>
+    }
+    @if (Block("carbon.calculator.disclaimers") is { } disclaimers)
+    {
+        <section class="small text-body-secondary mt-4">@Html.Raw(disclaimers)</section>
+    }
+</div>
+
+<script type="application/json" id="carbon-comparison-data">@Json.Serialize(Model.PageData)</script>
+
+@section Scripts {
+    <script src="~/lib/chart.js/dist/chart.umd.min.js"></script>
+    <script type="module" src="~/js/carbon-comparison.js" asp-append-version="true"></script>
+}

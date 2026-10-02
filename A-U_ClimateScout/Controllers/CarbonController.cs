@@ -42,5 +42,53 @@ namespace A_U_ClimateScout.Controllers
 
             return View(new CarbonMapViewModel(mapData, note));
         }
+
+        // The carbon comparison at /carbon-comparison?region=CA-AB: the region's grid intensity, the carbon calculator
+        // (which calls POST /api/v1/carbon/calculate) and a chart comparing regions.
+        [HttpGet("carbon-comparison")]
+        public async Task<IActionResult> Comparison(string? region, string? l, CancellationToken cancellationToken)
+        {
+            // The old carbon map linked here with the region's name (?l=Alberta&swlat=…); send those links to the new form.
+            if (string.IsNullOrEmpty(region) && !string.IsNullOrWhiteSpace(l))
+            {
+                var code = await db.CarbonRegions.Where(r => r.Name == l).Select(r => r.Code).FirstOrDefaultAsync(cancellationToken);
+                if (code is not null)
+                {
+                    return RedirectToActionPermanent(nameof(Comparison), new { region = code });
+                }
+            }
+
+            var current = await carbonValues.CurrentByRegionIdAsync(cancellationToken);
+            var allRegions = await db.CarbonRegions.AsNoTracking()
+                .OrderBy(r => r.Name)
+                .Select(r => new { r.Id, r.Code, r.Name, r.RegionType, r.Continent })
+                .ToListAsync(cancellationToken);
+            var regions = allRegions
+                .Where(r => current.ContainsKey(r.Id))
+                .Select(r =>
+                {
+                    var value = current[r.Id];
+                    return new CarbonComparisonRegion(r.Code, r.Name, r.RegionType, r.Continent,
+                        value.ValueGPerKWh, value.Year, value.Source, value.SourceUrl);
+                })
+                .ToList();
+
+            var requested = allRegions.FirstOrDefault(r => string.Equals(r.Code, region, StringComparison.OrdinalIgnoreCase));
+            var selected = regions.FirstOrDefault(r => r.Code == requested?.Code);
+
+            var blocks = await db.ContentBlocks.AsNoTracking()
+                .Where(b => b.Key.StartsWith("carbon.calculator.") || b.Key == "carbon.comparison.learn-more")
+                .ToDictionaryAsync(b => b.Key, b => b.Html, cancellationToken);
+
+            var pageData = new
+            {
+                calculateUrl = Url.Content("~/api/v1/carbon/calculate"),
+                selected = selected?.Code,
+                regions,
+            };
+
+            return View(new CarbonComparisonViewModel(regions, selected,
+                NoDataRegionName: selected is null ? requested?.Name : null, blocks, pageData));
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using A_U_ClimateScout.Options;
@@ -42,7 +43,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.AdminArea, policy => policy.RequireRole(Roles.Admin, Roles.Editor));
 
-builder.Services.AddControllersWithViews();
+// JSON (API and the data embedded in pages) writes enums as their names, e.g. "KwhPerSquareMetre", not 1.
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddMemoryCache();
 
 // Map tiles are fetched by our server (MapController), never directly by the browser (plan §5).

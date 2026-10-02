@@ -5,7 +5,15 @@ namespace A_U_ClimateScout.Services
     public enum AreaUnit { SquareFeet, SquareMetres }
 
     // KgPerSquareMetre is kg CO2e per m² per year; totals are per year.
-    public record CarbonResult(decimal KgPerSquareMetre, decimal TotalKg, decimal TotalTonnes);
+    public record CarbonResult(decimal KgPerSquareMetre, decimal TotalKg, decimal TotalTonnes)
+    {
+        private const decimal PoundsPerKilogram = 2.20462m;
+        private const decimal SquareFeetPerSquareMetre = 10.7639m;
+
+        // The same figures in US units, as the old page showed them.
+        public decimal LbPerSquareFoot => KgPerSquareMetre * PoundsPerKilogram / SquareFeetPerSquareMetre;
+        public decimal TotalLb => TotalKg * PoundsPerKilogram;
+    }
 
     // The carbon calculator from the old carbon comparison page (plan §2):
     // EUI × grid carbon intensity × area, with everything converted to metric first.
