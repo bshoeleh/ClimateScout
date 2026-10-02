@@ -17,7 +17,7 @@ Strategy pages done: `/design-strategy/{slug}` with zone chips, reference projec
 
 Zone page print view done: selected strategies only (all if none), light grey diagram band, stacked list with aligned icons and summaries, page margins 1 in left / ½ in elsewhere.
 
-**Next up:** the home climate map once a tile source is chosen. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
+**Next up:** the home climate map. Build against OpenStreetMap tiles + Nominatim search through our server proxy (no account needed); Esri is requested from Arcadis IT for production and will be a config switch (§5, decided 2026-10-02). Check the old data for gaps first (Köppen TopoJSON ↔ zones), then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -49,7 +49,7 @@ Rebuild ClimateScout (currently WordPress + ACF + custom theme) as an ASP.NET Co
 | Zone page diagram | 4 inline SVGs (hot-humid, hot-dry, temperate, cold), layers `id="ds-{slug}"`; toggling, conflict disabling (ref-counted), URL-hash state, print-only-selected | Keep behavior; SVGs become uploadable admin assets |
 | Carbon map | Leaflet choropleth from a 1–1.7 MB JS file mixing geometry + values (267 features) | Split: geometry = static GeoJSON; values = SQL |
 | Calculator | EUI × grid intensity × area; unit conversions; EPA equivalencies (gasoline, seedlings) | Port to a server-side service + API; fix dead unit-branch bug |
-| Maps | Leaflet 1.9 + Mapbox tiles/geocoding, **token hard-coded**, style owned by personal account | Keep Leaflet; move Mapbox to an Arcadis account behind a server proxy (see §5) |
+| Maps | Leaflet 1.9 + Mapbox tiles/geocoding, **token hard-coded**, style owned by personal account | Keep Leaflet; tiles + address search behind a server proxy — OSM for development, Esri for production (see §5) |
 | Content | About page, calculator intro/result text, carbon sources (ACF) | Becomes editable content blocks |
 | Media | 149 attachments; still downloadable from `climatescout.arcadis.com/wp-content/uploads/…` | Download once into our storage |
 | Data quirks | `�` mojibake for degree signs; unused `product` CPT; duplicate/dead templates | Clean during migration |
@@ -189,29 +189,31 @@ Köppen zone colors remain data (editable per zone). Carbon choropleth moves to 
 - **Accessibility (WCAG AA):** white text on `#E4610F` is only ~3.5 : 1, so primary buttons, active dropdown items and nav pills use `--cs-orange-dark` `#C4520C` (hover `#A94609`, pressed `#8E3A07`). Outline-button text is `#A94609` on light. Brand orange stays for accents, focus rings and checkboxes; use `text-primary` only for large text on light backgrounds (~3.2 : 1 on sand).
 - **Light navbar / panels:** `--bs-tertiary-bg` is white.
 - **Dark mode (site-wide):** Bootstrap 5.3 `data-bs-theme="dark"` with our palette — ink `#16181D` page, `#1F2228` / `#262A31` panels, `#D5D9DE` text, sand headings, sage `#9DBFB1` links, `#30343B` borders; brand orange as text passes (~5 : 1).
-- **Theme selection:** follows the OS by default; a Light / Dark / Auto menu in the navbar overrides it, saved in `localStorage` (`cs-theme`). An inline `<head>` script applies it before first paint. Maps will need a dark Mapbox tile style (Phase 4+).
+- **Theme selection:** follows the OS by default; a Light / Dark / Auto menu in the navbar overrides it, saved in `localStorage` (`cs-theme`). An inline `<head>` script applies it before first paint. Maps will need a dark basemap style or a CSS filter on the tiles in dark mode (Phase 4+).
 
 ## 5. Maps
 
 ### Decision (2026-09-28)
 - **Map library: Leaflet 1.9** (as on the old site) — proven with this exact data (~5,500 Köppen polygons, 267 carbon regions), simplest to maintain, provider-neutral (tile source is one URL). Used from vanilla ES modules, no jQuery.
-- **Tiles & address search: Mapbox** under a new Arcadis-owned account (shared mailbox). Style copied from the old personal account (`mdoll/cknkn6oz71ru317nvrvefoghs`).
-- **The Mapbox token never reaches the browser:**
-  - Tiles are served through our endpoint `GET /map/tiles/{z}/{x}/{y}` which forwards to the Mapbox Static Tiles API (short-lived HTTP caching per Mapbox headers; no persistent tile storage).
-  - Address search goes through `GET /api/v1/geocode?q=`.
-  - Token lives in server config (IIS environment variable), and is also URL-restricted in the Mapbox dashboard.
-- **Cost:** expected to stay inside Mapbox's free tier (100,000 temporary geocoding requests/month; tile requests have their own free allowance — confirm on mapbox.com/pricing when the account is created). A payment card may be required on the account; nothing is charged within the free tier.
+- **Tiles & address search (changed 2026-10-02):** Mapbox dropped — creating the account required a payment card, which would delay the project.
+  - **Production: Esri (ArcGIS Online)**, requested from Arcadis IT on 2026-10-02: an ArcGIS Online **Creator** licence (Arcadis requires publisher training for Online), the privilege to create **developer credentials / API keys**, and a key allowed to use the **Static Basemap Tiles** service and **Geocoding (not stored)** — ideally owned by a shared/service account, not a person. IT to confirm credits/budget for a public site.
+  - **Development (until the key arrives): OpenStreetMap** — standard raster tiles (`tile.openstreetmap.org`) shown muted (greyscale, reduced opacity), and Nominatim (`nominatim.openstreetmap.org`) for address search. No account or key. Usage policies: show "© OpenStreetMap contributors"; send a User-Agent identifying ClimateScout with a contact email; cache tiles, never bulk-download; Nominatim at most 1 request/second and **no search-as-you-type**.
+- **Everything goes through our server**, so the key never reaches the browser and switching provider is configuration, not code:
+  - Tiles: `GET /map/tiles/{z}/{x}/{y}` forwards to the upstream tile service, honouring its cache headers (short-lived HTTP caching; no persistent tile storage).
+  - Address search: `GET /api/v1/geocode?q=`.
+  - Upstream URLs and the API key live in server config (`Maps` section; User Secrets in development, IIS environment variables in production).
+- **Search runs on Enter / button**, not as you type (required by Nominatim; also keeps Esri usage low).
 
 ### Plugins / replacements
 | Old | New |
 |---|---|
 | `leaflet-omnivore` (deprecated) for TopoJSON | `topojson-client` → GeoJSON → `L.geoJSON` (canvas renderer for the Köppen layer) |
-| `leaflet-geosearch` with Mapbox key in the browser | Small custom search box (vanilla JS) calling `/api/v1/geocode`; 300 ms debounce, minimum 3 characters |
+| `leaflet-geosearch` with Mapbox key in the browser | Small custom search box (vanilla JS) calling `/api/v1/geocode` on Enter / button; minimum 3 characters |
 | `leaflet.locatecontrol` | Kept (vanilla, no jQuery) |
 | Hard-coded token in JS | Tile proxy + server config |
 
 ### Geocoding rules
-- Use **temporary** geocoding only: results are displayed (fly the map to the address), **never stored**. Storing geocoded coordinates (e.g. saved project addresses) is "permanent" geocoding under Mapbox terms — no free tier (~$5 / 1,000). Revisit if saved projects are ever added.
+- Use **temporary** geocoding only: results are displayed (fly the map to the address), **never stored**. Storing geocoded coordinates (e.g. saved project addresses) is "stored" geocoding — it costs credits with Esri and is not allowed with Nominatim. Revisit if saved projects are ever added.
 - Server-side safeguards on `/api/v1/geocode` and the tile proxy: per-IP rate limit plus a configurable **daily request cap**, with an admin email when 80% of the cap is reached.
 
 ### Point lookup
@@ -241,7 +243,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - `GET /api/v1/carbon/regions?type=&continent=` · `GET /api/v1/carbon/regions/{code}` (current + history)
 - `POST /api/v1/carbon/calculate` — { eui, euiUnit, area, areaUnit, regionCode | gridIntensity } → results + equivalencies
 - `GET /api/v1/lookup?lat=&lng=` → Köppen zone + carbon region + intensity
-- `GET /api/v1/geocode?q=` → proxied Mapbox search (temporary geocoding; rate-limited + daily cap)
+- `GET /api/v1/geocode?q=` → proxied address search (Esri; Nominatim in development) — temporary geocoding; rate-limited + daily cap
 - `GET /api/v1/sponsors`
 
 ## 8. Email
@@ -260,13 +262,13 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Decided (2026-09-28)
 - **Hosting:** Arcadis on-prem **IIS + SQL Server**. → Media on local disk / file share behind `IFileStorage`; secrets via IIS environment variables (not committed appsettings); email via Mailjet (see below); Data Protection keys persisted to a folder/SQL so logins survive app-pool recycles.
-- **Configuration & secrets:** development values live in **User Secrets** (never in committed files). Production reads **environment variables prefixed `CS__`** (ClimateScout), set per IIS site: `CS__ConnectionStrings__DefaultConnection`, `CS__Mapbox__AccessToken`, … — the prefix is stripped and `__` becomes `:`. `CS__` values override everything else. Exception: `ASPNETCORE_ENVIRONMENT` keeps its standard name (read by the framework before our code). Unprefixed variables are still read by the framework default, but `CS__` is the documented convention.
+- **Configuration & secrets:** development values live in **User Secrets** (never in committed files). Production reads **environment variables prefixed `CS__`** (ClimateScout), set per IIS site: `CS__ConnectionStrings__DefaultConnection`, `CS__Maps__ApiKey`, … — the prefix is stripped and `__` becomes `:`. `CS__` values override everything else. Exception: `ASPNETCORE_ENVIRONMENT` keeps its standard name (read by the framework before our code). Unprefixed variables are still read by the framework default, but `CS__` is the documented convention.
 - **Strategy conflicts:** always **symmetric**. Saving A↔B writes both rows; migration unions the old one-directional data.
 - **Carbon calculator (2026-09-30):** EUI and area must be **> 0** (rejected otherwise — a 0 is almost always a typo); grid intensity may be **0** (fully renewable grid) but not negative. Grid intensity is **g CO2e/kWh only** — the old page's g/kBTU and g/GJ branches were never offered and set the wrong factor, so they are not ported. EUI units: kBtu/ft², kWh/m², GJ/m²; area: ft², m².
 - **WordPress import (2026-09-30):** our own zone slugs use **hyphens** (`cfa_humid-subtropical` → `cfa-humid-subtropical`); old underscore links redirect (Phase 4). **External URLs** (e.g. 2030palette.org) are imported unchanged. Reference project "description" holds a place name, so it goes into `ReferenceProject.Location`; sector is empty in the old data. **Media:** all 149 old images were downloaded once by a script (not an app command) into `wwwroot/img/media/{projects,strategies,other}/` (committed to git) under clean flat names (lowercase, non-alphanumerics → `-`, no year/month folders). `Data/Import/media-map.csv` records WordPress ID → `StoragePath` (plus title, alt text, size); `import wordpress` creates the `MediaAsset` rows from it and links images through it — no extra column, no data in migrations. Identical duplicates share one file (Chadstone 107/165 → 148 files).
 - **API access:** **API key required** for all external callers. The site's own pages call the API with same-origin cookie/antiforgery auth. Admin screen to issue, name, rotate and revoke keys; keys stored hashed; per-key rate limits and usage logging.
 
-- **Maps:** **Mapbox** under a new Arcadis-owned account (shared mailbox), style copied from the old personal account, token URL-restricted to our domains and read from server config. Rendered with **Leaflet**; tiles and address search proxied through our server so the token never reaches the browser. Temporary geocoding only (results not stored). See §5.
+- **Maps:** **Mapbox** under a new Arcadis-owned account (shared mailbox), style copied from the old personal account, token URL-restricted to our domains and read from server config. Rendered with **Leaflet**; tiles and address search proxied through our server so the token never reaches the browser. Temporary geocoding only (results not stored). See §5. *Changed 2026-10-02: Esri for production (requested from IT), OpenStreetMap in development; Mapbox dropped (needs a payment card). See §5.*
 - **Email:** **Mailjet** (account to be set up later). Build `IEmailService` now with a Mailjet implementation + SMTP/Mailpit for development.
 - **Rich-text editor:** **Quill 2**; HTML sanitized server-side.
 - **jQuery:** stays installed; not used by new code in most cases.
@@ -288,14 +290,14 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 0 — Decisions & setup
 - [ ] Answer open questions (§10)
 - [ ] Confirm palette against Arcadis brand guidelines; obtain official logo files
-- [ ] Create Arcadis-owned Mapbox account; copy style `mdoll/cknkn6oz71ru317nvrvefoghs`; issue URL-restricted token
+- [ ] Esri API key for production (requested from Arcadis IT 2026-10-02: ArcGIS Online Creator, developer-credentials privilege, Static Basemap Tiles + Geocoding not stored). Development uses OpenStreetMap meanwhile; Mapbox dropped (needs a payment card).
 - [ ] Set up Mailjet account (later)
 
 ### Phase 1 — Platform setup (walkthrough, one step at a time)
 - [x] 1.1 Project structure: single web project + `tests/A-U_ClimateScout.Tests` (flat; Copilot models/seeder moved to `xfer/copilot-reference`)
 - [x] 1.2 Test project set up and running (`dotnet test` / Test Explorer)
 - [x] 1.3 Identity & DbContext: `Identity/ApplicationUser.cs`; `ApplicationDbContext` on `ApplicationUser`; retire the template's Identity migration; update `Program.cs` and `_LoginPartial`
-- [x] 1.4 Configuration: connection string in User Secrets (dev); production reads `CS__`-prefixed environment variables. Typed settings classes (Mapbox, Email, Storage, ApiKeys) are deferred — each is added with the feature that uses it (Phases 3–8).
+- [x] 1.4 Configuration: connection string in User Secrets (dev); production reads `CS__`-prefixed environment variables. Typed settings classes (Maps, Email, Storage, ApiKeys) are deferred — each is added with the feature that uses it (Phases 3–8).
 - [x] 1.5 Cross-cutting: `.editorconfig` (code style as suggestions) and Serilog (console + daily rolling files in `logs/`, 30-day retention, per-request line). Deferred: styled error pages (1.7), API ProblemDetails (Phase 7), `/health` check (Phase 2 / deployment), analyzers (revisit once there is real code).
 - [x] 1.6 Front-end setup
   - [x] change 1: move GreenIQ `site.css` and old toggle CSS to `xfer/reference/css/`
@@ -341,7 +343,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 4 — Public site
 - [ ] Layout: header/nav, footer (Arcadis, no CRTKL)
 - [ ] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
-- [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box, locate control
+- [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box (search on Enter), locate control, map attribution
 - [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
 - [x] Zone page print view (print only the selected strategies, as the old site did; all if none selected)

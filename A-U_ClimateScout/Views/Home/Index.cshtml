@@ -1,8 +1,51 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using A_U_ClimateScout.Controllers
+@model A_U_ClimateScout.Models.HomePageViewModel
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="~/lib/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    @* Zone colours come from the database (ZoneController.Stylesheet). *@
+    <link rel="stylesheet" href="~/css/zones.css" />
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container pt-4 pt-lg-5 text-center">
+    <p class="lead col-lg-8 mx-auto">Designing for a better world starts with understanding climate and context.</p>
+    <h1 class="h5 text-uppercase mt-4">Climate zones</h1>
 </div>
+
+<div class="container pb-5">
+    <div id="climate-map" class="cs-climate-map mt-3" aria-label="World map of climate zones"></div>
+    <p class="mt-3 mb-4">Select a location on the map to view its climate zone, or choose a zone below.</p>
+
+    <div class="cs-zone-filter" role="group" aria-label="Show climate zones by group">
+        <button type="button" class="btn btn-outline-secondary" data-group-filter="" aria-pressed="true">All</button>
+        @foreach (var group in Model.Groups)
+        {
+            <button type="button" class="btn btn-outline-secondary" data-group-filter="@group.Slug" aria-pressed="false">@group.Name</button>
+        }
+    </div>
+
+    <ul class="row list-unstyled g-2 mt-3">
+        @foreach (var group in Model.Groups)
+        {
+            foreach (var zone in group.Zones)
+            {
+                <li class="col-sm-6 col-lg-4 col-xl-3" data-group="@group.Slug">
+                    <a class="cs-zone-link" href="~/zone/@zone.Slug">
+                        <span class="cs-zone-swatch @ZoneController.CssClass(zone.KoppenCode)" aria-hidden="true"></span>
+                        <span><span class="text-body-secondary">@zone.KoppenCode</span> @zone.Name</span>
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<script type="application/json" id="climate-map-data">@Json.Serialize(Model.MapData)</script>
+
+@section Scripts {
+    <script src="~/lib/leaflet/dist/leaflet.js"></script>
+    <script src="~/lib/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <script src="~/lib/topojson-client/dist/topojson-client.min.js"></script>
+    <script type="module" src="~/js/climate-map.js" asp-append-version="true"></script>
+}

@@ -532,3 +532,54 @@ a.cs-zone-label:focus-visible {
         font-size: .8125rem;
     }
 }
+
+/* ---------- Home: climate map ---------- */
+.cs-climate-map {
+    height: clamp(360px, 60vh, 600px);
+    border-radius: .5rem;
+    background-color: var(--bs-tertiary-bg);
+}
+
+/* Base map muted, so the zone colours stand out (OpenStreetMap tiles are busy and colourful). */
+.cs-map-tiles {
+    filter: grayscale(1);
+    opacity: .7;
+}
+
+[data-bs-theme="dark"] .cs-map-tiles {
+    filter: grayscale(1) invert(1);
+    opacity: .6;
+}
+
+.cs-zone-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.cs-zone-filter .btn[aria-pressed="true"] {
+    border-color: var(--bs-btn-active-border-color);
+    background-color: var(--bs-btn-active-bg);
+    color: var(--bs-btn-active-color);
+}
+
+.cs-zone-link {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--bs-emphasis-color);
+    text-decoration: none;
+}
+
+.cs-zone-link:hover,
+.cs-zone-link:focus-visible {
+    text-decoration: underline;
+}
+
+.cs-zone-swatch {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: .25rem;
+    background-color: var(--cs-zone-bg, var(--cs-line));
+}
