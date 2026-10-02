@@ -428,3 +428,107 @@ a.cs-zone-label:focus-visible {
     margin: .75rem 0 0;
     text-align: center;
 }
+
+/* ---------- Print (zone pages: the diagram with the selected strategies, as on the old site) ---------- */
+.cs-strategy-print-summary {
+    display: none;
+}
+
+/* Print margins (top, right, bottom, left): a wider left edge for binding or hole-punching. */
+@page {
+    margin: .5in .5in .5in 1in;
+}
+
+@media print {
+    /* Use the full page width instead of Bootstrap's 720 px container. */
+    .container {
+        max-width: none;
+    }
+
+    /* Keep the logo bar; drop the menu, footer and on-screen controls. */
+    .navbar-toggler,
+    .navbar-collapse,
+    footer,
+    .cs-diagram-help,
+    .cs-strategy-toggle,
+    .cs-strategy-conflict {
+        display: none !important;
+    }
+
+    /* The diagram's line art is white and grey, so its band must print (browsers skip backgrounds by default).
+       On paper it uses a light grey instead of black (less ink); white and grey lines stay visible on it. */
+    .cs-diagram {
+        position: static;
+        background-color: #dee2e6;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Capped so the first few strategies fit on page 1 with the diagram. */
+    .cs-diagram-svg {
+        max-height: 5.5cm;
+    }
+
+    /* Strategies as a stacked list below the diagram (plain block flow, so Chrome breaks pages cleanly between rows). */
+    .row:has(> div > .cs-strategy-card) {
+        display: block;
+        margin: .5rem 0 0;
+    }
+
+    .row:has(> div > .cs-strategy-card) > div {
+        width: auto;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* When strategies are selected, print only those cards (with their summaries); with none selected, print them all. */
+    .row:has(.cs-strategy-card.is-selected) > div:not(:has(.cs-strategy-card.is-selected)) {
+        display: none;
+    }
+
+    /* Each row: icon in a fixed left column, name and summary aligned to its right. The link wrapper steps aside
+       (display: contents) so the icon and name sit directly in the card's grid. */
+    .cs-strategy-card {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        column-gap: 1rem;
+        row-gap: .125rem;
+        align-items: start;
+        height: auto;
+        padding: .75rem 0;
+        border: 0;
+        border-bottom: 1px solid #ced4da;
+        border-radius: 0;
+        background: none;
+        break-inside: avoid;
+    }
+
+    .cs-strategy-card.is-selected {
+        border-color: #ced4da;
+        box-shadow: none;
+    }
+
+    .cs-strategy-link {
+        display: contents;
+    }
+
+    .cs-strategy-link img {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        width: 48px;
+        height: 48px;
+    }
+
+    .cs-strategy-name {
+        grid-column: 2;
+        font-weight: 500;
+    }
+
+    .cs-strategy-print-summary {
+        display: block;
+        grid-column: 2;
+        margin: 0;
+        font-size: .8125rem;
+    }
+}

@@ -15,7 +15,9 @@ Last updated: 2026-10-02
 
 Strategy pages done: `/design-strategy/{slug}` with zone chips, reference projects and a `<dialog>` photo lightbox, plus the `/design-strategy` list.
 
-**Next up:** zone page print view (print only the selected strategies), then the home climate map once a tile source is chosen. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
+Zone page print view done: selected strategies only (all if none), light grey diagram band, stacked list with aligned icons and summaries, page margins 1 in left / ½ in elsewhere.
+
+**Next up:** the home climate map once a tile source is chosen. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -342,7 +344,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box, locate control
 - [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
-- [ ] Zone page print view (print only the selected strategies, as the old site did)
+- [x] Zone page print view (print only the selected strategies, as the old site did; all if none selected)
 - [x] Strategy page: content, image, zone chips, reference projects with lightbox (vanilla `<dialog>`), 2030 Palette link; list page at `/design-strategy`
 - [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
