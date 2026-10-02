@@ -611,3 +611,24 @@ a.cs-zone-label:focus-visible {
 .cs-map-search-status:empty {
     display: none;
 }
+
+/* ---------- Carbon map ---------- */
+/* Info box and legend on the map. */
+.cs-map-panel {
+    padding: .5rem .75rem;
+    border-radius: .375rem;
+    background-color: var(--bs-body-bg);
+    box-shadow: 0 1px 4px rgb(0 0 0 / .3);
+    color: var(--bs-body-color);
+    font-size: .8125rem;
+    line-height: 1.5;
+}
+
+.cs-map-legend-swatch {
+    display: inline-block;
+    width: 1rem;
+    height: .75rem;
+    margin-right: .5rem;
+    vertical-align: middle;
+    border: 1px solid rgb(0 0 0 / .15);
+}

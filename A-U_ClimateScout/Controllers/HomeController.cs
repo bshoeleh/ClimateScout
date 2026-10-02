@@ -22,13 +22,9 @@ namespace A_U_ClimateScout.Controllers
             var maps = options.Value;
             var mapData = new
             {
-                tileUrl = Url.Content("~/map/tiles/{z}/{x}/{y}"),
-                attribution = $"{maps.Attribution}, Köppen-Geiger: <a href=\"https://doi.org/10.1038/sdata.2018.214\">Beck et al. (2018)</a>",
-                maps.MinZoom,
-                maps.MaxZoom,
+                map = MapSettings.Create(Url, maps, "Köppen-Geiger: <a href=\"https://doi.org/10.1038/sdata.2018.214\">Beck et al. (2018)</a>"),
                 polygonsUrl = Url.Content("~/geo/koppen.json"),
                 zoneUrl = Url.Content("~/zone/"),
-                geocodeUrl = Url.Content("~/api/v1/geocode"),
                 zones = groups
                     .SelectMany(g => g.Zones.Where(z => z.MapId is not null), (g, z) => (Group: g, Zone: z))
                     .ToDictionary(

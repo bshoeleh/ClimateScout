@@ -55,6 +55,7 @@ builder.Services.AddHttpClient(MapsOptions.HttpClientName, (services, client) =>
 });
 builder.Services.AddSingleton<Geocoder>();
 builder.Services.AddScoped<CarbonImporter>();
+builder.Services.AddScoped<CarbonValues>();
 
 var app = builder.Build();
 

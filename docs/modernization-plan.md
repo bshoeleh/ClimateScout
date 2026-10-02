@@ -21,7 +21,9 @@ Home climate map done: Köppen polygons (`wwwroot/geo/koppen.json`, 30 zones by 
 
 Carbon importer core done ahead of Phase 6 (so the carbon map has data): `Services/CarbonImport/` (profiles detected from the header row, parser, region matcher, importer writing one batch per file, superseding changed values) and `tool import carbon --file <csv> [--dry-run]`. The three sample CSVs are in the dev database: 291 values in batches 1–3; every map region has a value except Lesotho and Yukon.
 
-**Next up:** the carbon map page (reuses the tile proxy; move the shared map setup out of `climate-map.js` when the second map needs it). Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Carbon map done at `/carbon`: the old site's eight colour bands, legend, label on hover, click → `/carbon-comparison?region={code}`. Shared map setup (base map, credits, locate, search) is in `wwwroot/js/map-base.js` with `MapSettings` on the server; the current value per region (preferred source, latest year) comes from `CarbonValues`.
+
+**Next up:** the carbon comparison page (`/carbon-comparison?region={code}`; calculator, result panel, Chart.js comparison). Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -352,7 +354,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
 - [x] Zone page print view (print only the selected strategies, as the old site did; all if none selected)
 - [x] Strategy page: content, image, zone chips, reference projects with lightbox (vanilla `<dialog>`), 2030 Palette link; list page at `/design-strategy`
-- [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
+- [x] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
 - [ ] About, Sponsors, Contact pages
 - [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
@@ -403,7 +405,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Form for Heating → reference project "Add Lenovo Campus Global Headquarters": remove the leftover "Add " from the name.
   - [ ] Indirect Gain Sunspace → reference project "SCLogic Office Fitout tional Airport Terminal 2": fix the name (text pasted in by mistake).
   - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
-  - [ ] Carbon data: Lesotho (empty in Ember's file) and Yukon (not in the Canada Energy Regulator file) have no value; check the next data releases.
+  - [ ] Carbon data: Lesotho (empty in Ember's file) and Yukon (not in the Canada Energy Regulator file) have no value; Central African Republic is 0 g/kWh in Ember's 2023 data (likely a reporting gap). Check the next data releases.
   - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 

@@ -1,0 +1,31 @@
+@model A_U_ClimateScout.Models.CarbonMapViewModel
+@{
+    ViewData["Title"] = "Grid carbon intensity";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="~/lib/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+}
+
+<div class="container pt-4 pt-lg-5 text-center">
+    <h1 class="h5 text-uppercase">Grid carbon intensity</h1>
+    <p class="lead col-lg-8 mx-auto mt-3">How much CO₂ the electricity grid emits for each kilowatt-hour, by country, US state and Canadian province.</p>
+</div>
+
+<div class="container pb-5">
+    <div id="carbon-map" class="cs-climate-map mt-3" aria-label="World map of grid carbon intensity"></div>
+    <p class="mt-3">Select a location on the map to compare your building's carbon impact there.</p>
+    @if (Model.NoteHtml is not null)
+    {
+        <div class="small text-body-secondary">@Html.Raw(Model.NoteHtml)</div>
+    }
+</div>
+
+<script type="application/json" id="carbon-map-data">@Json.Serialize(Model.MapData)</script>
+
+@section Scripts {
+    <script src="~/lib/leaflet/dist/leaflet.js"></script>
+    <script src="~/lib/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <script type="module" src="~/js/carbon-map.js" asp-append-version="true"></script>
+}
