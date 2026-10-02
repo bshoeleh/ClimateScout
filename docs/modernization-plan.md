@@ -19,7 +19,9 @@ Zone page print view done: selected strategies only (all if none), light grey di
 
 Home climate map done: Köppen polygons (`wwwroot/geo/koppen.json`, 30 zones by MapId; As and Csc are list-only), group filter, locate, address search (`/api/v1/geocode`, Nominatim, 1 request/second, cached a day). Tiles and search go through our server (`Maps` settings) — OpenStreetMap now; Esri requested from Arcadis IT for production (§5).
 
-**Next up:** the carbon map page (reuses the tile proxy; move the shared map setup out of `climate-map.js` when the second map needs it).
+Carbon importer core done ahead of Phase 6 (so the carbon map has data): `Services/CarbonImport/` (profiles detected from the header row, parser, region matcher, importer writing one batch per file, superseding changed values) and `tool import carbon --file <csv> [--dry-run]`. The three sample CSVs are in the dev database: 291 values in batches 1–3; every map region has a value except Lesotho and Yukon.
+
+**Next up:** the carbon map page (reuses the tile proxy; move the shared map setup out of `climate-map.js` when the second map needs it). Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -367,11 +369,11 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 6 — Carbon importer
 - [ ] Source profiles + header auto-detection; accept `.csv` and `.xlsx` (ClosedXML)
 - [ ] "Download current data" as `.xlsx` in the upload layout (round-trip editing in Excel)
-- [ ] Parse/validate/match pipeline with unit tests using the three sample CSVs
+- [ ] Parse/validate/match pipeline with unit tests using the three sample CSVs — pipeline done (`Services/CarbonImport/`, 2026-10-02); unit tests to write
 - [ ] Preview/diff screen with inline alias mapping
 - [ ] Commit, history, rollback
 - [ ] Import-complete email
-- [ ] Import the three new CSVs (`xfer/carbondata`) through the real importer (proves the importer; moved here from Phase 3)
+- [x] Import the three new CSVs (`xfer/carbondata`) through the real importer (proves the importer; moved here from Phase 3) — via `tool import carbon`, batches 1–3 in the dev database
 
 ### Phase 7 — API
 - [ ] v1 endpoints (§7) with DTOs, OpenAPI + Scalar
@@ -401,6 +403,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Form for Heating → reference project "Add Lenovo Campus Global Headquarters": remove the leftover "Add " from the name.
   - [ ] Indirect Gain Sunspace → reference project "SCLogic Office Fitout tional Airport Terminal 2": fix the name (text pasted in by mistake).
   - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
+  - [ ] Carbon data: Lesotho (empty in Ember's file) and Yukon (not in the Canada Energy Regulator file) have no value; check the next data releases.
   - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 

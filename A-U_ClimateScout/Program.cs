@@ -2,6 +2,7 @@ using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using A_U_ClimateScout.Options;
 using A_U_ClimateScout.Services;
+using A_U_ClimateScout.Services.CarbonImport;
 using A_U_ClimateScout.Tools;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +54,7 @@ builder.Services.AddHttpClient(MapsOptions.HttpClientName, (services, client) =>
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 builder.Services.AddSingleton<Geocoder>();
+builder.Services.AddScoped<CarbonImporter>();
 
 var app = builder.Build();
 

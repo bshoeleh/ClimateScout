@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Models;
 using A_U_ClimateScout.Services;
+using A_U_ClimateScout.Services.CarbonImport;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ namespace A_U_ClimateScout.Tools
             {
                 CreateWordPress(services),
                 CreateGeo(services),
+                CreateCarbon(services),
             };
         }
 
@@ -103,6 +105,51 @@ namespace A_U_ClimateScout.Tools
                 logger.LogInformation("Region aliases: {Verb} {Created}, skipped {Skipped} (already present).",
                     verb, aliasesCreated, aliasRows.Count - aliasesCreated);
                 return 0;
+            });
+            return command;
+        }
+
+        // tool import carbon --file <csv> [--dry-run]
+        // Grid carbon intensity from an Ember or Canada Energy Regulator CSV (plan §6). The file's layout is recognised
+        // from its header row; bad or unmatched lines are listed and skipped, and the rest is saved as one import batch.
+        // Re-running the same file changes nothing (every value is "unchanged").
+        private static Command CreateCarbon(IServiceProvider services)
+        {
+            var file = new Option<FileInfo>("--file") { Description = "The CSV file to import.", Required = true };
+            var dryRun = new Option<bool>("--dry-run") { Description = "Report what would change without saving." };
+            var command = new Command("carbon", "Import grid carbon intensity values from a CSV.") { file, dryRun };
+            command.SetAction(async (parseResult, cancellationToken) =>
+            {
+                using var scope = services.CreateScope();
+                var importer = scope.ServiceProvider.GetRequiredService<CarbonImporter>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<CarbonImporter>>();
+
+                var csv = parseResult.GetValue(file)!;
+                if (!csv.Exists)
+                {
+                    logger.LogError("CSV file not found: {Path}", csv.FullName);
+                    return 1;
+                }
+
+                try
+                {
+                    using var reader = csv.OpenText();
+                    var summary = await importer.ImportAsync(csv.Name, reader, parseResult.GetValue(dryRun), cancellationToken);
+
+                    foreach (var problem in summary.Problems)
+                    {
+                        logger.LogWarning("Line {Line} skipped ({Region}): {Message}", problem.Line, problem.RegionName ?? "no name", problem.Message);
+                    }
+                    logger.LogInformation("{Profile} ({Source}): {New} new, {Changed} changed, {Unchanged} unchanged, {Skipped} skipped. {Outcome}",
+                        summary.Profile, summary.Source, summary.NewRows, summary.ChangedRows, summary.UnchangedRows, summary.Problems.Count,
+                        summary.BatchId is { } id ? $"Saved as import batch {id}." : "Dry run: nothing saved.");
+                    return 0;
+                }
+                catch (CarbonImportException exception)
+                {
+                    logger.LogError("{Message}", exception.Message);
+                    return 1;
+                }
             });
             return command;
         }
