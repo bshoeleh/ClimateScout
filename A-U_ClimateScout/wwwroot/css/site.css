@@ -583,3 +583,31 @@ a.cs-zone-label:focus-visible {
     border-radius: .25rem;
     background-color: var(--cs-zone-bg, var(--cs-line));
 }
+
+/* Address search box in the map's top-right corner. */
+.cs-map-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    width: min(18rem, 70vw);
+    padding: .375rem;
+    border-radius: .375rem;
+    background-color: var(--bs-body-bg);
+    box-shadow: 0 1px 4px rgb(0 0 0 / .3);
+}
+
+.cs-map-search input {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.cs-map-search-status {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: .8125rem;
+}
+
+.cs-map-search-status:empty {
+    display: none;
+}

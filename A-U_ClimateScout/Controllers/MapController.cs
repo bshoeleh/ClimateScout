@@ -10,8 +10,6 @@ namespace A_U_ClimateScout.Controllers
     // can change in configuration without touching the pages.
     public class MapController(IHttpClientFactory httpClientFactory, IOptions<MapsOptions> options) : Controller
     {
-        public const string TileClient = "map-tiles";
-
         [HttpGet("map/tiles/{z:int}/{x:int}/{y:int}")]
         public async Task<IActionResult> Tile(int z, int x, int y, CancellationToken cancellationToken)
         {
@@ -23,7 +21,7 @@ namespace A_U_ClimateScout.Controllers
             }
 
             var url = maps.TileUrl.Replace("{z}", z.ToString()).Replace("{x}", x.ToString()).Replace("{y}", y.ToString());
-            using var response = await httpClientFactory.CreateClient(TileClient)
+            using var response = await httpClientFactory.CreateClient(MapsOptions.HttpClientName)
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {

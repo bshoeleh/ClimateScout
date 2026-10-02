@@ -5,8 +5,10 @@ namespace A_U_ClimateScout.Options
     public class MapsOptions
     {
         public const string SectionName = "Maps";
+        public const string HttpClientName = "maps";   // one client (with our User-Agent) for tiles and address search
 
         public string TileUrl { get; set; } = "";       // upstream raster tiles, with {z}, {x} and {y} placeholders
+        public string GeocodeUrl { get; set; } = "";    // upstream address search (Nominatim's /search for now)
         public string Attribution { get; set; } = "";   // HTML credit shown in the map corner (required by the provider)
         public int MinZoom { get; set; } = 2;
         public int MaxZoom { get; set; } = 8;

@@ -28,6 +28,7 @@ namespace A_U_ClimateScout.Controllers
                 maps.MaxZoom,
                 polygonsUrl = Url.Content("~/geo/koppen.json"),
                 zoneUrl = Url.Content("~/zone/"),
+                geocodeUrl = Url.Content("~/api/v1/geocode"),
                 zones = groups
                     .SelectMany(g => g.Zones.Where(z => z.MapId is not null), (g, z) => (Group: g, Zone: z))
                     .ToDictionary(

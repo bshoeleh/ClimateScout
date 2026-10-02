@@ -1,7 +1,7 @@
-using A_U_ClimateScout.Controllers;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using A_U_ClimateScout.Options;
+using A_U_ClimateScout.Services;
 using A_U_ClimateScout.Tools;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,12 +46,13 @@ builder.Services.AddMemoryCache();
 
 // Map tiles are fetched by our server (MapController), never directly by the browser (plan §5).
 builder.Services.Configure<MapsOptions>(builder.Configuration.GetSection(MapsOptions.SectionName));
-builder.Services.AddHttpClient(MapController.TileClient, (services, client) =>
+builder.Services.AddHttpClient(MapsOptions.HttpClientName, (services, client) =>
 {
     var maps = services.GetRequiredService<IOptions<MapsOptions>>().Value;
     client.DefaultRequestHeaders.UserAgent.ParseAdd($"ClimateScout/1.0 ({maps.ContactEmail})");
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+builder.Services.AddSingleton<Geocoder>();
 
 var app = builder.Build();
 

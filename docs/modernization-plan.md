@@ -17,7 +17,9 @@ Strategy pages done: `/design-strategy/{slug}` with zone chips, reference projec
 
 Zone page print view done: selected strategies only (all if none), light grey diagram band, stacked list with aligned icons and summaries, page margins 1 in left / ½ in elsewhere.
 
-**Next up:** the home climate map. Build against OpenStreetMap tiles + Nominatim search through our server proxy (no account needed); Esri is requested from Arcadis IT for production and will be a config switch (§5, decided 2026-10-02). Check the old data for gaps first (Köppen TopoJSON ↔ zones), then propose code.
+Home climate map done: Köppen polygons (`wwwroot/geo/koppen.json`, 30 zones by MapId; As and Csc are list-only), group filter, locate, address search (`/api/v1/geocode`, Nominatim, 1 request/second, cached a day). Tiles and search go through our server (`Maps` settings) — OpenStreetMap now; Esri requested from Arcadis IT for production (§5).
+
+**Next up:** the carbon map page (reuses the tile proxy; move the shared map setup out of `climate-map.js` when the second map needs it).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -343,8 +345,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 4 — Public site
 - [ ] Layout: header/nav, footer (Arcadis, no CRTKL)
 - [ ] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
-- [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box (search on Enter), locate control, map attribution
-- [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
+- [x] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box (search on Enter), locate control, map attribution — in `climate-map.js` for now
+- [x] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
 - [x] Zone page print view (print only the selected strategies, as the old site did; all if none selected)
 - [x] Strategy page: content, image, zone chips, reference projects with lightbox (vanilla `<dialog>`), 2030 Palette link; list page at `/design-strategy`
