@@ -1,17 +1,19 @@
 # ClimateScout Modernization Plan
 
-Status: **IN PROGRESS — Phases 1–3 complete; next Phase 4 (public site)**
-Last updated: 2026-10-01
+Status: **IN PROGRESS — Phases 1–3 complete; Phase 4 (public site) in progress**
+Last updated: 2026-10-02
 
-## ▶ Where we left off (2026-10-01)
+## ▶ Where we left off (2026-10-02)
 
-**Last commit:** see `git log` — `import wordpress` finished (content blocks + paragraph conversion).
+**Last commit:** see `git log` — interactive building diagram on the zone pages.
 
 **Done so far:** Phase 1 complete (1.1–1.7). The site has the brand palette, Fira Sans, light/dark themes, the Arcadis ClimateScout logo, the public menu, a footer placeholder, a locked Admin area at `/admin`, registration disabled, and styled 404/error pages. The follow-ups from 1.7 are listed under that step in §11. Phase 2: domain model and initial migration (`afb54b5`); `tool init reference` and `tool init admin` with a forced password change on first sign-in (`3fce944`), verified end to end. Unit tests: conflict rules (`6588e41`) and carbon calculator (`2967d66`), 11 passing — run `dotnet test` from the repo root. Phase 3: import decisions recorded in §10 (hyphen slugs, description → Location, media approach); all 149 old images downloaded, cleaned and sorted into `wwwroot/img/media/{projects,strategies,other}/` with `Data/Import/media-map.csv` as the log (`873bf4c`). `tool import wordpress --sqlite <file> [--dry-run]` (all in `Tools/ImportCommands.cs`) imports media rows, 31 zones, 27 strategies, 627 zone links, 74 reference projects, 112 conflict rows and 7 content blocks; it is safe to re-run and logs every data gap as a warning. The dev database holds the imported data.
 
 **Phase 3 complete:** `tool import wordpress` + `tool import geo` load everything; `docs/import-verification.md` shows 25/25 checks passed.
 
-**Next up — Phase 4, public site:** start with the zone and strategy pages (they only need the imported data). The maps (home climate map, carbon map) need the Arcadis Mapbox account from Phase 0 for tiles; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
+**Phase 4 in progress:** zone pages done — description, zone colours from the database (`626d855`), and the interactive building diagram with strategy toggles, conflict disabling and shareable `#slug,slug` URLs (`ae917fb`). Checked by hand on Cfa; every layer works. Zones without a diagram (Am) show the page without the diagram band.
+
+**Next up:** strategy pages (`/design-strategy/{slug}`): content, image, reference projects with a vanilla lightbox, 2030 Palette link. After that, the zone page print view. The maps (home climate map, carbon map) still wait on the Arcadis Mapbox account from Phase 0; until it exists they can be built and tested with a free tile source, then switched. Check the old data for gaps first, then propose code.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -337,7 +339,8 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
 - [ ] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box, locate control
 - [ ] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
-- [ ] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state, print view
+- [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
+- [ ] Zone page print view (print only the selected strategies, as the old site did)
 - [ ] Strategy page: content, image, reference projects with lightbox (vanilla), 2030 Palette link
 - [ ] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [ ] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters, zoomed climate map
@@ -388,6 +391,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Solar Greenhouse: review its conflicts (it conflicts with 24 of the other 26 strategies; may be intended).
   - [ ] Stack Ventilation → reference project "NCI Tower Competition": add its location (empty on the old site).
   - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
+  - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 
 ### Later
