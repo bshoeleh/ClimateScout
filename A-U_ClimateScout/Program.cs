@@ -39,6 +39,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.AdminArea, policy => policy.RequireRole(Roles.Admin, Roles.Editor));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

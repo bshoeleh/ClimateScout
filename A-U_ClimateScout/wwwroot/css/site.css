@@ -204,27 +204,122 @@ body > .container {
     text-transform: uppercase;
 }
 
+/* Building diagram band: black to match the artwork, and sticky so the diagram stays in view
+   while strategies are chosen (as on the old site). */
+.cs-diagram {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #000;
+    color: #fff;
+}
+
+.cs-diagram-help {
+    margin: 0;
+    padding-top: 1rem;
+    font-weight: 500;
+}
+
+.cs-diagram-help .cs-icon {
+    color: var(--cs-orange);
+}
+
+.cs-diagram-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+}
+
+/* Strategy layers (<g class="cs-diagram-layer">, marked by DiagramMarkup) are hidden until selected. */
+.cs-diagram-layer {
+    visibility: hidden;
+}
+
+.cs-diagram-layer.is-visible {
+    visibility: visible;
+}
+
+/* Strategy cards: a link to the strategy page plus a toggle that shows it on the diagram. */
 .cs-strategy-card {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: .75rem;
+    gap: .25rem .75rem;
     height: 100%;
     padding: .5rem;
     border: 1px solid var(--bs-border-color);
     border-radius: .5rem;
     background-color: var(--bs-tertiary-bg);
+}
+
+.cs-strategy-card.is-selected {
+    border-color: var(--cs-orange);
+    box-shadow: inset 0 0 0 1px var(--cs-orange);
+}
+
+.cs-strategy-link {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    gap: .75rem;
+    min-width: 0;
     color: var(--bs-emphasis-color);
     text-decoration: none;
 }
 
-.cs-strategy-card:hover,
-.cs-strategy-card:focus-visible {
-    border-color: var(--cs-orange);
+.cs-strategy-link:hover .cs-strategy-name,
+.cs-strategy-link:focus-visible .cs-strategy-name {
+    text-decoration: underline;
 }
 
-.cs-strategy-card img {
+.cs-strategy-link img {
     flex: none;
     width: 64px;
     height: 64px;
     object-fit: contain;
+}
+
+.cs-strategy-card.is-disabled .cs-strategy-link {
+    opacity: .55;
+}
+
+.cs-strategy-card.is-disabled img {
+    filter: grayscale(1);
+}
+
+.cs-strategy-toggle {
+    display: inline-flex;
+    flex: none;
+    padding: .25rem;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--cs-orange-dark);
+}
+
+.cs-strategy-toggle .cs-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+.cs-strategy-toggle:disabled {
+    color: var(--bs-secondary-color);
+    cursor: not-allowed;
+}
+
+.cs-strategy-toggle .cs-icon-on,
+.cs-strategy-toggle[aria-pressed="true"] .cs-icon-off {
+    display: none;
+}
+
+.cs-strategy-toggle[aria-pressed="true"] .cs-icon-on {
+    display: inline;
+}
+
+.cs-strategy-conflict {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: .8125rem;
 }

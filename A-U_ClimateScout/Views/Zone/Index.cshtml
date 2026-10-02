@@ -1,7 +1,8 @@
 @using A_U_ClimateScout.Controllers
-@model A_U_ClimateScout.Models.ClimateZone
+@model A_U_ClimateScout.Models.ZonePageViewModel
 @{
-    ViewData["Title"] = $"{Model.KoppenCode} {Model.Name}";
+    var zone = Model.Zone;
+    ViewData["Title"] = $"{zone.KoppenCode} {zone.Name}";
 }
 
 @section Styles {
@@ -10,29 +11,55 @@
 }
 
 <div class="container py-4 py-lg-5">
-    <span class="cs-zone-label @ZoneController.CssClass(Model.KoppenCode)">
-        Climate zone · @Model.Group.Name
+    <span class="cs-zone-label @ZoneController.CssClass(zone.KoppenCode)">
+        Climate zone · @zone.Group.Name
     </span>
-    <h1 class="mt-3"><span class="text-body-secondary">@Model.KoppenCode</span> @Model.Name</h1>
+    <h1 class="mt-3"><span class="text-body-secondary">@zone.KoppenCode</span> @zone.Name</h1>
     <div class="col-lg-8">
-        @Html.Raw(Model.DescriptionHtml)
+        @Html.Raw(zone.DescriptionHtml)
     </div>
 </div>
 
-<section class="container pb-5" aria-labelledby="strategies-heading">
-    <h2 id="strategies-heading" class="h5 text-uppercase">Design strategies for @Model.Name</h2>
+@if (Model.DiagramMarkup is not null)
+{
+    <section class="cs-diagram" aria-label="Building diagram">
+        <div class="container">
+            <p class="cs-diagram-help" data-diagram-help>
+                Begin by selecting <svg class="cs-icon" aria-hidden="true"><use href="#cs-icon-plus"></use></svg> design strategies below.
+            </p>
+            @Html.Raw(Model.DiagramMarkup)
+        </div>
+    </section>
+}
+
+<section class="container py-4 pb-5" aria-labelledby="strategies-heading">
+    <h2 id="strategies-heading" class="h5 text-uppercase">Design strategies for @zone.Name</h2>
     <div class="row g-3 mt-1">
-        @foreach (var strategy in Model.Strategies.Select(l => l.Strategy))
+        @foreach (var strategy in zone.Strategies.Select(l => l.Strategy))
         {
             <div class="col-sm-6 col-lg-4 col-xl-3">
-                <a class="cs-strategy-card" href="~/design-strategy/@strategy.Slug">
-                    @if (strategy.ImageAsset is not null)
+                <div class="cs-strategy-card" data-strategy="@strategy.Slug" data-conflicts="@string.Join(",", Model.ConflictsBySlug[strategy.Slug])">
+                    <a class="cs-strategy-link" href="~/design-strategy/@strategy.Slug">
+                        @if (strategy.ImageAsset is not null)
+                        {
+                            <img src="~/img/media/@strategy.ImageAsset.StoragePath" alt="" width="64" height="64" loading="lazy" />
+                        }
+                        <span class="cs-strategy-name">@strategy.Name</span>
+                    </a>
+                    @if (Model.DiagramLayers.Contains(strategy.Slug))
                     {
-                        <img src="~/img/media/@strategy.ImageAsset.StoragePath" alt="" width="64" height="64" loading="lazy" />
+                        <button type="button" class="cs-strategy-toggle" aria-pressed="false" aria-label="Show @strategy.Name on the diagram">
+                            <svg class="cs-icon cs-icon-off" aria-hidden="true"><use href="#cs-icon-plus"></use></svg>
+                            <svg class="cs-icon cs-icon-on" aria-hidden="true"><use href="#cs-icon-minus"></use></svg>
+                        </button>
                     }
-                    <span>@strategy.Name</span>
-                </a>
+                    <p class="cs-strategy-conflict" data-conflict-note hidden></p>
+                </div>
             </div>
         }
     </div>
 </section>
+
+@section Scripts {
+    <script type="module" src="~/js/zone-diagram.js" asp-append-version="true"></script>
+}
