@@ -794,3 +794,46 @@ a.cs-zone-label:focus-visible {
     font-size: 1.25rem;
     font-weight: 300;
 }
+
+/* ---------- Sponsors ---------- */
+.cs-sponsor-card {
+    height: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+}
+
+.cs-sponsor-logo {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.cs-sponsor-invite {
+    padding: 1.5rem 2rem;
+    border-left: .375rem solid var(--cs-orange);
+    border-radius: .5rem;
+    background-color: var(--bs-tertiary-bg);
+}
+
+/* Footer strip: logos in greyscale until hovered or focused, so no sponsor's colours dominate the footer. */
+.cs-sponsor-strip-title {
+    display: block;
+    margin-bottom: .75rem;
+    color: inherit;
+    font-weight: 500;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.cs-sponsor-strip img {
+    filter: grayscale(1);
+    opacity: .7;
+    transition: filter .2s, opacity .2s;
+}
+
+.cs-sponsor-strip a:hover img,
+.cs-sponsor-strip a:focus-visible img {
+    filter: none;
+    opacity: 1;
+}

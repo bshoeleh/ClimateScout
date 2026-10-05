@@ -1,0 +1,14 @@
+@model List<A_U_ClimateScout.Models.Sponsor>
+<div class="cs-sponsor-strip mb-4">
+    <a class="cs-sponsor-strip-title" href="~/sponsors">Our sponsors</a>
+    <ul class="list-unstyled d-flex flex-wrap align-items-center gap-4 mb-0">
+        @foreach (var sponsor in Model)
+        {
+            <li>
+                <a href="@(string.IsNullOrEmpty(sponsor.Url) ? Url.Content("~/sponsors") : sponsor.Url)" rel="noopener">
+                    <img src="~/img/media/@sponsor.LogoAsset!.StoragePath" alt="@sponsor.Name" height="32" />
+                </a>
+            </li>
+        }
+    </ul>
+</div>

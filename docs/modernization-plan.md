@@ -29,7 +29,9 @@ Calculator infographic done: the total as CO₂ clouds, then one stacked card pe
 
 About page done at `/about` (content block `about.body`; `PageController` serves pages that are a single content block).
 
-**Next up:** Sponsors and Contact pages (Contact needs Phase 8 email to send). Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Sponsors done: `/sponsors` (cards by tier, invitation to sponsor linking to Contact; "Be our first sponsor" while there are none) and the footer logo strip (`SponsorStrip` view component, greyscale until hover, hidden when empty). Visible sponsors come from the `Sponsors` service, cached 10 minutes (Admin clears `Sponsors.CacheKey` on save). No sponsors exist yet; they are added in Admin (Phase 5).
+
+**Next up:** Contact page (form and validation now; sending needs Phase 8 email). Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -354,7 +356,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 4 — Public site
 - [ ] Layout: header/nav, footer (Arcadis, no CRTKL)
-- [ ] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
+- [x] Footer sponsor strip view component (logos link out, grayscale → color on hover, hidden when no visible sponsors, cached)
 - [x] Map module (vanilla ES): Leaflet setup, tile proxy endpoint, custom geocode search box (search on Enter), locate control, map attribution — in `climate-map.js` for now
 - [x] Home: climate map (Leaflet + Köppen TopoJSON layer, group filter tabs, search, locate, click → zone)
 - [x] Zone page: description, diagram with strategy toggles, conflicts, shareable URL state (`626d855`, `ae917fb`)
@@ -364,7 +366,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters
 - [x] Carbon comparison: infographic for the equivalencies (trees, gasoline, carbon … growing with the result)
 - [ ] Carbon comparison: zoomed climate map of the chosen region (later)
-- [ ] About, Sponsors, Contact pages — About done (`/about`)
+- [ ] About, Sponsors, Contact pages — About and Sponsors done
 - [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
 - [ ] Accessibility & responsive pass; print stylesheet
 
