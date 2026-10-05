@@ -95,6 +95,109 @@ function clearErrors() {
     form.querySelector("[data-form-error]").hidden = true;
 }
 
+// Infographic: the total as CO₂ clouds, then each EPA equivalency as a row of icons, one card per line so the
+// results are easy to compare. Each icon stands for a round amount (1, 2, 5, 10, 20, 50 …) chosen so a card never
+// needs more than 30 icons; the last icon is filled in part for the remainder.
+const maxIcons = 30;
+const svgNs = "http://www.w3.org/2000/svg";
+
+function unitFor(amount) {
+    for (let power = 1; ; power *= 10) {
+        for (const step of [1, 2, 5]) {
+            if (amount / (step * power) <= maxIcons) return step * power;
+        }
+    }
+}
+
+function icon(name, className) {
+    const svg = document.createElementNS(svgNs, "svg");
+    svg.setAttribute("aria-hidden", "true");
+    if (className) svg.setAttribute("class", className);
+    const use = document.createElementNS(svgNs, "use");
+    use.setAttribute("href", `#cs-icon-${name}`);
+    svg.append(use);
+    return svg;
+}
+
+const amountText = amount =>
+    amount >= 1e6 ? `${number(amount / 1e6, 1)} million` : number(amount, amount < 100 ? 1 : 0);
+
+function equivalencyCard({ key, iconName, amount, label, unitSingular, unitPlural }) {
+    const unit = unitFor(amount);
+    const card = document.createElement("div");
+    card.className = `cs-eq-card cs-eq-${key}`;
+
+    const head = document.createElement("div");
+    head.className = "cs-eq-head";
+    const badge = document.createElement("span");
+    badge.className = "cs-eq-badge";
+    badge.append(icon(iconName));
+    const text = document.createElement("div");
+    const big = document.createElement("div");
+    big.className = "cs-eq-amount";
+    big.textContent = amountText(amount);
+    const caption = document.createElement("div");
+    caption.className = "cs-eq-label";
+    caption.textContent = label;
+    text.append(big, caption);
+    head.append(badge, text);
+
+    // The row of icons; screen readers get the number and label instead.
+    const row = document.createElement("div");
+    row.className = "cs-eq-icons";
+    row.setAttribute("aria-hidden", "true");
+    const count = amount / unit;
+    for (let i = 0; i < Math.ceil(count); i++) {
+        const cell = document.createElement("span");
+        cell.className = "cs-eq-icon";
+        cell.style.setProperty("--i", i);
+        const filled = document.createElement("span");
+        filled.className = "cs-eq-fill";
+        filled.style.width = `${Math.min(1, count - i) * 100}%`;
+        filled.append(icon(iconName));
+        cell.append(icon(iconName, "cs-eq-empty"), filled);
+        row.append(cell);
+    }
+
+    const scale = document.createElement("div");
+    scale.className = "cs-eq-scale";
+    scale.append(icon(iconName), ` = ${number(unit)} ${unit === 1 ? unitSingular : unitPlural}`);
+
+    card.append(head, row, scale);
+    return card;
+}
+
+function renderInfographic(container, response) {
+    const heading = text => {
+        const h = document.createElement("h3");
+        h.className = "h6 text-uppercase mt-4 mb-2";
+        h.textContent = text;
+        return h;
+    };
+    const cards = list => list.map(e => equivalencyCard({
+        key: e.key, iconName: e.icon ?? "cloud-fill", amount: e.amount, label: e.label,
+        unitSingular: e.unitSingular, unitPlural: e.unitPlural,
+    }));
+    const emissions = response.equivalencies.filter(e => e.kind === "Emissions");
+    const absorption = response.equivalencies.filter(e => e.kind === "Absorption");
+
+    container.replaceChildren(
+        equivalencyCard({ key: "co2", iconName: "cloud-fill", amount: response.totalTonnes,
+            label: "metric tons of CO₂e emitted each year", unitSingular: "metric ton", unitPlural: "metric tons" }),
+        ...(emissions.length ? [heading("The same as"), ...cards(emissions)] : []),
+        ...(absorption.length ? [heading("To absorb it you would need"), ...cards(absorption)] : []));
+
+    const sourceUrl = response.equivalencies.find(e => e.sourceUrl)?.sourceUrl;
+    if (sourceUrl) {
+        const source = document.createElement("a");
+        source.className = "d-inline-block small mt-2";
+        source.href = sourceUrl;
+        source.rel = "noopener";
+        source.textContent = "Source: EPA greenhouse gas equivalencies";
+        container.append(source);
+    }
+}
+
 function showResult(response) {
     const set = (name, text) => { result.querySelector(`[data-result="${name}"]`).textContent = text; };
     const grid = response.gridIntensity;
@@ -107,25 +210,7 @@ function showResult(response) {
     set("totalKg", number(response.totalKg));
     set("totalLb", number(response.totalLb));
 
-    const list = result.querySelector('[data-result="equivalencies"]');
-    list.replaceChildren(...response.equivalencies.map(equivalency => {
-        const item = document.createElement("li");
-        const amount = document.createElement("strong");
-        amount.textContent = number(equivalency.amount);
-        item.append("Equivalent to ", amount, ` ${equivalency.label}`);
-        return item;
-    }));
-    const sourceUrl = response.equivalencies.find(equivalency => equivalency.sourceUrl)?.sourceUrl;
-    if (sourceUrl) {
-        const source = document.createElement("li");
-        source.className = "small text-body-secondary";
-        const link = document.createElement("a");
-        link.href = sourceUrl;
-        link.rel = "noopener";
-        link.textContent = "Source: EPA greenhouse gas equivalencies";
-        source.append(link);
-        list.append(source);
-    }
+    renderInfographic(result.querySelector('[data-result="infographic"]'), response);
 
     form.hidden = true;
     result.hidden = false;

@@ -25,7 +25,9 @@ Carbon map done at `/carbon`: the old site's eight colour bands, legend, label o
 
 Carbon comparison done at `/carbon-comparison?region={code}` (old `?l=Name` links redirect): location panel, calculator calling `POST /api/v1/carbon/calculate` (region value or an entered one; EPA equivalencies from the database), Chart.js comparison by US states / Canada / continent, sorted, chosen location outlined. Colour bands shared in `wwwroot/js/carbon-bands.js`.
 
-**Next up:** infographic for the calculator's equivalencies (user request: icons/graphics for trees, gasoline, carbon that grow in number or size with the result); then About, Sponsors and Contact pages. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Calculator infographic done: the total as CO₂ clouds, then one stacked card per EPA equivalency (icon arrays, each icon a round 1-2-5 amount, last icon part-filled). Six equivalencies (gasoline, miles, homes, phone charges, tree seedlings, forest acres) with `Kind`, `Icon`, unit words on `EquivalencyFactor` (migration `AddEquivalencyInfographicFields`); icons are an inline Bootstrap Icons sprite in the comparison view.
+
+**Next up:** About, Sponsors and Contact pages (Contact needs Phase 8 email to send). Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -358,7 +360,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Strategy page: content, image, zone chips, reference projects with lightbox (vanilla `<dialog>`), 2030 Palette link; list page at `/design-strategy`
 - [x] Carbon map page (choropleth, legend, hover info, click → comparison)
 - [x] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters
-- [ ] Carbon comparison: infographic for the equivalencies (trees, gasoline, carbon … growing with the result)
+- [x] Carbon comparison: infographic for the equivalencies (trees, gasoline, carbon … growing with the result)
 - [ ] Carbon comparison: zoomed climate map of the chosen region (later)
 - [ ] About, Sponsors, Contact pages
 - [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)

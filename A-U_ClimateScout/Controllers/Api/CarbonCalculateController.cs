@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using A_U_ClimateScout.Data;
+using A_U_ClimateScout.Models;
 using A_U_ClimateScout.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +54,7 @@ namespace A_U_ClimateScout.Controllers.Api
             var result = CarbonCalculator.Calculate(request.Eui, request.EuiUnit, request.Area, request.AreaUnit, grid.Value);
             var equivalencies = await db.EquivalencyFactors.AsNoTracking()
                 .OrderBy(f => f.SortOrder)
-                .Select(f => new { f.Key, f.Label, f.TonsCo2ePerUnit, f.SourceUrl })
+                .Select(f => new { f.Key, f.Label, f.TonsCo2ePerUnit, f.SourceUrl, f.Kind, f.Icon, f.UnitSingular, f.UnitPlural })
                 .ToListAsync(cancellationToken);
 
             return new CarbonCalculateResponse(
@@ -64,7 +65,8 @@ namespace A_U_ClimateScout.Controllers.Api
                 TotalTonnes: Math.Round(result.TotalTonnes, 2),
                 TotalLb: Math.Round(result.TotalLb, 0),
                 Equivalencies: equivalencies
-                    .Select(f => new EquivalencyDto(f.Key, f.Label, Math.Round(result.TotalTonnes / f.TonsCo2ePerUnit, 0), f.SourceUrl))
+                    .Select(f => new EquivalencyDto(f.Key, f.Label, Math.Round(result.TotalTonnes / f.TonsCo2ePerUnit, 2), f.SourceUrl,
+                        f.Kind, f.Icon, f.UnitSingular, f.UnitPlural))
                     .ToList());
         }
     }
@@ -88,5 +90,6 @@ namespace A_U_ClimateScout.Controllers.Api
 
     public record RegionDto([property: System.Text.Json.Serialization.JsonIgnore] int Id, string Code, string Name);
 
-    public record EquivalencyDto(string Key, string Label, decimal Amount, string? SourceUrl);
+    public record EquivalencyDto(string Key, string Label, decimal Amount, string? SourceUrl,
+        EquivalencyKind Kind, string? Icon, string UnitSingular, string UnitPlural);
 }

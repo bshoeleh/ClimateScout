@@ -16,6 +16,10 @@ namespace A_U_ClimateScout.Data.Configurations
             builder.Property(f => f.Label).HasMaxLength(FieldLengths.Name);
             builder.Property(f => f.TonsCo2ePerUnit).HasPrecision(12, 8);
             builder.Property(f => f.SourceUrl).HasMaxLength(FieldLengths.Url);
+            builder.Property(f => f.Kind).HasConversion<string>().HasMaxLength(FieldLengths.EnumText);
+            builder.Property(f => f.Icon).HasMaxLength(50);
+            builder.Property(f => f.UnitSingular).HasMaxLength(50);
+            builder.Property(f => f.UnitPlural).HasMaxLength(50);
         }
     }
 }
