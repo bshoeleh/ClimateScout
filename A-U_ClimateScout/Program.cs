@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using A_U_ClimateScout.Controllers;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using A_U_ClimateScout.Options;
@@ -61,6 +63,15 @@ builder.Services.AddScoped<CarbonImporter>();
 builder.Services.AddScoped<CarbonValues>();
 builder.Services.AddScoped<Sponsors>();
 
+// Contact form: at most 5 messages per visitor (IP address) per 15 minutes; more get the "too many requests" page.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(ContactController.RateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
+});
+
 var app = builder.Build();
 
 // Data commands (plan §3.3): "tool …" runs one command against the same configuration and database
@@ -92,6 +103,8 @@ app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 
 app.UseRouting();
+
+app.UseRateLimiter();
 
 app.UseAuthorization();
 

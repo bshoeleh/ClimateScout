@@ -837,3 +837,13 @@ a.cs-zone-label:focus-visible {
     filter: none;
     opacity: 1;
 }
+
+/* ---------- Contact ---------- */
+/* Honeypot field: moved off-screen rather than display:none, which some bots detect and skip. */
+.cs-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}

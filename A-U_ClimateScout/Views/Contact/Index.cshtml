@@ -1,0 +1,43 @@
+@model A_U_ClimateScout.Models.ContactFormModel
+@{
+    ViewData["Title"] = "Contact";
+}
+
+<div class="container py-4 py-lg-5">
+    <div class="col-lg-7">
+        <h1>Contact</h1>
+        <p class="lead">Questions about ClimateScout, feedback, or interest in sponsoring? Send us a message.</p>
+
+        <form method="post" class="cs-calculator mt-4" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" autocomplete="name" />
+                <span asp-validation-for="Name" class="invalid-feedback d-block"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" type="email" autocomplete="email" />
+                <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Message" class="form-label">Message</label>
+                <textarea asp-for="Message" class="form-control" rows="7" maxlength="5000"></textarea>
+                <span asp-validation-for="Message" class="invalid-feedback d-block"></span>
+            </div>
+            @* Honeypot: off-screen and skipped by keyboard and screen readers; people never see or fill it. *@
+            <div class="cs-honeypot" aria-hidden="true">
+                <label asp-for="Website">Website</label>
+                <input asp-for="Website" tabindex="-1" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary">Send message</button>
+        </form>
+        <p class="small text-body-secondary mt-3">
+            We use your name and email only to reply to you. See the <a href="https://www.arcadis.com/en/privacy">Arcadis privacy notice</a>.
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
