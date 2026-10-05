@@ -27,7 +27,9 @@ Carbon comparison done at `/carbon-comparison?region={code}` (old `?l=Name` link
 
 Calculator infographic done: the total as CO₂ clouds, then one stacked card per EPA equivalency (icon arrays, each icon a round 1-2-5 amount, last icon part-filled). Six equivalencies (gasoline, miles, homes, phone charges, tree seedlings, forest acres) with `Kind`, `Icon`, unit words on `EquivalencyFactor` (migration `AddEquivalencyInfographicFields`); icons are an inline Bootstrap Icons sprite in the comparison view.
 
-**Next up:** About, Sponsors and Contact pages (Contact needs Phase 8 email to send). Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+About page done at `/about` (content block `about.body`; `PageController` serves pages that are a single content block).
+
+**Next up:** Sponsors and Contact pages (Contact needs Phase 8 email to send). Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -300,7 +302,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 ### Phase 0 — Decisions & setup
 - [ ] Answer open questions (§10)
 - [ ] Confirm palette against Arcadis brand guidelines; obtain official logo files
-- [ ] Esri API key for production (requested from Arcadis IT 2026-10-02: ArcGIS Online Creator, developer-credentials privilege, Static Basemap Tiles + Geocoding not stored). Development uses OpenStreetMap meanwhile; Mapbox dropped (needs a payment card).
+- [ ] **On hold (2026-10-05):** Esri API key for production — waiting for the account; OpenStreetMap is in use meanwhile and works well (requested from Arcadis IT 2026-10-02: ArcGIS Online Creator, developer-credentials privilege, Static Basemap Tiles + Geocoding not stored). Development uses OpenStreetMap meanwhile; Mapbox dropped (needs a payment card).
 - [ ] Set up Mailjet account (later)
 
 ### Phase 1 — Platform setup (walkthrough, one step at a time)
@@ -362,7 +364,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Carbon comparison: calculator (calls API), result panel, Chart.js comparison with region filters
 - [x] Carbon comparison: infographic for the equivalencies (trees, gasoline, carbon … growing with the result)
 - [ ] Carbon comparison: zoomed climate map of the chosen region (later)
-- [ ] About, Sponsors, Contact pages
+- [ ] About, Sponsors, Contact pages — About done (`/about`)
 - [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
 - [ ] Accessibility & responsive pass; print stylesheet
 
@@ -412,6 +414,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Indirect Gain Sunspace → reference project "SCLogic Office Fitout tional Airport Terminal 2": fix the name (text pasted in by mistake).
   - [ ] Diagram artwork: add the missing strategy layers — Temperate: `ds-evaporative-cooling-towers` (zones BWk, Dsa); Cold: `ds-cross-ventilation`, `ds-solar-shading`, `ds-stack-ventilation` (the coldest D zones). On the old site these toggles showed nothing. Every import run lists them until fixed.
   - [ ] Content block `carbon.comparison.learn-more`: fix the typo "locaiton".
+  - [ ] Content block `about.body`: review the text — it says "CLIMATE SCOUT" (brand is now Arcadis ClimateScout®), "30 sub-types" (the site lists 31 zones; As is not on the 2018 map), and "export this image to a report" (the site prints).
   - [ ] Carbon data: Lesotho (empty in Ember's file) and Yukon (not in the Canada Energy Regulator file) have no value; Central African Republic is 0 g/kWh in Ember's 2023 data (likely a reporting gap). Check the next data releases.
   - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.

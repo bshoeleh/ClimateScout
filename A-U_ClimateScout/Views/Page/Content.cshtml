@@ -1,0 +1,18 @@
+@model A_U_ClimateScout.Models.ContentPageViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container py-4 py-lg-5">
+    <article class="cs-content col-lg-8">
+        @if (string.IsNullOrWhiteSpace(Model.Html))
+        {
+            <h1>@Model.Title</h1>
+            <p class="text-body-secondary">This page has no content yet.</p>
+        }
+        else
+        {
+            @Html.Raw(Model.Html)
+        }
+    </article>
+</div>

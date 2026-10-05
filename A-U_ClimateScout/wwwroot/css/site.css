@@ -781,3 +781,16 @@ a.cs-zone-label:focus-visible {
 /* Dark theme: the darker colours need a lighter shade to stand out on a dark background. */
 [data-bs-theme="dark"] .cs-eq-forest-acres { --eq-color: var(--cs-sage); }
 [data-bs-theme="dark"] .cs-eq-smartphones-charged { --eq-color: #A99BD1; }
+
+/* ---------- Content pages (About …) ---------- */
+/* Headings and paragraphs come from a content block, so spacing is set here rather than with classes. */
+.cs-content h2,
+.cs-content h3,
+.cs-content h4 {
+    margin-top: 2rem;
+}
+
+.cs-content h1 + p {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
