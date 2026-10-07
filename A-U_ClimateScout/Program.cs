@@ -30,11 +30,15 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// Every save is audited (Data/AuditInterceptor.cs); the interceptor is scoped, one per context.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<AuditInterceptor>();
+builder.Services.AddDbContext<ApplicationDbContext>((services, options) =>
     options.UseSqlServer(connectionString, sql =>
-        // Generate SQL that SQL Server 2019 (compatibility level 150) understands. Raise this once the
-        // production server's version is confirmed (plan §10).
-        sql.UseCompatibilityLevel(150)));
+            // Generate SQL that SQL Server 2019 (compatibility level 150) understands. Raise this once the
+            // production server's version is confirmed (plan §10).
+            sql.UseCompatibilityLevel(150))
+        .AddInterceptors(services.GetRequiredService<AuditInterceptor>()));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

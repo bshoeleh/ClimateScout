@@ -41,7 +41,9 @@ Print done: pages print in the light theme whatever the screen theme (`theme.js`
 
 Phase 5 started: admin layout and dashboard (`9aade08`) — own layout (`Areas/Admin/Views/Shared/_AdminLayout.cshtml`, noindex), grouped side menu from `Areas/Admin/AdminMenu.cs` (set an item's Controller when its screen is built; "soon" until then), `AdminOnly` policy for Users / Audit log / carbon Imports; dashboard with counts, last carbon import, messages to handle, recent audit entries and a live "Needs attention" list. Head assets, icon sprite and theme menu are shared partials in `Views/Shared`.
 
-**Next up:** Phase 5 — audit logging for admin saves, then the first editing screens. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Audit logging done: `Data/AuditInterceptor.cs` (EF Core save interceptor, scoped) writes one `AuditLog` row per created / changed / deleted record — user, time, readable summary, field before/after as JSON. Skips AuditLog, CarbonIntensity (imports log per batch), Identity tables and saves by signed-out visitors; tools log as "System". Checked against the dev database inside a rolled-back transaction.
+
+**Next up:** Phase 5 — the first editing screens. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
