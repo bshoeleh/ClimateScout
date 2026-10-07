@@ -9,7 +9,11 @@ const map = createMap("climate-map", data.map);
 
 // Group filter: "" shows every group. Works on the list straight away; the map follows once its polygons load.
 const groupLayers = new Map();   // zone group slug → Leaflet layer group
-let currentGroup = "";
+// A group in the address (/?group=a-tropical, from old zone-group links) starts the map filtered to it.
+let currentGroup = new URLSearchParams(location.search).get("group") ?? "";
+if (!document.querySelector(`[data-group-filter="${CSS.escape(currentGroup)}"]`)) {
+    currentGroup = "";
+}
 
 function showGroup(slug) {
     currentGroup = slug;
@@ -34,6 +38,8 @@ document.addEventListener("click", event => {
         showGroup(button.dataset.groupFilter);
     }
 });
+
+showGroup(currentGroup);
 
 // The zone polygons: each one's "n" is looked up in data.zones (by MapId). A canvas draws the 5,499 polygons
 // much faster than one SVG element each.

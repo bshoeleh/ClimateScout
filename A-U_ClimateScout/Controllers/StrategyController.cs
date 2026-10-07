@@ -35,5 +35,10 @@ namespace A_U_ClimateScout.Controllers
 
             return strategy is null ? NotFound() : View(strategy);
         }
+
+        // The old site had a page per image of a strategy (/design-strategy/cool-roof/cool-roof-2x/); send them to the strategy.
+        [HttpGet("design-strategy/{slug}/{attachment}")]
+        public IActionResult OldAttachmentPage(string slug) =>
+            RedirectToActionPermanent(nameof(Index), new { slug });
     }
 }

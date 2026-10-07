@@ -30,6 +30,13 @@ namespace A_U_ClimateScout.Controllers
                 .FirstOrDefaultAsync(z => z.Slug == slug && z.IsActive, cancellationToken);
             if (zone is null)
             {
+                // The old site also had a page per zone group (/zone/a_tropical, redirected above to /zone/a-tropical):
+                // send those to the home map with the group's filter selected.
+                var groupSlug = await db.ClimateZoneGroups.Where(g => g.Slug == slug).Select(g => g.Slug).FirstOrDefaultAsync(cancellationToken);
+                if (groupSlug is not null)
+                {
+                    return RedirectPermanent($"{Url.Content("~/")}?group={Uri.EscapeDataString(groupSlug)}");
+                }
                 return NotFound();
             }
 
