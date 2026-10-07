@@ -39,7 +39,9 @@ Accessibility & responsive pass done: every public page checked at 390 px (phone
 
 Print done: pages print in the light theme whatever the screen theme (`theme.js`), on white, without menu, footer, map controls, filter buttons or the Calculate button; colour keys and zone labels keep their colours; maps are resized to the paper width and print their coloured regions without base-map tiles; the comparison chart redraws in the light colours (it now also follows theme changes on screen); the 2030 Palette band prints as an outlined box with its link address.
 
-**Next up:** Phase 4 is complete apart from the later zoomed climate map on the comparison page. Phase 5 — Admin area. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Phase 5 started: admin layout and dashboard (`9aade08`) — own layout (`Areas/Admin/Views/Shared/_AdminLayout.cshtml`, noindex), grouped side menu from `Areas/Admin/AdminMenu.cs` (set an item's Controller when its screen is built; "soon" until then), `AdminOnly` policy for Users / Audit log / carbon Imports; dashboard with counts, last carbon import, messages to handle, recent audit entries and a live "Needs attention" list. Head assets, icon sprite and theme menu are shared partials in `Views/Shared`.
+
+**Next up:** Phase 5 — audit logging for admin saves, then the first editing screens. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -379,7 +381,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Accessibility & responsive pass; print stylesheet
 
 ### Phase 5 — Admin area
-- [ ] Admin layout + dashboard
+- [x] Admin layout + dashboard
 - [ ] CRUD: zone groups, zones, diagrams, strategies (conflicts matrix, zone assignment, reference projects)
 - [ ] CRUD: sponsors (logo upload, tier, dates, ShowInFooter, drag-to-reorder), content blocks, equivalency factors, carbon regions & aliases
 - [ ] Media library (upload, alt text, replace). Uploads go to `img/media/projects/`, `strategies/` or `other/` automatically from what is being edited — no folder prompt.
