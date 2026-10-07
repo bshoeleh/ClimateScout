@@ -74,6 +74,8 @@
         <symbol id="cs-icon-plus" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/></symbol>
         <symbol id="cs-icon-minus" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1z"/></symbol>
     </svg>
+    @* Hidden until it gets keyboard focus: lets keyboard users jump past the menu. *@
+    <a class="visually-hidden-focusable cs-skip-link" href="#content">Skip to content</a>
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom box-shadow mb-4" aria-label="Main">
             <div class="container">
@@ -117,7 +119,7 @@
         </nav>
     </header>
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" id="content" tabindex="-1" class="pb-3">
             @RenderBody()
         </main>
     </div>

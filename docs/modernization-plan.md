@@ -423,6 +423,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
   - [ ] Content block `about.body`: review the text — it says "CLIMATE SCOUT" (brand is now Arcadis ClimateScout®), "30 sub-types" (the site lists 31 zones; As is not on the 2018 map), and "export this image to a report" (the site prints).
   - [ ] Carbon data: Lesotho (empty in Ember's file) and Yukon (not in the Canada Energy Regulator file) have no value; Central African Republic is 0 g/kWh in Ember's 2023 data (likely a reporting gap). Check the next data releases.
   - [ ] Diagram artwork: the Temperate `ds-cool-roof` layer is a single thin grey line on the roof edge and is barely visible when selected (same on the old site); consider a thicker or coloured stroke.
+  - [ ] Content block heading levels (accessibility: headings should step down one level at a time): `carbon.calculator.intro` starts at `<h3>` under the page's `<h1>` ("Carbon Emissions Calculator", "Step 1…") — make them `<h2>`; `about.body` has an `<h4>` ("CLIMATE SCOUT Disclaimer") with no `<h3>` above it — make it `<h2>`.
   - [ ] Share image: make a 1200×630 image for link previews (Teams, LinkedIn, email) to replace the default `og:image`, which is the thin 329×23 logo (`~/img/brand/logo-on-light.png`, set in `_Layout.cshtml`).
   - [ ] Replace the 26 reference-project links to `callisonrtkl.com/projects/…` with their arcadis.com project pages (they now redirect to a generic Arcadis architecture page). The import logs a warning for each.
 

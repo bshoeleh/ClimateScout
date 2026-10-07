@@ -170,6 +170,29 @@ body > .container {
     --bs-btn-disabled-color: var(--cs-orange);
 }
 
+/* Bootstrap's grey (#6c757d) is under 4.5 : 1 on both our backgrounds; its secondary text colour passes in each theme. */
+.btn-outline-secondary {
+    --bs-btn-color: var(--bs-secondary-color);
+}
+
+/* Skip link: shown at the top left when it gets keyboard focus. */
+.cs-skip-link:focus {
+    position: fixed !important;
+    top: .5rem;
+    left: .5rem;
+    z-index: 2000;
+    padding: .5rem 1rem;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border: 2px solid var(--cs-orange);
+    border-radius: .375rem;
+}
+
+/* The skip link moves focus to <main>; it needs no focus ring of its own. */
+#content:focus {
+    outline: none;
+}
+
 .form-control:focus,
 .form-select:focus,
 .form-check-input:focus {
