@@ -29,6 +29,22 @@ legend.onAdd = () => {
 };
 legend.addTo(map);
 
+// Phones: the same key as one strip under the map, cleanest first (CSS hides the one on the map).
+const strip = document.getElementById("carbon-legend-strip");
+const stripTitle = document.createElement("strong");
+stripTitle.textContent = "g CO₂/kWh";
+const stripRow = document.createElement("div");
+stripRow.className = "cs-legend-strip-row";
+for (const { color, label } of [...bands].reverse().concat({ color: noDataColor, label: "No data" })) {
+    const item = document.createElement("div");
+    const swatch = document.createElement("span");
+    swatch.className = "cs-legend-strip-swatch";
+    swatch.style.backgroundColor = color;
+    item.append(swatch, label.replace(/–.*/, ""));   // "200–300" → "200": each colour starts at its number
+    stripRow.append(item);
+}
+strip.append(stripTitle, stripRow);
+
 // The region outlines (wwwroot/geo/carbon-regions.geojson), joined to data.regions by "code".
 const baseStyle = { weight: 1, color: "#fff", opacity: 0.8, fillOpacity: 0.7 };
 try {

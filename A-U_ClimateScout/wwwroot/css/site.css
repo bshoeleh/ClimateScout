@@ -656,6 +656,33 @@ a.cs-zone-label:focus-visible {
     border: 1px solid rgb(0 0 0 / .15);
 }
 
+/* Phones: the key moves from the map to a strip under it (#carbon-legend-strip, shown below md). */
+@media (max-width: 767.98px) {
+    .cs-map-legend {
+        display: none;
+    }
+}
+
+.cs-legend-strip {
+    font-size: .75rem;
+}
+
+.cs-legend-strip-row {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    margin-top: .25rem;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.cs-legend-strip-swatch {
+    display: block;
+    height: .75rem;
+    margin-bottom: .25rem;
+    border: 1px solid rgb(0 0 0 / .15);
+}
+
 /* ---------- Carbon comparison ---------- */
 .cs-carbon-location {
     display: inline-block;
