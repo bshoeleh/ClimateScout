@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>@(ViewData["Title"] is string title ? $"{title} · " : "")Admin · Arcadis ClimateScout®</title>
+    <partial name="_HeadAssets" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="cs-admin">
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"] as string;
+    }
+    <partial name="_IconSprite" />
+    <a class="visually-hidden-focusable cs-skip-link" href="#content">Skip to content</a>
+    <header>
+        <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom box-shadow" aria-label="Admin">
+            <div class="container-fluid">
+                <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#admin-menu"
+                        aria-controls="admin-menu" aria-label="Admin menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a class="navbar-brand d-flex align-items-center gap-2 me-auto" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                    <img src="~/img/brand/logo-on-light.png" class="cs-logo cs-logo-on-light" width="329" height="23" alt="Arcadis ClimateScout®" />
+                    <img src="~/img/brand/logo-on-dark.png" class="cs-logo cs-logo-on-dark" width="332" height="23" alt="Arcadis ClimateScout®" />
+                    <span class="badge text-bg-secondary">Admin</span>
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a class="nav-link d-none d-sm-block" href="~/">View site</a>
+                    <partial name="_ThemeMenu" />
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            @* Side menu: always shown from lg up; below that it slides in from the left (Bootstrap offcanvas). *@
+            <div class="col-lg-3 col-xl-2 border-end cs-admin-sidebar">
+                <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="admin-menu" aria-labelledby="admin-menu-title">
+                    <div class="offcanvas-header">
+                        <h2 class="offcanvas-title h5" id="admin-menu-title">Admin menu</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#admin-menu" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body d-block py-lg-4">
+                        <nav aria-label="Admin sections">
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link @(currentController == "Dashboard" ? "active" : null)"
+                                       aria-current="@(currentController == "Dashboard" ? "page" : null)"
+                                       asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                                </li>
+                            </ul>
+                            @foreach (var group in A_U_ClimateScout.Areas.Admin.AdminMenu.Groups)
+                            {
+                                var visible = new List<A_U_ClimateScout.Areas.Admin.AdminMenu.Item>();
+                                foreach (var item in group.Items)
+                                {
+                                    if ((await AuthorizationService.AuthorizeAsync(User, item.Policy)).Succeeded)
+                                    {
+                                        visible.Add(item);
+                                    }
+                                }
+                                if (visible.Count == 0)
+                                {
+                                    continue;
+                                }
+                                <h3 class="cs-admin-menu-heading">@group.Heading</h3>
+                                <ul class="nav flex-column">
+                                    @foreach (var item in visible)
+                                    {
+                                        var current = item.Controller == currentController;
+                                        <li class="nav-item">
+                                            @if (item.Controller is null)
+                                            {
+                                                <span class="nav-link disabled" aria-disabled="true">@item.Text <span class="cs-admin-soon">soon</span></span>
+                                            }
+                                            else
+                                            {
+                                                <a class="nav-link @(current ? "active" : null)" aria-current="@(current ? "page" : null)"
+                                                   asp-area="Admin" asp-controller="@item.Controller" asp-action="Index">@item.Text</a>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <main class="col-lg-9 col-xl-10 py-4 px-lg-4" id="content" tabindex="-1">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -46,7 +46,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 // Who may use the Admin area. Views and controllers check the policy, never role names,
 // so Entra ID sign-in can be added later without touching them (plan §9).
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy(Policies.AdminArea, policy => policy.RequireRole(Roles.Admin, Roles.Editor));
+    .AddPolicy(Policies.AdminArea, policy => policy.RequireRole(Roles.Admin, Roles.Editor))
+    .AddPolicy(Policies.AdminOnly, policy => policy.RequireRole(Roles.Admin));
 
 // JSON (API and the data embedded in pages) writes enums as their names, e.g. "KwhPerSquareMetre", not 1.
 builder.Services.AddControllersWithViews()

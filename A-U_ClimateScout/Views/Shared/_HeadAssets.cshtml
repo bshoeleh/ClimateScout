@@ -1,0 +1,18 @@
+<script type="importmap"></script>
+<script>
+    // Set the theme before anything renders, so dark-mode visitors never see a white flash.
+    (() => {
+        let stored = null;
+        try { stored = localStorage.getItem("cs-theme"); } catch { }
+        const theme = stored === "light" || stored === "dark"
+            ? stored
+            : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-bs-theme", theme);
+    })();
+</script>
+<link rel="stylesheet" href="~/lib/fira-sans/latin-400.css" />
+<link rel="stylesheet" href="~/lib/fira-sans/latin-400-italic.css" />
+<link rel="stylesheet" href="~/lib/fira-sans/latin-500.css" />
+<link rel="stylesheet" href="~/lib/fira-sans/latin-700.css" />
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />

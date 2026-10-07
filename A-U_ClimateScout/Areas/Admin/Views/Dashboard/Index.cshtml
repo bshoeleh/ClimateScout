@@ -1,5 +1,105 @@
+@model A_U_ClimateScout.Areas.Admin.Models.DashboardViewModel
 @{
-    ViewData["Title"] = "Admin";
+    ViewData["Title"] = "Dashboard";
 }
-<h1>Admin</h1>
-<p class="text-body-secondary">The admin screens are built in Phase 5.</p>
+
+<h1 class="h3 mb-4">Dashboard</h1>
+
+<section aria-labelledby="counts-heading" class="mb-5">
+    <h2 id="counts-heading" class="visually-hidden">Content</h2>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-xxl-6 g-3">
+        @foreach (var count in Model.Counts)
+        {
+            <div class="col">
+                <div class="cs-admin-tile">
+                    <div class="cs-admin-tile-value">@count.Value.ToString("N0")</div>
+                    <div class="cs-admin-tile-label">@count.Label</div>
+                </div>
+            </div>
+        }
+    </div>
+    <p class="small text-body-secondary mt-2 mb-0">
+        Last carbon import:
+        @(Model.LastCarbonImport is { } last ? last.ToLocalTime().ToString("d MMMM yyyy") : "none yet")
+    </p>
+</section>
+
+<div class="row g-5">
+    <div class="col-xl-7">
+        <section aria-labelledby="attention-heading">
+            <h2 id="attention-heading" class="h5 text-uppercase">Needs attention</h2>
+            @if (Model.NeedsAttention.Count == 0)
+            {
+                <p class="text-body-secondary">Nothing to fix.</p>
+            }
+            else
+            {
+                <p class="small text-body-secondary">Checked from the data each time this page opens; an item disappears once it is fixed.</p>
+                <div class="accordion" id="attention">
+                    @for (var i = 0; i < Model.NeedsAttention.Count; i++)
+                    {
+                        var item = Model.NeedsAttention[i];
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#attention-@i" aria-expanded="false" aria-controls="attention-@i">
+                                    <span class="badge rounded-pill text-bg-warning me-2">@item.Names.Count</span>@item.Title
+                                </button>
+                            </h3>
+                            <div id="attention-@i" class="accordion-collapse collapse" data-bs-parent="#attention">
+                                <div class="accordion-body">
+                                    <p class="small text-body-secondary">@item.Explanation</p>
+                                    <ul class="mb-0">
+                                        @foreach (var name in item.Names)
+                                        {
+                                            <li>@name</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+    <div class="col-xl-5">
+        <section aria-labelledby="messages-heading" class="mb-5">
+            <h2 id="messages-heading" class="h5 text-uppercase">Contact messages</h2>
+            <p class="mb-0">
+                @if (Model.UnhandledMessages == 0)
+                {
+                    <span class="text-body-secondary">No messages to handle.</span>
+                }
+                else
+                {
+                    <span><strong>@Model.UnhandledMessages</strong> @(Model.UnhandledMessages == 1 ? "message" : "messages") to handle.</span>
+                }
+            </p>
+        </section>
+
+        <section aria-labelledby="activity-heading">
+            <h2 id="activity-heading" class="h5 text-uppercase">Recent activity</h2>
+            @if (Model.RecentActivity.Count == 0)
+            {
+                <p class="text-body-secondary">No changes yet.</p>
+            }
+            else
+            {
+                <ul class="list-unstyled small">
+                    @foreach (var entry in Model.RecentActivity)
+                    {
+                        <li class="py-2 border-bottom">
+                            <div>@(entry.Summary ?? $"{entry.Action} {entry.EntityType} {entry.EntityId}")</div>
+                            <div class="text-body-secondary">
+                                @(entry.UserName ?? "System") ·
+                                <time datetime="@entry.OccurredAt.ToString("o")">@entry.OccurredAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")</time>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    </div>
+</div>
