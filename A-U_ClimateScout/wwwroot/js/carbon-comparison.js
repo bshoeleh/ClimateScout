@@ -248,16 +248,18 @@ for (const name of groupNames) {
     groupButtons.append(button);
 }
 
-// Chart text and grid lines follow the page theme (light or dark).
+// Chart text and grid lines follow the page theme (light or dark), read from Bootstrap's colours each time the
+// chart draws (functions, so a theme change only needs a redraw).
 const theme = getComputedStyle(document.documentElement);
-Chart.defaults.color = theme.getPropertyValue("--bs-secondary-color").trim();
-Chart.defaults.borderColor = theme.getPropertyValue("--bs-border-color-translucent").trim();
-Chart.defaults.font.family = theme.getPropertyValue("--bs-body-font-family").trim();
+const themeColor = name => theme.getPropertyValue(name).trim();
+const textColor = () => themeColor("--bs-secondary-color");
+const gridColor = () => themeColor("--bs-border-color-translucent");
+Chart.defaults.font.family = themeColor("--bs-body-font-family");
 
 const chartBox = document.querySelector(".cs-carbon-chart");
 const chart = new Chart(document.getElementById("carbon-chart"), {
     type: "bar",
-    data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: theme.getPropertyValue("--bs-emphasis-color").trim(), borderWidth: [] }] },
+    data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: themeColor("--bs-emphasis-color"), borderWidth: [] }] },
     options: {
         indexAxis: "y",
         responsive: true,
@@ -267,9 +269,18 @@ const chart = new Chart(document.getElementById("carbon-chart"), {
             tooltip: { callbacks: { label: context => ` ${number(context.parsed.x)} g CO₂e/kWh` } },
         },
         scales: {
-            x: { beginAtZero: true, title: { display: true, text: "g CO₂e/kWh" } },
+            x: {
+                beginAtZero: true,
+                title: { display: true, text: "g CO₂e/kWh", color: textColor },
+                ticks: { color: textColor },
+                grid: { color: gridColor },
+                border: { color: gridColor },
+            },
             y: {
+                grid: { color: gridColor },
+                border: { color: gridColor },
                 ticks: {
+                    color: textColor,
                     autoSkip: false,
                     // The chosen location's name in bold (context.chart, since this runs while the chart is created).
                     font: context => ({
@@ -298,6 +309,13 @@ function showGroup(name) {
     chartBox.style.height = `${rows.length * 20 + 60}px`;
     chart.update();
 }
+
+// Redraw in the new colours when the theme changes: the theme menu, the computer's setting, or printing
+// (theme.js prints in the light theme).
+new MutationObserver(() => {
+    chart.data.datasets[0].borderColor = themeColor("--bs-emphasis-color");
+    chart.update("none");
+}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-bs-theme"] });
 
 const selected = regionsByCode.get(selectedCode);
 showGroup((selected && groupOf(selected)) ?? "United States");

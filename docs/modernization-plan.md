@@ -35,7 +35,11 @@ Contact done at `/contact`: messages saved to `ContactMessages` (read them in Ad
 
 SEO done: old-URL redirects (zone groups → `/?group=…`, old per-image strategy pages → the strategy), meta description, canonical link and Open Graph tags in `_Layout.cshtml` (views set `ViewData["Description"]` / `ViewData["Image"]`; `PlainText.Summarize` makes descriptions from database HTML), `/robots.txt` and `/sitemap.xml` (`SeoController`, 65 URLs, paths cached an hour).
 
-**Next up:** rest of Phase 4 — the accessibility & responsive pass, plus a print stylesheet. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Accessibility & responsive pass done: every public page checked at 390 px (phone emulation) and with axe in light and dark — no sideways scrolling, no contrast failures; skip-to-content link; carbon map key as a strip under the map on phones. Remaining axe findings are the content-block heading levels on the owner's list (Phase 9).
+
+Print done: pages print in the light theme whatever the screen theme (`theme.js`), on white, without menu, footer, map controls, filter buttons or the Calculate button; colour keys and zone labels keep their colours; maps are resized to the paper width and print their coloured regions without base-map tiles; the comparison chart redraws in the light colours (it now also follows theme changes on screen); the 2030 Palette band prints as an outlined box with its link address.
+
+**Next up:** Phase 4 is complete apart from the later zoomed climate map on the comparison page. Phase 5 — Admin area. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -372,7 +376,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Carbon comparison: zoomed climate map of the chosen region (later)
 - [x] About, Sponsors, Contact pages (Contact saves messages; sending email is Phase 8)
 - [x] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
-- [ ] Accessibility & responsive pass; print stylesheet
+- [x] Accessibility & responsive pass; print stylesheet
 
 ### Phase 5 — Admin area
 - [ ] Admin layout + dashboard

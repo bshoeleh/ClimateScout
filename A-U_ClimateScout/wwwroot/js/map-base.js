@@ -14,6 +14,17 @@ export function createMap(elementId, settings) {
     }).addTo(map);
     L.control.locate({ flyTo: true, strings: { title: "Show my location" } }).addTo(map);
     new SearchControl({ geocodeUrl: settings.geocodeUrl }).addTo(map);
+    // Printing: before the page is laid out for paper, size the map to the paper's text width (6.75 in fits Letter
+    // and A4 with our margins) and redraw it around the same centre; put it back afterwards.
+    const element = map.getContainer();
+    addEventListener("beforeprint", () => {
+        element.style.width = "6.75in";
+        map.invalidateSize({ animate: false });
+    });
+    addEventListener("afterprint", () => {
+        element.style.width = "";
+        map.invalidateSize({ animate: false });
+    });
     return map;
 }
 

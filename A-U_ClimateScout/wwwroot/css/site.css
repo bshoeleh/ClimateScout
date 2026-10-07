@@ -554,6 +554,62 @@ a.cs-zone-label:focus-visible {
         margin: 0;
         font-size: .8125rem;
     }
+
+    /* Every page: paper is white (theme.js also switches to the light theme while printing). */
+    body {
+        background-color: #fff;
+        color: #000;
+    }
+
+    /* On-screen controls: map zoom, locate and search (the credits stay), the filter-button rows (home zone groups,
+       comparison regions) and the calculator's button. */
+    .cs-skip-link,
+    .leaflet-top,
+    .cs-zone-filter,
+    .cs-calculator button[type="submit"] {
+        display: none !important;
+    }
+
+    /* Colour keys and zone labels are background colours, which browsers drop when printing: keep them. */
+    .cs-zone-swatch,
+    .cs-zone-label,
+    .cs-map-legend-swatch,
+    .cs-legend-strip-swatch {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* Maps print the coloured regions on white, without the base map: its tiles load too late for the printout. */
+    .cs-map-tiles {
+        display: none;
+    }
+
+    .leaflet-container {
+        background: #fff;
+    }
+
+    /* 2030 Palette: browsers drop the black band, so print it as an outlined box with the link's address. */
+    .cs-palette-band {
+        background: none;
+        color: #000;
+        border: 1px solid #ced4da;
+    }
+
+    .cs-palette-band .container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    .cs-palette-band h2,
+    .cs-palette-link {
+        color: #000;
+    }
+
+    .cs-palette-link::after {
+        content: " (" attr(href) ")";
+        font-size: .8125rem;
+        word-break: break-all;
+    }
 }
 
 /* ---------- Home: climate map ---------- */

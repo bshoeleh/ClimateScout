@@ -42,6 +42,18 @@
         if (getPreference() === "auto") apply("auto");
     });
 
+    // Paper is white: print in the light theme (browsers drop dark backgrounds, leaving pale text on white),
+    // then go back to the chosen theme.
+    let themeBeforePrint = null;
+    addEventListener("beforeprint", () => {
+        themeBeforePrint = document.documentElement.getAttribute("data-bs-theme");
+        document.documentElement.setAttribute("data-bs-theme", "light");
+    });
+    addEventListener("afterprint", () => {
+        if (themeBeforePrint) document.documentElement.setAttribute("data-bs-theme", themeBeforePrint);
+        themeBeforePrint = null;
+    });
+
     document.addEventListener("DOMContentLoaded", () => {
         apply(getPreference());
         document.querySelectorAll("[data-cs-theme-value]").forEach((item) => {
