@@ -3,7 +3,30 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@(ViewData["Title"] is string title ? $"{title} · " : "")Arcadis ClimateScout®</title>
+    @{
+        // Search and share-preview tags. A view may set ViewData["Description"] and ViewData["Image"] (an app path such as ~/img/...).
+        var origin = $"{Context.Request.Scheme}://{Context.Request.Host}";
+        var pageUrl = origin + Context.Request.PathBase + Context.Request.Path;   // no query string: one address per page
+        var pageTitle = ViewData["Title"] is string title ? $"{title} · Arcadis ClimateScout®" : "Arcadis ClimateScout®";
+        var description = ViewData["Description"] as string
+            ?? "Climate-responsive design strategies for every Köppen climate zone, and the carbon intensity of electricity around the world.";
+        var image = origin + Url.Content(ViewData["Image"] as string ?? "~/img/brand/logo-on-light.png");
+    }
+    <title>@pageTitle</title>
+    <meta name="description" content="@description" />
+    @if (Context.Response.StatusCode < 400)
+    {
+        <link rel="canonical" href="@pageUrl" />
+    }
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Arcadis ClimateScout®" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@description" />
+    @if (Context.Response.StatusCode < 400)
+    {
+        <meta property="og:url" content="@pageUrl" />
+    }
+    <meta property="og:image" content="@image" />
     <script type="importmap"></script>
     <script>
         // Set the theme before anything renders, so dark-mode visitors never see a white flash.

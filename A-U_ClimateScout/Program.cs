@@ -1,4 +1,6 @@
+using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading.RateLimiting;
 using A_U_ClimateScout.Controllers;
 using A_U_ClimateScout.Data;
@@ -10,6 +12,7 @@ using A_U_ClimateScout.Tools;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.WebEncoders;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +52,9 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddMemoryCache();
+
+// Pages keep ®, ö, · etc. as they are instead of &#xAE; (<, >, & and quotes are still encoded).
+builder.Services.Configure<WebEncoderOptions>(options => options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
 // Map tiles are fetched by our server (MapController), never directly by the browser (plan §5).
 builder.Services.Configure<MapsOptions>(builder.Configuration.GetSection(MapsOptions.SectionName));
