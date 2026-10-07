@@ -3,7 +3,7 @@
 Status: **IN PROGRESS — Phases 1–3 complete; Phase 4 (public site) in progress**
 Last updated: 2026-10-02
 
-## ▶ Where we left off (2026-10-02)
+## ▶ Where we left off (2026-10-07)
 
 **Last commit:** see `git log` — interactive building diagram on the zone pages.
 
@@ -33,7 +33,9 @@ Sponsors done: `/sponsors` (cards by tier, invitation to sponsor linking to Cont
 
 Contact done at `/contact`: messages saved to `ContactMessages` (read them in Admin, Phase 5; email to admins in Phase 8). Spam guards: antiforgery token, honeypot field, rate limit 5 per IP per 15 minutes (`AddRateLimiter`, policy `contact`). `/contact?about=sponsoring` pre-fills the message (Sponsors page links there).
 
-**Next up:** rest of Phase 4 — SEO (titles, meta descriptions, Open Graph, sitemap.xml, robots.txt, old-URL redirects), then the accessibility & responsive pass. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+SEO done: old-URL redirects (zone groups → `/?group=…`, old per-image strategy pages → the strategy), meta description, canonical link and Open Graph tags in `_Layout.cshtml` (views set `ViewData["Description"]` / `ViewData["Image"]`; `PlainText.Summarize` makes descriptions from database HTML), `/robots.txt` and `/sitemap.xml` (`SeoController`, 65 URLs, paths cached an hour).
+
+**Next up:** rest of Phase 4 — the accessibility & responsive pass, plus a print stylesheet. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -369,7 +371,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [x] Carbon comparison: infographic for the equivalencies (trees, gasoline, carbon … growing with the result)
 - [ ] Carbon comparison: zoomed climate map of the chosen region (later)
 - [x] About, Sponsors, Contact pages (Contact saves messages; sending email is Phase 8)
-- [ ] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
+- [x] SEO: titles, meta, Open Graph, sitemap.xml, robots.txt, redirects from old URLs (including old underscore zone slugs → hyphen form, e.g. `cfa_humid-subtropical` → `cfa-humid-subtropical`)
 - [ ] Accessibility & responsive pass; print stylesheet
 
 ### Phase 5 — Admin area
