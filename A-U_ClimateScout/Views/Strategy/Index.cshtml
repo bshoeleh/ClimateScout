@@ -2,6 +2,11 @@
 @model A_U_ClimateScout.Models.DesignStrategy
 @{
     ViewData["Title"] = Model.Name;
+    ViewData["Description"] = PlainText.Summarize(Model.Summary);
+    if (Model.ImageAsset is not null)
+    {
+        ViewData["Image"] = $"~/img/media/{Model.ImageAsset.StoragePath}";
+    }
 }
 
 @section Styles {

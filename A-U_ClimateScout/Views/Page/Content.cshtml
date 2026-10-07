@@ -1,6 +1,7 @@
 @model A_U_ClimateScout.Models.ContentPageViewModel
 @{
     ViewData["Title"] = Model.Title;
+    ViewData["Description"] = PlainText.Summarize(Model.Html);
 }
 
 <div class="container py-4 py-lg-5">

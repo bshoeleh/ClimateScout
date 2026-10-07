@@ -4,6 +4,7 @@
 @model CarbonComparisonViewModel
 @{
     ViewData["Title"] = Model.Selected is null ? "Carbon comparison" : $"Carbon comparison: {Model.Selected.Name}";
+    ViewData["Description"] = "Estimate a building's operational carbon from its energy use and the local grid, and compare it with other regions.";
     string? Block(string key) => Model.Blocks.TryGetValue(key, out var html) && !string.IsNullOrWhiteSpace(html) ? html : null;
 
     // Location list groups: countries by continent, then US states, Canadian provinces, and the world/regional averages.

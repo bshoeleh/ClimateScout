@@ -3,6 +3,7 @@
 @{
     var zone = Model.Zone;
     ViewData["Title"] = $"{zone.KoppenCode} {zone.Name}";
+    ViewData["Description"] = PlainText.Summarize(zone.DescriptionHtml);
 }
 
 @section Styles {
