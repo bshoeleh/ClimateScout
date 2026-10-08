@@ -1,0 +1,28 @@
+@model List<EquivalencyFactor>
+@{
+    ViewData["Title"] = "Equivalency factors";
+}
+
+<h1 class="h3 mb-2">Equivalency factors</h1>
+<p class="text-body-secondary mb-3">The comparisons in the carbon calculator's infographic ("the same as … gallons of gasoline"). Factors are from the EPA's Greenhouse Gas Equivalencies Calculator; update them when the EPA does.</p>
+<partial name="_Status" />
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle small">
+        <thead>
+            <tr><th scope="col">#</th><th scope="col">Label</th><th scope="col" class="text-end">t CO₂e per unit</th><th scope="col">Group</th><th scope="col">Icon</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var factor in Model)
+            {
+                <tr>
+                    <td>@factor.SortOrder</td>
+                    <td><a asp-action="Edit" asp-route-key="@factor.Key">@factor.Label</a></td>
+                    <td class="text-end font-monospace">@factor.TonsCo2ePerUnit.ToString("0.########")</td>
+                    <td>@(factor.Kind == EquivalencyKind.Emissions ? "The same as" : "To absorb it")</td>
+                    <td><code>@factor.Icon</code></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
