@@ -1,0 +1,92 @@
+@model A_U_ClimateScout.Areas.Admin.Models.ZoneForm
+@{
+    ViewData["Title"] = $"{Model.KoppenCode} {Model.Name}";
+    var strategies = (List<DesignStrategy>)ViewData["Strategies"]!;
+    var ticked = Model.StrategyIds.ToHashSet();
+    var diagrams = (SelectList)ViewData["Diagrams"]!;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/quill/dist/quill.snow.css" />
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Climate zones</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.KoppenCode</li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
+    <h1 class="h3 mb-0">@Model.KoppenCode @Model.Name</h1>
+    <a href="~/zone/@Model.Slug" target="_blank" rel="noopener">View on site</a>
+</div>
+
+<form asp-action="Edit" method="post" data-rich-text-form class="cs-admin-form">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <input asp-for="Id" type="hidden" />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" required />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+            <div class="form-text">Address: <code>/zone/@Model.Slug</code> (fixed, so links keep working).</div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <label asp-for="Color" class="form-label"></label>
+            <div class="input-group">
+                <input type="color" class="form-control form-control-color" value="@Model.Color" aria-label="Pick the colour" data-color-picker />
+                <input asp-for="Color" class="form-control" data-color-text />
+            </div>
+            <span asp-validation-for="Color" class="text-danger small"></span>
+            <div class="form-text">Visitors see a new colour within 10 minutes.</div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <label asp-for="DiagramId" class="form-label"></label>
+            <select asp-for="DiagramId" asp-items="diagrams" class="form-select">
+                <option value="">None</option>
+            </select>
+        </div>
+
+        <div class="col-12">
+            <div class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label" id="description-label">Description</label>
+            <textarea asp-for="DescriptionHtml" class="d-none" data-rich-text-source></textarea>
+            <div class="cs-rich-text cs-rich-text-short" data-rich-text-editor aria-labelledby="description-label"></div>
+        </div>
+
+        <fieldset class="col-12">
+            <legend class="form-label fs-6">Design strategies for this zone <span class="small text-body-secondary">(@ticked.Count ticked; shown alphabetically on the zone page)</span></legend>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-1">
+                @foreach (var strategy in strategies)
+                {
+                    <div class="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="StrategyIds" value="@strategy.Id" id="strategy-@strategy.Id"
+                                   checked="@ticked.Contains(strategy.Id)" />
+                            <label class="form-check-label" for="strategy-@strategy.Id">@strategy.Name</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/lib/quill/dist/quill.js"></script>
+    <script src="~/js/rich-text.js" asp-append-version="true"></script>
+    <script src="~/js/admin-color.js" asp-append-version="true"></script>
+}

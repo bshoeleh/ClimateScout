@@ -14,8 +14,8 @@ namespace A_U_ClimateScout.Areas.Admin
         [
             new("Content",
             [
-                new("Climate zones", null),
-                new("Zone groups", null),
+                new("Climate zones", "ClimateZones"),
+                new("Zone groups", "ZoneGroups"),
                 new("Diagrams", null),
                 new("Design strategies", null),
                 new("Content blocks", "ContentBlocks"),

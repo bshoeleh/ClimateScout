@@ -30,7 +30,7 @@ namespace A_U_ClimateScout.Data
         // Readable JSON: <, > and & stay as they are (it is stored, never written into a page unencoded).
         private static readonly JsonSerializerOptions JsonOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-        private record Pending(EntityEntry Entry, string Action, Dictionary<string, Change> Changes);
+        private record Pending(EntityEntry Entry, string Action, Dictionary<string, Change> Changes, string? Name);
 
         private record Change(object? From, object? To);
 
@@ -101,7 +101,7 @@ namespace A_U_ClimateScout.Data
                         {
                             changes[property.Metadata.Name] = new Change(null, property.CurrentValue);
                         }
-                        pending.Add(new Pending(entry, "Create", changes));
+                        pending.Add(new Pending(entry, "Create", changes, NameOf(entry)));
                         break;
 
                     case EntityState.Modified:
@@ -109,9 +109,11 @@ namespace A_U_ClimateScout.Data
                         {
                             changes[property.Metadata.Name] = new Change(property.OriginalValue, property.CurrentValue);
                         }
-                        if (changes.Count > 0)   // a save that set values to what they already were changes nothing
+                        // Nothing really changed (values set to what they were), or only a position in a list changed
+                        // (renumbering after an add or a reorder would flood the log): not logged.
+                        if (changes.Count > 0 && !changes.Keys.All(k => k == "SortOrder"))
                         {
-                            pending.Add(new Pending(entry, "Update", changes));
+                            pending.Add(new Pending(entry, "Update", changes, NameOf(entry)));
                         }
                         break;
 
@@ -120,7 +122,7 @@ namespace A_U_ClimateScout.Data
                         {
                             changes[property.Metadata.Name] = new Change(property.OriginalValue, null);
                         }
-                        pending.Add(new Pending(entry, "Delete", changes));
+                        pending.Add(new Pending(entry, "Delete", changes, NameOf(entry)));
                         break;
                 }
             }
@@ -139,7 +141,7 @@ namespace A_U_ClimateScout.Data
             var userName = user?.Identity?.Name ?? "System";
             var now = DateTimeOffset.UtcNow;
 
-            foreach (var (entry, action, changes) in pending)
+            foreach (var (entry, action, changes, name) in pending)
             {
                 var type = entry.Metadata.ClrType.Name;
                 context.Add(new AuditLog
@@ -150,7 +152,7 @@ namespace A_U_ClimateScout.Data
                     Action = action,
                     EntityType = type,
                     EntityId = string.Join(",", entry.Metadata.FindPrimaryKey()!.Properties.Select(p => entry.Property(p.Name).CurrentValue)),
-                    Summary = Truncate(Summarize(entry, action, type, changes), FieldLengths.Summary),
+                    Summary = Truncate(Summarize(action, type, name, changes), FieldLengths.Summary),
                     ChangesJson = JsonSerializer.Serialize(changes.ToDictionary(c => c.Key, c => new { from = c.Value.From, to = c.Value.To }), JsonOptions),
                 });
             }
@@ -159,14 +161,42 @@ namespace A_U_ClimateScout.Data
             return true;
         }
 
+        // The record's name for the summary, worked out before the save (while links still point at their records):
+        // its own Name / Title / … property, or for a link record such as a zone's strategy, the names of the records
+        // it links ("Humid Subtropical / Cool Roof").
+        private static string? NameOf(EntityEntry entry)
+        {
+            var own = OwnName(entry);
+            if (own is not null)
+            {
+                return own;
+            }
+
+            // Find each linked record among the tracked ones by the link's key values (original values, so this also
+            // works for a link being deleted, whose navigation properties have already been cleared).
+            var tracked = entry.Context.ChangeTracker.Entries().ToList();
+            var linked = entry.Metadata.GetForeignKeys()
+                .Select(fk =>
+                {
+                    var values = fk.Properties.Select(p => entry.Property(p.Name).OriginalValue).ToList();
+                    var target = tracked.FirstOrDefault(e => e.Metadata == fk.PrincipalEntityType
+                        && fk.PrincipalKey.Properties.Select(p => e.Property(p.Name).CurrentValue).SequenceEqual(values));
+                    return target is null ? null : OwnName(target);
+                })
+                .Where(n => n is not null)
+                .ToList();
+            return linked.Count > 0 ? string.Join(" / ", linked) : null;
+        }
+
+        private static string? OwnName(EntityEntry entry) => NameProperties
+            .Select(p => entry.Metadata.FindProperty(p) is null ? null : entry.Property(p).CurrentValue ?? entry.Property(p).OriginalValue)
+            .Select(v => v?.ToString())
+            .FirstOrDefault(v => !string.IsNullOrEmpty(v));
+
         // "Updated design strategy "Cool Roof": Name, Summary"
-        private static string Summarize(EntityEntry entry, string action, string type, Dictionary<string, Change> changes)
+        private static string Summarize(string action, string type, string? name, Dictionary<string, Change> changes)
         {
             var verb = action switch { "Create" => "Created", "Update" => "Updated", _ => "Deleted" };
-            var name = NameProperties
-                .Select(p => entry.Metadata.FindProperty(p) is null ? null : entry.Property(p).CurrentValue ?? entry.Property(p).OriginalValue)
-                .Select(v => v?.ToString())
-                .FirstOrDefault(v => !string.IsNullOrEmpty(v));
             var what = WordBoundary().Replace(type, " $1").ToLowerInvariant();
             var summary = name is null ? $"{verb} {what}" : $"{verb} {what} \"{name}\"";
             return action == "Update" ? $"{summary}: {string.Join(", ", changes.Keys)}" : summary;

@@ -14,6 +14,9 @@ namespace A_U_ClimateScout.Controllers
         private static readonly string[] FixedPaths =
             ["/", "/design-strategy", "/carbon", "/carbon-comparison", "/sponsors", "/about", "/contact"];
 
+        // Cleared by Admin when a zone or strategy is shown or hidden.
+        public const string SitemapCacheKey = "sitemap:paths";
+
         private string Origin => $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
         [HttpGet("robots.txt")]
@@ -33,7 +36,7 @@ namespace A_U_ClimateScout.Controllers
         public async Task<ContentResult> Sitemap(CancellationToken cancellationToken)
         {
             // The list of paths is cached an hour; the address in front of them comes from each request.
-            var paths = await cache.GetOrCreateAsync("sitemap:paths", async entry =>
+            var paths = await cache.GetOrCreateAsync(SitemapCacheKey, async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
 

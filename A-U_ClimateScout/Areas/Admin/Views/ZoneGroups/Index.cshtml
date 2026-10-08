@@ -1,0 +1,26 @@
+@model List<ClimateZoneGroup>
+@{
+    ViewData["Title"] = "Zone groups";
+}
+
+<h1 class="h3 mb-2">Zone groups</h1>
+<p class="text-body-secondary mb-4">The five Köppen groups. Their names appear as filters on the home map and on each zone page.</p>
+<partial name="_Status" />
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr><th scope="col">Group</th><th scope="col">Colour</th><th scope="col">Zones</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Model)
+            {
+                <tr>
+                    <td><span class="text-body-secondary me-2">@group.Code</span><a asp-action="Edit" asp-route-id="@group.Id">@group.Name</a></td>
+                    <td class="small"><span class="cs-zone-swatch d-inline-block align-middle me-2" style="background-color: @group.Color"></span><code>@group.Color</code></td>
+                    <td class="small">@group.Zones.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

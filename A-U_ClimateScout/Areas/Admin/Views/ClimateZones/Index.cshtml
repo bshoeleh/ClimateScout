@@ -1,0 +1,53 @@
+@using A_U_ClimateScout.Controllers
+@model List<ClimateZone>
+@{
+    ViewData["Title"] = "Climate zones";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/zones.css" />
+}
+
+<h1 class="h3 mb-2">Climate zones</h1>
+<p class="text-body-secondary mb-4">The 31 Köppen zones. Each is tied to the map data, so zones can be edited or hidden but not added or removed.</p>
+<partial name="_Status" />
+
+@foreach (var group in Model.GroupBy(z => z.Group))
+{
+    <h2 class="h6 text-uppercase text-body-secondary mt-4">@group.Key.Name</h2>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-3">
+            <thead class="visually-hidden">
+                <tr><th scope="col">Zone</th><th scope="col">Diagram</th><th scope="col">Strategies</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var zone in group)
+                {
+                    <tr>
+                        <td style="width: 45%">
+                            <span class="cs-zone-label @ZoneController.CssClass(zone.KoppenCode) me-2">@zone.KoppenCode</span>
+                            <a asp-action="Edit" asp-route-id="@zone.Id">@zone.Name</a>
+                        </td>
+                        <td class="small">
+                            @if (zone.Diagram is null)
+                            {
+                                <span class="badge text-bg-warning">No diagram</span>
+                            }
+                            else
+                            {
+                                @zone.Diagram.Name
+                            }
+                        </td>
+                        <td class="small">@zone.Strategies.Count strategies</td>
+                        <td class="small">
+                            @if (!zone.IsActive)
+                            {
+                                <span class="badge text-bg-secondary">Hidden</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
