@@ -1004,6 +1004,16 @@ a.cs-zone-label:focus-visible {
     vertical-align: .1em;
 }
 
+/* A contact message as the visitor typed it (line breaks kept). */
+.cs-admin-message {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+    background-color: var(--bs-tertiary-bg);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 /* Dashboard count tiles. */
 .cs-admin-tile {
     height: 100%;

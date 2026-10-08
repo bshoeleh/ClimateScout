@@ -1,0 +1,70 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model List<ContactMessage>
+@{
+    ViewData["Title"] = "Contact messages";
+    var show = (string)ViewData["Show"]!;
+    var tabs = new (string Value, string Text)[]
+    {
+        (ContactMessagesController.ToHandle, "To handle"),
+        (ContactMessagesController.Handled, "Handled"),
+        (ContactMessagesController.All, "All"),
+    };
+}
+
+<h1 class="h3 mb-3">Contact messages</h1>
+<partial name="_Status" />
+
+<ul class="nav nav-underline mb-3">
+    @foreach (var tab in tabs)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(tab.Value == show ? "active" : null)" aria-current="@(tab.Value == show ? "page" : null)"
+               asp-action="Index" asp-route-show="@tab.Value">@tab.Text</a>
+        </li>
+    }
+</ul>
+
+@if (Model.Count == 0)
+{
+    <p class="text-body-secondary">
+        @(show == ContactMessagesController.ToHandle ? "No messages to handle." : "No messages.")
+    </p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Received</th>
+                    <th scope="col">From</th>
+                    <th scope="col">Message</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var message in Model)
+                {
+                    <tr>
+                        <td class="text-nowrap small">@message.CreatedAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@message.Id">@message.Name</a>
+                            <div class="small text-body-secondary">@message.Email</div>
+                        </td>
+                        <td class="small">@PlainText.Summarize(message.Message, 100)</td>
+                        <td class="small text-nowrap">
+                            @if (message.Handled)
+                            {
+                                <span class="badge text-bg-success">Handled</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-warning">To handle</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

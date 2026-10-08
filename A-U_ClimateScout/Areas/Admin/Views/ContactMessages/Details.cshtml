@@ -1,0 +1,54 @@
+@model ContactMessage
+@{
+    ViewData["Title"] = $"Message from {Model.Name}";
+    var replySubject = Uri.EscapeDataString("Re: your message to Arcadis ClimateScout");
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Contact messages</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-3">Message from @Model.Name</h1>
+<partial name="_Status" />
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <dl class="row mb-4">
+            <dt class="col-sm-3">From</dt>
+            <dd class="col-sm-9">@Model.Name &lt;<a href="mailto:@Model.Email">@Model.Email</a>&gt;</dd>
+            <dt class="col-sm-3">Received</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("d MMMM yyyy, HH:mm")</dd>
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.Handled)
+                {
+                    <span>Handled@(Model.HandledBy is { } by ? $" by {by.UserName}" : "")@(Model.HandledAt is { } at ? $", {at.ToLocalTime():d MMMM yyyy}" : "")</span>
+                }
+                else
+                {
+                    <span>To handle</span>
+                }
+            </dd>
+        </dl>
+
+        @* The visitor's text as typed: Razor encodes it, and line breaks are kept by CSS. *@
+        <div class="cs-admin-message">@Model.Message</div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="d-grid gap-2">
+            <a class="btn btn-primary" href="mailto:@Model.Email?subject=@replySubject">Reply by email</a>
+            <form asp-action="SetHandled" asp-route-id="@Model.Id" method="post" class="d-grid">
+                <input type="hidden" name="handled" value="@(Model.Handled ? "false" : "true")" />
+                <button type="submit" class="btn btn-outline-secondary">@(Model.Handled ? "Move back to To handle" : "Mark as handled")</button>
+            </form>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-grid"
+                  onsubmit="return confirm('Delete this message? This cannot be undone.');">
+                <button type="submit" class="btn btn-outline-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>

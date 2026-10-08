@@ -1,0 +1,5 @@
+@* A one-off confirmation after a save ("Marked as handled."), set by the controller in TempData["Status"]. *@
+@if (TempData["Status"] is string status)
+{
+    <div class="alert alert-success" role="status">@status</div>
+}

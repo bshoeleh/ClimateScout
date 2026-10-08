@@ -30,7 +30,7 @@ namespace A_U_ClimateScout.Areas.Admin
             new("Site",
             [
                 new("Sponsors", null),
-                new("Contact messages", null),
+                new("Contact messages", "ContactMessages"),
             ]),
             new("Administration",
             [

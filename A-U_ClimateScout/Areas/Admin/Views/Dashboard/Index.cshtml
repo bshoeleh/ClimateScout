@@ -74,7 +74,7 @@
                 }
                 else
                 {
-                    <span><strong>@Model.UnhandledMessages</strong> @(Model.UnhandledMessages == 1 ? "message" : "messages") to handle.</span>
+                    <a asp-controller="ContactMessages" asp-action="Index"><strong>@Model.UnhandledMessages</strong> @(Model.UnhandledMessages == 1 ? "message" : "messages") to handle</a>
                 }
             </p>
         </section>
