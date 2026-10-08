@@ -1116,6 +1116,13 @@ a.cs-zone-label:focus-visible {
     max-height: 100%;
 }
 
+/* Audit entry: long values (HTML, descriptions) wrap instead of widening the table. */
+.cs-audit-changes td {
+    max-width: 30rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 /* Dashboard count tiles. */
 .cs-admin-tile {
     height: 100%;

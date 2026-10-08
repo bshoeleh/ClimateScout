@@ -1,0 +1,38 @@
+@model AuditLog
+@{
+    ViewData["Title"] = "Audit entry";
+    var changes = (List<(string Field, string? From, string? To)>)ViewData["Changes"]!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Audit log</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Entry @Model.Id</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">@(Model.Summary ?? $"{Model.Action} {Model.EntityType}")</h1>
+<dl class="row small mb-4">
+    <dt class="col-sm-2">When</dt><dd class="col-sm-10">@Model.OccurredAt.ToLocalTime().ToString("d MMMM yyyy, HH:mm:ss")</dd>
+    <dt class="col-sm-2">Who</dt><dd class="col-sm-10">@Model.UserName</dd>
+    <dt class="col-sm-2">Record</dt><dd class="col-sm-10">@Model.EntityType #@Model.EntityId (@Model.Action)</dd>
+</dl>
+
+@if (changes.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-top small cs-audit-changes">
+            <thead><tr><th scope="col">Field</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+            <tbody>
+                @foreach (var change in changes)
+                {
+                    <tr>
+                        <th scope="row" class="fw-medium">@change.Field</th>
+                        <td>@if (change.From is null) { <span class="text-body-secondary">—</span> } else { <span>@change.From</span> }</td>
+                        <td>@if (change.To is null) { <span class="text-body-secondary">—</span> } else { <span>@change.To</span> }</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

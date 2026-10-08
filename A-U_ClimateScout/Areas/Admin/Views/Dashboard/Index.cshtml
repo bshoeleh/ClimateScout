@@ -81,6 +81,10 @@
 
         <section aria-labelledby="activity-heading">
             <h2 id="activity-heading" class="h5 text-uppercase">Recent activity</h2>
+            @if ((await AuthorizationService.AuthorizeAsync(User, Policies.AdminOnly)).Succeeded)
+            {
+                <p class="small"><a asp-controller="AuditLog" asp-action="Index">Full audit log</a></p>
+            }
             @if (Model.RecentActivity.Count == 0)
             {
                 <p class="text-body-secondary">No changes yet.</p>

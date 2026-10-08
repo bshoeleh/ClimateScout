@@ -1,0 +1,80 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model List<AuditLog>
+@{
+    ViewData["Title"] = "Audit log";
+    var filter = (AuditLogController.Filter)ViewData["Filter"]!;
+    var total = (int)ViewData["Total"]!;
+    var pageSize = (int)ViewData["PageSize"]!;
+    var pages = Math.Max(1, (total + pageSize - 1) / pageSize);
+}
+
+<h1 class="h3 mb-3">Audit log</h1>
+
+<form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <label for="user" class="form-label small">Person</label>
+        <select id="user" name="User" class="form-select form-select-sm">
+            <option value="">Everyone</option>
+            @foreach (var user in (List<string?>)ViewData["Users"]!)
+            {
+                <option value="@user" selected="@(user == filter.User)">@user</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <label for="type" class="form-label small">Record type</label>
+        <select id="type" name="Type" class="form-select form-select-sm">
+            <option value="">All</option>
+            @foreach (var type in (List<string>)ViewData["Types"]!)
+            {
+                <option value="@type" selected="@(type == filter.Type)">@type</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-8 col-lg-4">
+        <label for="search" class="form-label small">Text</label>
+        <input id="search" name="Search" value="@filter.Search" class="form-control form-control-sm" placeholder="e.g. Cool Roof" />
+    </div>
+    <div class="col-sm-4 col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+<p class="small text-body-secondary">@total.ToString("N0") @(total == 1 ? "entry" : "entries")</p>
+
+@if (Model.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle small">
+            <thead>
+                <tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">What</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model)
+                {
+                    <tr>
+                        <td class="text-nowrap">@entry.OccurredAt.ToLocalTime().ToString("d MMM yyyy, HH:mm")</td>
+                        <td class="text-nowrap">@entry.UserName</td>
+                        <td><a asp-action="Details" asp-route-id="@entry.Id">@(entry.Summary ?? $"{entry.Action} {entry.EntityType}")</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (pages > 1)
+    {
+        <nav aria-label="Pages">
+            <ul class="pagination pagination-sm">
+                <li class="page-item @(filter.Page <= 1 ? "disabled" : null)">
+                    <a class="page-link" asp-action="Index" asp-route-User="@filter.User" asp-route-Type="@filter.Type" asp-route-Search="@filter.Search" asp-route-Page="@(filter.Page - 1)">Newer</a>
+                </li>
+                <li class="page-item disabled"><span class="page-link">Page @filter.Page of @pages</span></li>
+                <li class="page-item @(filter.Page >= pages ? "disabled" : null)">
+                    <a class="page-link" asp-action="Index" asp-route-User="@filter.User" asp-route-Type="@filter.Type" asp-route-Search="@filter.Search" asp-route-Page="@(filter.Page + 1)">Older</a>
+                </li>
+            </ul>
+        </nav>
+    }
+}
