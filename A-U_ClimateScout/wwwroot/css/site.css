@@ -1014,6 +1014,84 @@ a.cs-zone-label:focus-visible {
     overflow-wrap: anywhere;
 }
 
+/* Rich-text editor (Quill, snow theme): the site's font and colours in both themes. */
+.cs-rich-text {
+    min-height: 20rem;
+    font-family: var(--bs-body-font-family);
+    font-size: 1rem;
+}
+
+.cs-rich-text .ql-editor {
+    min-height: 20rem;
+    line-height: 1.6;
+}
+
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+    border-color: var(--bs-border-color);
+}
+
+.ql-toolbar.ql-snow {
+    border-radius: .375rem .375rem 0 0;
+    background-color: var(--bs-tertiary-bg);
+}
+
+.ql-container.ql-snow {
+    border-radius: 0 0 .375rem .375rem;
+    background-color: var(--bs-body-bg);
+}
+
+.ql-snow .ql-stroke {
+    stroke: var(--bs-body-color);
+}
+
+.ql-snow .ql-fill {
+    fill: var(--bs-body-color);
+}
+
+.ql-snow .ql-picker,
+.ql-snow .ql-editor.ql-blank::before {
+    color: var(--bs-secondary-color);
+}
+
+.ql-snow .ql-picker-options,
+.ql-snow .ql-tooltip {
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    box-shadow: 0 2px 8px rgb(0 0 0 / .2);
+}
+
+.ql-snow .ql-tooltip input[type="text"] {
+    border-color: var(--bs-border-color);
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-picker-label:hover .ql-stroke {
+    stroke: var(--cs-orange);
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill {
+    fill: var(--cs-orange);
+}
+
+.ql-snow.ql-toolbar button:hover,
+.ql-snow.ql-toolbar button.ql-active,
+.ql-snow .ql-picker-label:hover,
+.ql-snow .ql-picker-label.ql-active,
+.ql-snow .ql-picker-item:hover,
+.ql-snow .ql-picker-item.ql-selected {
+    color: var(--cs-orange);
+}
+
+.ql-snow a {
+    color: var(--bs-link-color);
+}
+
 /* Dashboard count tiles. */
 .cs-admin-tile {
     height: 100%;

@@ -1,0 +1,54 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model ContentBlock
+@{
+    ViewData["Title"] = Model.Title;
+    var page = ContentBlocksController.PagePath(Model.Key);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/quill/dist/quill.snow.css" />
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Content blocks</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-3">
+    <h1 class="h3 mb-0">@Model.Title</h1>
+    @if (page is not null)
+    {
+        <a href="@Url.Content("~" + page)" target="_blank" rel="noopener">View on site</a>
+    }
+</div>
+<partial name="_Status" />
+
+<form asp-action="Edit" asp-route-key="@Model.Key" method="post" data-rich-text-form>
+    @* The saved HTML, loaded into the editor by rich-text.js and written back here on submit. *@
+    <textarea name="html" class="d-none" data-rich-text-source>@Model.Html</textarea>
+    <label class="form-label" id="editor-label">Text</label>
+    <div class="cs-rich-text" data-rich-text-editor aria-labelledby="editor-label"></div>
+    <noscript><p class="text-danger mt-2">The editor needs JavaScript.</p></noscript>
+
+    <div class="d-flex align-items-center gap-3 mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index">Cancel</a>
+        <span class="small text-body-secondary ms-auto">
+            @if (Model.UpdatedBy is not null)
+            {
+                <span>Last changed @Model.UpdatedAt.ToLocalTime().ToString("d MMMM yyyy, HH:mm") by @Model.UpdatedBy.UserName</span>
+            }
+            else
+            {
+                <span>Imported from the old site</span>
+            }
+        </span>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/lib/quill/dist/quill.js"></script>
+    <script src="~/js/rich-text.js" asp-append-version="true"></script>
+}
