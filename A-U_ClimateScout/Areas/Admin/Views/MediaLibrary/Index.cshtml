@@ -1,0 +1,46 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model List<MediaLibraryController.MediaRow>
+@{
+    ViewData["Title"] = "Media library";
+    var folder = (string?)ViewData["Folder"];
+    var unused = (bool)ViewData["Unused"]!;
+}
+
+<h1 class="h3 mb-2">Media library</h1>
+<p class="text-body-secondary mb-3">Every image and diagram file. New files are added on the screen that uses them (sponsors, strategies, projects, diagrams); here you can fix alt text, replace an image everywhere it's used, or delete files nothing uses.</p>
+<partial name="_Status" />
+
+<form method="get" class="d-flex flex-wrap align-items-end gap-3 mb-3">
+    <div>
+        <label for="folder" class="form-label small">Folder</label>
+        <select id="folder" name="folder" class="form-select form-select-sm">
+            <option value="">All</option>
+            @foreach (var f in (List<string>)ViewData["Folders"]!)
+            {
+                <option value="@f" selected="@(f == folder)">@f</option>
+            }
+        </select>
+    </div>
+    <div class="form-check mb-1">
+        <input class="form-check-input" type="checkbox" id="unused" name="unused" value="true" checked="@unused" />
+        <label class="form-check-label small" for="unused">Only files nothing uses</label>
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">Show</button>
+</form>
+
+<p class="small text-body-secondary">@Model.Count files</p>
+<div class="row row-cols-2 row-cols-sm-3 row-cols-lg-4 row-cols-xxl-6 g-3">
+    @foreach (var row in Model)
+    {
+        <div class="col">
+            <a asp-action="Edit" asp-route-id="@row.Asset.Id" class="cs-media-tile">
+                <span class="cs-media-thumb"><img src="~/img/media/@row.Asset.StoragePath" alt="" loading="lazy" /></span>
+                <span class="d-block small text-truncate mt-1">@row.Asset.FileName</span>
+                <span class="d-block small text-body-secondary">
+                    @(row.UsedBy.Count == 0 ? "Not used" : row.UsedBy.Count == 1 ? row.UsedBy[0] : $"{row.UsedBy.Count} uses")
+                    @if (string.IsNullOrEmpty(row.Asset.AltText) && row.UsedBy.Count > 0) { <span class="badge text-bg-warning ms-1">no alt</span> }
+                </span>
+            </a>
+        </div>
+    }
+</div>

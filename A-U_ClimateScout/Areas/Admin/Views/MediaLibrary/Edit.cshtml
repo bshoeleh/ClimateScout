@@ -1,0 +1,68 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@using A_U_ClimateScout.Services
+@model MediaLibraryController.MediaForm
+@{
+    var asset = (MediaAsset)ViewData["Asset"]!;
+    var usedBy = (List<string>)ViewData["UsedBy"]!;
+    ViewData["Title"] = asset.FileName;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Media library</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@asset.FileName</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3 text-break">@asset.FileName</h1>
+<partial name="_Status" />
+
+<div class="row g-5">
+    <div class="col-lg-6">
+        <div class="cs-media-preview mb-2"><img src="~/img/media/@asset.StoragePath" alt="@asset.AltText" /></div>
+        <p class="small text-body-secondary">
+            <code>@asset.StoragePath</code> · @asset.ContentType · @(asset.SizeBytes / 1024) KB@(asset.Width is null ? "" : $" · {asset.Width}×{asset.Height}") ·
+            uploaded @asset.UploadedAt.ToLocalTime().ToString("d MMM yyyy")
+        </p>
+    </div>
+    <div class="col-lg-6">
+        <h2 class="h6 text-uppercase">Used by</h2>
+        @if (usedBy.Count == 0)
+        {
+            <p class="small text-body-secondary">Nothing.</p>
+        }
+        else
+        {
+            <ul class="small">@foreach (var use in usedBy) { <li>@use</li> }</ul>
+        }
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" class="mt-4">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <input asp-for="Id" type="hidden" />
+            <div class="mb-3">
+                <label asp-for="AltText" class="form-label"></label>
+                <input asp-for="AltText" class="form-control" />
+                <div class="form-text">What the image shows, for people using screen readers. Logos and project photos mostly use the sponsor or project name instead.</div>
+                <span asp-validation-for="AltText" class="text-danger small"></span>
+            </div>
+            @if (asset.ContentType != "image/svg+xml")
+            {
+                <div class="mb-3">
+                    <label asp-for="File" class="form-label"></label>
+                    <input asp-for="File" class="form-control" type="file" accept="@ImageUploads.Accept" />
+                    <div class="form-text">PNG, JPEG or WebP, up to 2 MB. Every page using this image shows the new one.</div>
+                    <span asp-validation-for="File" class="text-danger small"></span>
+                </div>
+            }
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+
+        @if (usedBy.Count == 0)
+        {
+            <form asp-action="Delete" asp-route-id="@asset.Id" method="post" class="mt-5 pt-3 border-top"
+                  onsubmit="return confirm('Delete this file? This cannot be undone.');">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Delete this file</button>
+            </form>
+        }
+    </div>
+</div>

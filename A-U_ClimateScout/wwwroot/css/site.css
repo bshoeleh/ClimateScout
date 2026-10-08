@@ -1123,6 +1123,46 @@ a.cs-zone-label:focus-visible {
     overflow-wrap: anywhere;
 }
 
+/* Media library tiles and preview: images on a checkerboard, so transparent logos and white images show. */
+.cs-media-tile {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.cs-media-thumb,
+.cs-media-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background: repeating-conic-gradient(#e9ecef 0 25%, #fff 0 50%) 0 0 / 16px 16px;
+}
+
+.cs-media-thumb {
+    aspect-ratio: 4 / 3;
+    padding: .25rem;
+}
+
+.cs-media-tile:hover .cs-media-thumb,
+.cs-media-tile:focus-visible .cs-media-thumb {
+    border-color: var(--cs-orange);
+}
+
+.cs-media-thumb img,
+.cs-media-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.cs-media-preview {
+    min-height: 12rem;
+    max-height: 28rem;
+    padding: .5rem;
+}
+
 /* Dashboard count tiles. */
 .cs-admin-tile {
     height: 100%;
