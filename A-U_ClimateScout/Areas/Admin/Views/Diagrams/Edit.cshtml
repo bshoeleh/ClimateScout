@@ -1,0 +1,67 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model DiagramsController.DiagramForm
+@{
+    var diagram = (Diagram)ViewData["Diagram"]!;
+    var layers = (IReadOnlySet<string>)ViewData["Layers"]!;
+    var missing = (IReadOnlyList<string>)ViewData["Missing"]!;
+    var zones = (List<string>)ViewData["Zones"]!;
+    ViewData["Title"] = diagram.Name;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Diagrams</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@diagram.Name</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-3">@diagram.Name</h1>
+<partial name="_Status" />
+
+<div class="row g-5">
+    <div class="col-xl-6">
+        @if (diagram.SvgAsset is not null)
+        {
+            <div class="border rounded p-2 mb-3 bg-dark">
+                <img src="~/img/media/@diagram.SvgAsset.StoragePath" alt="Current artwork (all layers shown)" class="img-fluid" />
+            </div>
+            <p class="small text-body-secondary">Current file: @diagram.SvgAsset.FileName (@(diagram.SvgAsset.SizeBytes / 1024) KB). All layers are shown here; the zone page shows only the selected strategies.</p>
+        }
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <input asp-for="Id" type="hidden" />
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Svg" class="form-label"></label>
+                <input asp-for="Svg" class="form-control" type="file" accept=".svg,image/svg+xml" />
+                <div class="form-text">Up to 5 MB. Scripts and links to other sites are removed before it's saved. Keep the layer ids (<code>ds-cool-roof</code> …) when editing the artwork.</div>
+                <span asp-validation-for="Svg" class="text-danger small"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+
+    <div class="col-xl-6">
+        <h2 class="h6 text-uppercase">Used by</h2>
+        <p class="small">@(zones.Count == 0 ? "No zones." : string.Join(", ", zones))</p>
+
+        <h2 class="h6 text-uppercase mt-4">Missing strategy layers</h2>
+        @if (missing.Count == 0)
+        {
+            <p class="small text-body-secondary">None: every strategy of these zones has a layer.</p>
+        }
+        else
+        {
+            <p class="small">These strategies are recommended for a zone using this diagram but have no layer, so selecting them shows nothing:</p>
+            <ul class="small">@foreach (var slug in missing) { <li><code>ds-@slug</code></li> }</ul>
+        }
+
+        <h2 class="h6 text-uppercase mt-4">Layers in the artwork (@layers.Count)</h2>
+        <p class="small text-body-secondary">@string.Join(", ", layers.Order())</p>
+    </div>
+</div>

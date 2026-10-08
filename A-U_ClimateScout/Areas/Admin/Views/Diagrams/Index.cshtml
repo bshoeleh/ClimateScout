@@ -1,0 +1,35 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model List<DiagramsController.DiagramRow>
+@{
+    ViewData["Title"] = "Diagrams";
+}
+
+<h1 class="h3 mb-2">Diagrams</h1>
+<p class="text-body-secondary mb-3">The building diagrams on the zone pages. Each strategy is a layer in the artwork with the id <code>ds-</code> + the strategy's address; zones choose their diagram on the Climate zones screen.</p>
+<partial name="_Status" />
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead><tr><th scope="col">Diagram</th><th scope="col">Zones</th><th scope="col">Strategy layers</th><th scope="col">Missing for its zones</th></tr></thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                <tr>
+                    <td><a asp-action="Edit" asp-route-id="@row.Diagram.Id">@row.Diagram.Name</a></td>
+                    <td class="small">@row.Zones</td>
+                    <td class="small">@(row.Diagram.SvgAsset is null ? "No artwork" : row.Layers.Count.ToString())</td>
+                    <td class="small">
+                        @if (row.Missing.Count == 0)
+                        {
+                            <span class="text-body-secondary">None</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-warning">@row.Missing.Count</span> @string.Join(", ", row.Missing)
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
