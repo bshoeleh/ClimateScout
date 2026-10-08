@@ -24,7 +24,7 @@ namespace A_U_ClimateScout.Areas.Admin
             new("Carbon",
             [
                 new("Regions & aliases", "CarbonRegions"),
-                new("Imports", null, Policies.AdminOnly),
+                new("Imports", "CarbonImports", Policies.AdminOnly),
                 new("Equivalency factors", "EquivalencyFactors"),
             ]),
             new("Site",

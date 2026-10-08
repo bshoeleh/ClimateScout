@@ -1,0 +1,72 @@
+@model List<CarbonImportBatch>
+@{
+    ViewData["Title"] = "Carbon imports";
+}
+
+<h1 class="h3 mb-2">Carbon imports</h1>
+<p class="text-body-secondary mb-3">Upload a grid carbon intensity file to update the carbon map and calculator. You'll see what would change before anything is saved.</p>
+<partial name="_Status" />
+
+<div class="card mb-5" style="max-width: 44rem">
+    <div class="card-body">
+        <h2 class="h6 text-uppercase">Upload a file</h2>
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" class="d-flex flex-wrap gap-2 align-items-center">
+            <label for="file" class="visually-hidden">Carbon data file</label>
+            <input id="file" name="file" type="file" accept=".csv,.xlsx" class="form-control" style="max-width: 26rem" required />
+            <button type="submit" class="btn btn-primary">Preview</button>
+        </form>
+        <p class="small text-body-secondary mt-2 mb-0">
+            Supported: Ember yearly electricity data (countries, US states) and the Canada Energy Regulator provincial file,
+            as .csv or saved from Excel as .xlsx. The file's type is recognised from its column headings.
+        </p>
+    </div>
+</div>
+
+<h2 class="h6 text-uppercase">History</h2>
+@if (Model.Count == 0)
+{
+    <p class="text-body-secondary">No imports yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle small">
+            <thead>
+                <tr><th scope="col">#</th><th scope="col">When</th><th scope="col">File</th><th scope="col">Source</th><th scope="col" class="text-end">New</th><th scope="col" class="text-end">Changed</th><th scope="col" class="text-end">Skipped</th><th scope="col">Status</th><th scope="col"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var batch in Model)
+                {
+                    <tr>
+                        <td><a asp-action="Details" asp-route-id="@batch.Id">@batch.Id</a></td>
+                        <td class="text-nowrap">@((batch.CommittedAt ?? batch.UploadedAt).ToLocalTime().ToString("d MMM yyyy"))<br /><span class="text-body-secondary">@(batch.UploadedBy?.Email ?? "command line")</span></td>
+                        <td class="text-break">@batch.FileName</td>
+                        <td>@batch.Source.Name</td>
+                        <td class="text-end">@batch.NewRows</td>
+                        <td class="text-end">@batch.ChangedRows</td>
+                        <td class="text-end">@(batch.UnmatchedRows + batch.InvalidRows)</td>
+                        <td>
+                            @if (batch.Status == CarbonImportStatus.RolledBack)
+                            {
+                                <span class="badge text-bg-secondary">Rolled back</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">@batch.Status</span>
+                            }
+                        </td>
+                        <td>
+                            @if (batch.Status == CarbonImportStatus.Committed)
+                            {
+                                <form asp-action="Rollback" asp-route-id="@batch.Id" method="post"
+                                      onsubmit="return confirm('Roll back this import? Its values are removed and the ones it replaced come back.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Roll back</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

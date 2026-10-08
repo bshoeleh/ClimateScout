@@ -9,10 +9,11 @@ namespace A_U_ClimateScout.Services.CarbonImport
     // for the same source. New values are added; a changed value is added and the old row is marked as superseded
     // by this batch (never deleted, so the batch can be rolled back in Phase 6); unchanged values are left alone.
     // Everything is saved in one transaction, so a failure leaves the database as it was. A dry run saves nothing.
-    // Used by "tool import carbon" now, and by the Admin upload screen in Phase 6.
+    // Used by "tool import carbon" and the Admin Carbon imports screen (which also rolls batches back).
     public class CarbonImporter(ApplicationDbContext db)
     {
-        public async Task<CarbonImportSummary> ImportAsync(string fileName, TextReader reader, bool dryRun, CancellationToken cancellationToken)
+        public async Task<CarbonImportSummary> ImportAsync(string fileName, TextReader reader, bool dryRun, CancellationToken cancellationToken,
+            string? uploadedById = null)
         {
             var now = DateTimeOffset.UtcNow;
             var parsed = CarbonCsvParser.Parse(reader, now.Year);
@@ -70,6 +71,7 @@ namespace A_U_ClimateScout.Services.CarbonImport
                 SourceId = source.Id,
                 Profile = profile.Name,
                 Status = CarbonImportStatus.Committed,
+                UploadedById = uploadedById,
                 UploadedAt = now,
                 CommittedAt = now,
                 TotalRows = parsed.Rows.Count + parsed.Problems.Count,
@@ -81,7 +83,8 @@ namespace A_U_ClimateScout.Services.CarbonImport
                 ErrorsJson = problems.Count > 0 ? JsonSerializer.Serialize(problems) : null,
             };
 
-            await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+            // Own transaction, unless the caller already started one (then it commits or rolls back the whole).
+            await using var transaction = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(cancellationToken) : null;
             db.CarbonImportBatches.Add(batch);
             await db.SaveChangesAsync(cancellationToken);
 
@@ -101,9 +104,45 @@ namespace A_U_ClimateScout.Services.CarbonImport
                 ImportBatchId = batch.Id,
             }));
             await db.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+            if (transaction is not null)
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
 
             return summary with { BatchId = batch.Id };
+        }
+
+        // Undoes a committed batch: its values are removed and the values it replaced become current again. Refused
+        // (returns the reason) while a later import has replaced any of this batch's values: roll that one back first.
+        public async Task<string?> RollbackAsync(int batchId, CancellationToken cancellationToken)
+        {
+            var batch = await db.CarbonImportBatches.FirstOrDefaultAsync(b => b.Id == batchId, cancellationToken);
+            if (batch is null || batch.Status != CarbonImportStatus.Committed)
+            {
+                return "Only a committed import can be rolled back.";
+            }
+            var laterBatches = await db.CarbonIntensities
+                .Where(i => i.ImportBatchId == batchId && i.SupersededByBatchId != null)
+                .Select(i => i.SupersededByBatchId!.Value).Distinct().ToListAsync(cancellationToken);
+            if (laterBatches.Count > 0)
+            {
+                return $"Later imports (#{string.Join(", #", laterBatches)}) replaced some of these values. Roll those back first.";
+            }
+
+            // Own transaction, unless the caller already started one (then it commits or rolls back the whole).
+            await using var transaction = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(cancellationToken) : null;
+            // Remove this batch's values first: the database allows only one current value per region, source and year.
+            await db.CarbonIntensities.Where(i => i.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
+            await db.CarbonIntensities.Where(i => i.SupersededByBatchId == batchId)
+                .ExecuteUpdateAsync(set => set.SetProperty(i => i.SupersededByBatchId, (int?)null), cancellationToken);
+            batch.Status = CarbonImportStatus.RolledBack;
+            batch.RolledBackAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync(cancellationToken);
+            if (transaction is not null)
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
+            return null;
         }
     }
 

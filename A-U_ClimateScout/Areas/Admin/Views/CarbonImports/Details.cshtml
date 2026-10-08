@@ -1,0 +1,34 @@
+@using A_U_ClimateScout.Services.CarbonImport
+@model CarbonImportBatch
+@{
+    ViewData["Title"] = $"Import #{Model.Id}";
+    var problems = (List<CarbonCsvProblem>)ViewData["Problems"]!;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Carbon imports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">#@Model.Id</li>
+    </ol>
+</nav>
+
+<h1 class="h4 mb-3">Import #@Model.Id: @Model.FileName</h1>
+<dl class="row small" style="max-width: 48rem">
+    <dt class="col-sm-4">Source / file type</dt><dd class="col-sm-8">@Model.Source.Name · @Model.Profile</dd>
+    <dt class="col-sm-4">Imported</dt><dd class="col-sm-8">@((Model.CommittedAt ?? Model.UploadedAt).ToLocalTime().ToString("d MMMM yyyy, HH:mm")) by @(Model.UploadedBy?.Email ?? "the command line")</dd>
+    <dt class="col-sm-4">Status</dt><dd class="col-sm-8">@Model.Status@(Model.RolledBackAt is { } at ? $" ({at.ToLocalTime():d MMMM yyyy})" : "")</dd>
+    <dt class="col-sm-4">Rows in the file</dt><dd class="col-sm-8">@Model.TotalRows</dd>
+    <dt class="col-sm-4">New / changed / unchanged</dt><dd class="col-sm-8">@Model.NewRows / @Model.ChangedRows / @Model.UnchangedRows</dd>
+    <dt class="col-sm-4">Unmatched / invalid</dt><dd class="col-sm-8">@Model.UnmatchedRows / @Model.InvalidRows</dd>
+</dl>
+
+@if (problems.Count > 0)
+{
+    <h2 class="h6 text-uppercase mt-4">Rows skipped</h2>
+    <ul class="small">
+        @foreach (var problem in problems)
+        {
+            <li>Line @problem.Line@(problem.RegionName is null ? "" : $" ({problem.RegionName})"): @problem.Message</li>
+        }
+    </ul>
+}

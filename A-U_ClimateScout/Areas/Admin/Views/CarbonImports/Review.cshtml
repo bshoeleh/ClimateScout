@@ -1,0 +1,81 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model CarbonImportsController.Preview
+@{
+    ViewData["Title"] = "Import preview";
+    var summary = Model.Summary;
+    var unmatched = summary?.Problems.Where(p => p.RegionName is not null && p.Message.StartsWith("No matching region")).ToList() ?? [];
+    var other = summary?.Problems.Except(unmatched).ToList() ?? [];
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Carbon imports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Preview</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-1">Preview: @Model.FileName</h1>
+<p class="text-body-secondary">Nothing has been saved yet.</p>
+<partial name="_Status" />
+
+@if (Model.Error is not null)
+{
+    <div class="alert alert-danger">@Model.Error</div>
+    <a asp-action="Index">Back</a>
+}
+else if (summary is not null)
+{
+    <p>Recognised as <strong>@summary.Profile</strong> from <strong>@summary.Source</strong>.</p>
+    <div class="row row-cols-2 row-cols-md-4 g-3 mb-4" style="max-width: 48rem">
+        <div class="col"><div class="cs-admin-tile"><div class="cs-admin-tile-value">@summary.NewRows</div><div class="cs-admin-tile-label">New values</div></div></div>
+        <div class="col"><div class="cs-admin-tile"><div class="cs-admin-tile-value">@summary.ChangedRows</div><div class="cs-admin-tile-label">Changed values</div></div></div>
+        <div class="col"><div class="cs-admin-tile"><div class="cs-admin-tile-value">@summary.UnchangedRows</div><div class="cs-admin-tile-label">Unchanged</div></div></div>
+        <div class="col"><div class="cs-admin-tile"><div class="cs-admin-tile-value">@summary.Problems.Count</div><div class="cs-admin-tile-label">Rows skipped</div></div></div>
+    </div>
+
+    @if (unmatched.Count > 0)
+    {
+        <h2 class="h6 text-uppercase">Names that matched no region</h2>
+        <p class="small text-body-secondary">If a name is another name for one of our regions, choose it: an alias is saved and the preview runs again. Names you leave are skipped (aggregates such as "OECD" usually should be).</p>
+        <ul class="list-group mb-4" style="max-width: 48rem">
+            @foreach (var name in unmatched.Select(p => p.RegionName!).Distinct())
+            {
+                <li class="list-group-item">
+                    <form asp-action="MapName" method="post" class="d-flex flex-wrap align-items-center gap-2">
+                        <input type="hidden" name="token" value="@Model.Token" />
+                        <input type="hidden" name="name" value="@name" />
+                        <span class="fw-medium me-auto">@name</span>
+                        <label class="visually-hidden" for="map-@name.GetHashCode()">Region for @name</label>
+                        <select id="map-@name.GetHashCode()" name="regionId" class="form-select form-select-sm" style="width: auto" required>
+                            <option value="">Choose a region…</option>
+                            @foreach (var region in Model.Regions)
+                            {
+                                <option value="@region.Id">@region.Name (@region.Code)</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Map</button>
+                    </form>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (other.Count > 0)
+    {
+        <h2 class="h6 text-uppercase">Other rows skipped</h2>
+        <ul class="small mb-4">
+            @foreach (var problem in other.Take(50))
+            {
+                <li>Line @problem.Line@(problem.RegionName is null ? "" : $" ({problem.RegionName})"): @problem.Message</li>
+            }
+            @if (other.Count > 50) { <li>… and @(other.Count - 50) more.</li> }
+        </ul>
+    }
+
+    <form asp-action="Commit" method="post" class="d-flex align-items-center gap-3">
+        <input type="hidden" name="token" value="@Model.Token" />
+        <button type="submit" class="btn btn-primary" disabled="@(summary.NewRows + summary.ChangedRows == 0)">Import @(summary.NewRows + summary.ChangedRows) values</button>
+        <a asp-action="Index">Cancel</a>
+        @if (summary.NewRows + summary.ChangedRows == 0) { <span class="small text-body-secondary">Nothing would change.</span> }
+    </form>
+}
