@@ -1,0 +1,110 @@
+@using A_U_ClimateScout.Services
+@model A_U_ClimateScout.Areas.Admin.Models.SponsorForm
+@{
+    var isNew = Model.Id is null;
+    ViewData["Title"] = isNew ? "Add a sponsor" : Model.Name;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/quill/dist/quill.snow.css" />
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Sponsors</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(isNew ? "Add" : Model.Name)</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">@(isNew ? "Add a sponsor" : Model.Name)</h1>
+
+<form asp-action="Save" method="post" enctype="multipart/form-data" data-rich-text-form class="cs-admin-form">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <input asp-for="Id" type="hidden" />
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" required />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Tier" class="form-label"></label>
+            <select asp-for="Tier" class="form-select">
+                <option value="1">1 (top)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+            <span asp-validation-for="Tier" class="text-danger small"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Url" class="form-label"></label>
+            <input asp-for="Url" class="form-control" type="url" placeholder="https://" />
+            <span asp-validation-for="Url" class="text-danger small"></span>
+        </div>
+
+        <div class="col-sm-6 col-md-4">
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+            <div class="form-text">Empty: shown from now.</div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <div class="form-text">Empty: no end date.</div>
+            <span asp-validation-for="EndDate" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4 d-flex flex-column justify-content-center gap-1">
+            <div class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="ShowInFooter" class="form-check-input" />
+                <label asp-for="ShowInFooter" class="form-check-label"></label>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Logo" class="form-label"></label>
+            @if (Model.CurrentLogoPath is not null)
+            {
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="cs-admin-logo"><img src="~/img/media/@Model.CurrentLogoPath" alt="Current logo" /></div>
+                    <div class="form-check">
+                        <input asp-for="RemoveLogo" class="form-check-input" />
+                        <label asp-for="RemoveLogo" class="form-check-label"></label>
+                    </div>
+                </div>
+            }
+            <input asp-for="Logo" class="form-control" type="file" accept="@ImageUploads.Accept" />
+            <div class="form-text">PNG, JPEG or WebP, up to 2 MB. A wide logo on a transparent background works best; the footer shows it in grey until hovered.@(Model.CurrentLogoPath is null ? "" : " Choosing a file replaces the current logo.")</div>
+            <span asp-validation-for="Logo" class="text-danger small"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label" id="description-label">Description <span class="text-body-secondary small">(optional, shown on the Sponsors page)</span></label>
+            <textarea asp-for="DescriptionHtml" class="d-none" data-rich-text-source></textarea>
+            <div class="cs-rich-text cs-rich-text-short" data-rich-text-editor aria-labelledby="description-label"></div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+        <button type="submit" class="btn btn-primary">@(isNew ? "Add sponsor" : "Save")</button>
+        <a asp-action="Index">Cancel</a>
+    </div>
+</form>
+
+@if (!isNew)
+{
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-5 pt-3 border-top"
+          onsubmit="return confirm('Delete this sponsor? This cannot be undone.');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">Delete this sponsor</button>
+    </form>
+}
+
+@section Scripts {
+    <script src="~/lib/quill/dist/quill.js"></script>
+    <script src="~/js/rich-text.js" asp-append-version="true"></script>
+}

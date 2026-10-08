@@ -1092,6 +1092,30 @@ a.cs-zone-label:focus-visible {
     color: var(--bs-link-color);
 }
 
+/* A shorter editor for descriptions (sponsors). */
+.cs-rich-text.cs-rich-text-short,
+.cs-rich-text-short .ql-editor {
+    min-height: 8rem;
+}
+
+/* Logo thumbnail in admin lists and forms: on white, like most logos are made for. */
+.cs-admin-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 8rem;
+    height: 3.5rem;
+    padding: .375rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background-color: #fff;
+}
+
+.cs-admin-logo img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
 /* Dashboard count tiles. */
 .cs-admin-tile {
     height: 100%;

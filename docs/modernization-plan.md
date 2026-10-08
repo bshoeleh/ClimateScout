@@ -3,7 +3,7 @@
 Status: **IN PROGRESS — Phases 1–3 complete; Phase 4 (public site) in progress**
 Last updated: 2026-10-02
 
-## ▶ Where we left off (2026-10-07)
+## ▶ Where we left off (2026-10-08)
 
 **Last commit:** see `git log` — interactive building diagram on the zone pages.
 
@@ -43,7 +43,9 @@ Phase 5 started: admin layout and dashboard (`9aade08`) — own layout (`Areas/A
 
 Audit logging done: `Data/AuditInterceptor.cs` (EF Core save interceptor, scoped) writes one `AuditLog` row per created / changed / deleted record — user, time, readable summary, field before/after as JSON. Skips AuditLog, CarbonIntensity (imports log per batch), Identity tables and saves by signed-out visitors; tools log as "System". Checked against the dev database inside a rolled-back transaction.
 
-**Next up:** Phase 5 — the first editing screens. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Editing screens done: Contact messages (`ace3af6`), Content blocks with the Quill rich-text editor and `HtmlCleaner` (`d6b59fd`), Sponsors (list by tier with up/down ordering, add/edit/delete, logo upload via `Services/ImageUploads.cs` — PNG/JPEG/WebP checked by their bytes, 2 MB). **Sponsors has not been tried in the browser yet** — start the next session by adding a test sponsor with a logo, reordering, checking /sponsors and the footer, then deleting it.
+
+**Next up:** Phase 5 — Climate zones and zone groups, then Design strategies (conflicts, zone assignment, reference projects), Diagrams, Carbon regions & equivalency factors, Media library, Users, Audit log viewer. Unpushed commits: GitHub sign-in uses b-shoeleh (403) — fix the saved credentials, then sync. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -417,6 +419,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web; optimise the 4 diagram SVGs (0.5–0.9 MB each, Illustrator exports) with an SVG optimiser, keeping the `ds-*` ids
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
+  - Uploaded media (`wwwroot/img/media/sponsors/`, and later uploads from the media library) must survive a deployment: keep those folders out of the deploy package and back them up with the database, or move uploads to a folder outside the site (a virtual directory) before launch.
 - [ ] Decommission WordPress after sign-off
 - [ ] **Owner's final fixes** — data gaps found during the import, left as on the old site and fixed by hand in Admin before launch:
   - [ ] Am Tropical Monsoon: choose its diagram. It has none set; the old site fell back to Hot-Dry, the other tropical zones use Hot-Humid (both diagrams have all of Am's strategy layers). The import logs a warning for it.

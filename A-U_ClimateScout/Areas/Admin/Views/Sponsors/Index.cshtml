@@ -1,0 +1,87 @@
+@model List<Sponsor>
+@{
+    ViewData["Title"] = "Sponsors";
+    var today = DateOnly.FromDateTime(DateTime.Today);
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h3 mb-0">Sponsors</h1>
+    <a class="btn btn-primary" asp-action="Create">Add a sponsor</a>
+</div>
+<partial name="_Status" />
+
+@if (Model.Count == 0)
+{
+    <p class="text-body-secondary">No sponsors yet. The public Sponsors page invites organisations to become the first one.</p>
+}
+else
+{
+    @foreach (var tier in Model.GroupBy(s => s.Tier))
+    {
+        var sponsors = tier.ToList();
+        <h2 class="h6 text-uppercase text-body-secondary mt-4">Tier @tier.Key</h2>
+        <ul class="list-group mb-3">
+            @for (var i = 0; i < sponsors.Count; i++)
+            {
+                var sponsor = sponsors[i];
+                var ended = sponsor.EndDate is { } end && end < today;
+                var notYet = sponsor.StartDate is { } start && start > today;
+                <li class="list-group-item d-flex flex-wrap align-items-center gap-3">
+                    <div class="cs-admin-logo">
+                        @if (sponsor.LogoAsset is not null)
+                        {
+                            <img src="~/img/media/@sponsor.LogoAsset.StoragePath" alt="" />
+                        }
+                        else
+                        {
+                            <span class="small text-body-secondary">No logo</span>
+                        }
+                    </div>
+                    <div class="flex-grow-1">
+                        <a asp-action="Edit" asp-route-id="@sponsor.Id" class="fw-medium">@sponsor.Name</a>
+                        <div class="small text-body-secondary">
+                            @(sponsor.StartDate?.ToString("d MMM yyyy") ?? "No start date") – @(sponsor.EndDate?.ToString("d MMM yyyy") ?? "open-ended")
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            @if (!sponsor.IsActive)
+                            {
+                                <span class="badge text-bg-secondary">Inactive</span>
+                            }
+                            else if (ended)
+                            {
+                                <span class="badge text-bg-secondary">Ended</span>
+                            }
+                            else if (notYet)
+                            {
+                                <span class="badge text-bg-info">Starts later</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">Shown</span>
+                            }
+                            @if (!sponsor.ShowInFooter)
+                            {
+                                <span class="badge text-bg-light border">Not in footer</span>
+                            }
+                            @if (sponsor.LogoAsset is null && sponsor.ShowInFooter)
+                            {
+                                <span class="badge text-bg-warning">No logo: left out of the footer</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <form asp-action="Move" asp-route-id="@sponsor.Id" asp-route-direction="-1" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" disabled="@(i == 0)"
+                                    aria-label="Move @sponsor.Name up">↑</button>
+                        </form>
+                        <form asp-action="Move" asp-route-id="@sponsor.Id" asp-route-direction="1" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" disabled="@(i == sponsors.Count - 1)"
+                                    aria-label="Move @sponsor.Name down">↓</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    <p class="small text-body-secondary">Tier 1 sponsors are shown first and larger. Within a tier, the order here is the order on the site.</p>
+}
