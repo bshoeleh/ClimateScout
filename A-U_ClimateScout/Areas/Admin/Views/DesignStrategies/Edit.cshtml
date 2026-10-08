@@ -1,0 +1,175 @@
+@using A_U_ClimateScout.Controllers
+@using A_U_ClimateScout.Services
+@model A_U_ClimateScout.Areas.Admin.Models.StrategyForm
+@{
+    var isNew = Model.Id is null;
+    ViewData["Title"] = isNew ? "Add a strategy" : Model.Name;
+    var zones = (List<ClimateZone>)ViewData["Zones"]!;
+    var strategies = (List<DesignStrategy>)ViewData["Strategies"]!;
+    var projects = (List<ReferenceProject>)ViewData["Projects"]!;
+    var zoneIds = Model.ZoneIds.ToHashSet();
+    var conflictIds = Model.ConflictIds.ToHashSet();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/quill/dist/quill.snow.css" />
+    <link rel="stylesheet" href="~/css/zones.css" />
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Design strategies</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(isNew ? "Add" : Model.Name)</li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
+    <h1 class="h3 mb-0">@(isNew ? "Add a strategy" : Model.Name)</h1>
+    @if (!isNew)
+    {
+        <a href="~/design-strategy/@Model.Slug" target="_blank" rel="noopener">View on site</a>
+    }
+</div>
+<partial name="_Status" />
+
+<form asp-action="Save" method="post" enctype="multipart/form-data" data-rich-text-form class="cs-admin-form">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <input asp-for="Id" type="hidden" />
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" required />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+            <div class="form-text">
+                @if (isNew)
+                {
+                    <span>The address is made from the name (e.g. <code>/design-strategy/cool-roof</code>) and then stays fixed. To appear on the building diagrams, the diagram artwork also needs a layer with the id <code>ds-</code> + that address.</span>
+                }
+                else
+                {
+                    <span>Address: <code>/design-strategy/@Model.Slug</code>; diagram layer <code>ds-@Model.Slug</code> (both fixed).</span>
+                }
+            </div>
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+            <div class="form-check">
+                <input asp-for="IsActive" class="form-check-input" />
+                <label asp-for="IsActive" class="form-check-label"></label>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Summary" class="form-label"></label>
+            <textarea asp-for="Summary" class="form-control" rows="2"></textarea>
+            <div class="form-text">One or two sentences, plain text: shown on the zone pages' printouts and in search results.</div>
+            <span asp-validation-for="Summary" class="text-danger small"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label" id="body-label">Text on the strategy page</label>
+            <textarea asp-for="BodyHtml" class="d-none" data-rich-text-source></textarea>
+            <div class="cs-rich-text cs-rich-text-short" data-rich-text-editor aria-labelledby="body-label"></div>
+        </div>
+
+        <div class="col-md-8">
+            <label asp-for="Palette2030Url" class="form-label"></label>
+            <input asp-for="Palette2030Url" class="form-control" type="url" placeholder="https://www.2030palette.org/…" />
+            <span asp-validation-for="Palette2030Url" class="text-danger small"></span>
+        </div>
+
+        <div class="col-12">
+            <label asp-for="Image" class="form-label"></label>
+            @if (Model.CurrentImagePath is not null)
+            {
+                <div class="mb-2"><img src="~/img/media/@Model.CurrentImagePath" alt="Current illustration" width="96" height="96" class="border rounded" /></div>
+            }
+            <input asp-for="Image" class="form-control" type="file" accept="@ImageUploads.Accept" />
+            <div class="form-text">The square icon shown on the strategy page and the zone pages. PNG, JPEG or WebP, up to 2 MB.@(Model.CurrentImagePath is null ? "" : " Choosing a file replaces the current one.")</div>
+            <span asp-validation-for="Image" class="text-danger small"></span>
+        </div>
+
+        <fieldset class="col-12">
+            <legend class="form-label fs-6">Climate zones that use this strategy</legend>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-1">
+                @foreach (var zone in zones)
+                {
+                    <div class="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ZoneIds" value="@zone.Id" id="zone-@zone.Id" checked="@zoneIds.Contains(zone.Id)" />
+                            <label class="form-check-label" for="zone-@zone.Id">
+                                <span class="cs-zone-label @ZoneController.CssClass(zone.KoppenCode) me-1">@zone.KoppenCode</span>@zone.Name
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </fieldset>
+
+        <fieldset class="col-12">
+            <legend class="form-label fs-6">Conflicts with <span class="small text-body-secondary">(can't be selected together on a zone diagram; saved both ways)</span></legend>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-1">
+                @foreach (var other in strategies)
+                {
+                    <div class="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ConflictIds" value="@other.Id" id="conflict-@other.Id" checked="@conflictIds.Contains(other.Id)" />
+                            <label class="form-check-label" for="conflict-@other.Id">@other.Name</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+        <button type="submit" class="btn btn-primary">@(isNew ? "Add strategy" : "Save")</button>
+        <a asp-action="Index">Cancel</a>
+    </div>
+</form>
+
+@if (!isNew)
+{
+    <section id="projects" class="mt-5 pt-4 border-top" aria-labelledby="projects-heading">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 id="projects-heading" class="h5 text-uppercase mb-0">Reference projects</h2>
+            <a class="btn btn-outline-primary btn-sm" asp-controller="ReferenceProjects" asp-action="Create" asp-route-strategyId="@Model.Id">Add a project</a>
+        </div>
+        @if (projects.Count == 0)
+        {
+            <p class="text-body-secondary">No reference projects yet.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @for (var i = 0; i < projects.Count; i++)
+                {
+                    var project = projects[i];
+                    <li class="list-group-item d-flex flex-wrap align-items-center gap-3">
+                        @if (project.ImageAsset is not null)
+                        {
+                            <img src="~/img/media/@project.ImageAsset.StoragePath" alt="" width="64" height="44" class="object-fit-cover rounded" />
+                        }
+                        <div class="flex-grow-1">
+                            <a asp-controller="ReferenceProjects" asp-action="Edit" asp-route-id="@project.Id">@project.Name</a>
+                            <div class="small text-body-secondary">@(project.Location ?? "No location")</div>
+                        </div>
+                        <div class="d-flex gap-1">
+                            <form asp-controller="ReferenceProjects" asp-action="Move" asp-route-id="@project.Id" asp-route-direction="-1" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" disabled="@(i == 0)" aria-label="Move @project.Name up">↑</button>
+                            </form>
+                            <form asp-controller="ReferenceProjects" asp-action="Move" asp-route-id="@project.Id" asp-route-direction="1" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" disabled="@(i == projects.Count - 1)" aria-label="Move @project.Name down">↓</button>
+                            </form>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}
+
+@section Scripts {
+    <script src="~/lib/quill/dist/quill.js"></script>
+    <script src="~/js/rich-text.js" asp-append-version="true"></script>
+}

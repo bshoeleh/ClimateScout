@@ -1,0 +1,67 @@
+@using A_U_ClimateScout.Services
+@model A_U_ClimateScout.Areas.Admin.Models.ReferenceProjectForm
+@{
+    var isNew = Model.Id is null;
+    ViewData["Title"] = isNew ? "Add a reference project" : Model.Name;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="DesignStrategies" asp-action="Index">Design strategies</a></li>
+        <li class="breadcrumb-item"><a asp-controller="DesignStrategies" asp-action="Edit" asp-route-id="@Model.StrategyId" asp-fragment="projects">@Model.StrategyName</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(isNew ? "Add a project" : Model.Name)</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">@(isNew ? "Add a reference project" : Model.Name)</h1>
+
+<form asp-action="Save" method="post" enctype="multipart/form-data" class="cs-admin-form" style="max-width: 48rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="StrategyId" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" required />
+        <span asp-validation-for="Name" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Location" class="form-label"></label>
+        <input asp-for="Location" class="form-control" placeholder="City, country" />
+        <span asp-validation-for="Location" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Url" class="form-label"></label>
+        <input asp-for="Url" class="form-control" type="url" placeholder="https://www.arcadis.com/…" />
+        <span asp-validation-for="Url" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Photo" class="form-label"></label>
+        @if (Model.CurrentPhotoPath is not null)
+        {
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <img src="~/img/media/@Model.CurrentPhotoPath" alt="Current photo" width="160" height="110" class="object-fit-cover rounded border" />
+                <div class="form-check">
+                    <input asp-for="RemovePhoto" class="form-check-input" />
+                    <label asp-for="RemovePhoto" class="form-check-label"></label>
+                </div>
+            </div>
+        }
+        <input asp-for="Photo" class="form-control" type="file" accept="@ImageUploads.Accept" />
+        <div class="form-text">PNG, JPEG or WebP, up to 2 MB; landscape photos fit the cards best.@(Model.CurrentPhotoPath is null ? "" : " Choosing a file replaces the current photo.")</div>
+        <span asp-validation-for="Photo" class="text-danger small"></span>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-primary">@(isNew ? "Add project" : "Save")</button>
+        <a asp-controller="DesignStrategies" asp-action="Edit" asp-route-id="@Model.StrategyId" asp-fragment="projects">Cancel</a>
+    </div>
+</form>
+
+@if (!isNew)
+{
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-5 pt-3 border-top"
+          onsubmit="return confirm('Delete this project? This cannot be undone.');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">Delete this project</button>
+    </form>
+}

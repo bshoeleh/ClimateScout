@@ -1,0 +1,55 @@
+@model List<DesignStrategy>
+@{
+    ViewData["Title"] = "Design strategies";
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h3 mb-0">Design strategies</h1>
+    <a class="btn btn-primary" asp-action="Create">Add a strategy</a>
+</div>
+<partial name="_Status" />
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th scope="col">Strategy</th>
+                <th scope="col">Zones</th>
+                <th scope="col">Conflicts</th>
+                <th scope="col">Projects</th>
+                <th scope="col">Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var strategy in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            @if (strategy.ImageAsset is not null)
+                            {
+                                <img src="~/img/media/@strategy.ImageAsset.StoragePath" alt="" width="40" height="40" />
+                            }
+                            <a asp-action="Edit" asp-route-id="@strategy.Id">@strategy.Name</a>
+                        </div>
+                    </td>
+                    <td class="small">@strategy.Zones.Count</td>
+                    <td class="small">@strategy.Conflicts.Count</td>
+                    <td class="small">@strategy.ReferenceProjects.Count</td>
+                    <td class="small">
+                        <div class="d-flex flex-wrap gap-1">
+                            @if (!strategy.IsActive)
+                            {
+                                <span class="badge text-bg-secondary">Hidden</span>
+                            }
+                            @if (string.IsNullOrEmpty(strategy.Palette2030Url))
+                            {
+                                <span class="badge text-bg-warning">No 2030 Palette link</span>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
