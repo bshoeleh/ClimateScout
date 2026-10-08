@@ -34,7 +34,7 @@ namespace A_U_ClimateScout.Areas.Admin
             ]),
             new("Administration",
             [
-                new("Users", null, Policies.AdminOnly),
+                new("Users", "Users", Policies.AdminOnly),
                 new("Audit log", "AuditLog", Policies.AdminOnly),
             ]),
         ];

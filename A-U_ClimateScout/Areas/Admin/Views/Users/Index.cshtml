@@ -1,0 +1,69 @@
+@using A_U_ClimateScout.Areas.Admin.Controllers
+@model List<UsersController.UserRow>
+@{
+    ViewData["Title"] = "Users";
+    var me = (string?)ViewData["Me"];
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h3 mb-0">Users</h1>
+    <a class="btn btn-primary" asp-action="Invite">Invite someone</a>
+</div>
+<partial name="_Status" />
+<p class="small text-body-secondary">Admins can do everything; Editors edit content but can't manage users, see the audit log or run carbon imports.</p>
+
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+            <tr><th scope="col">Account</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                var isMe = row.User.Id == me;
+                <tr>
+                    <td>@row.User.Email @if (isMe) { <span class="badge text-bg-light border ms-1">you</span> }</td>
+                    <td>
+                        <form asp-action="SetRole" asp-route-id="@row.User.Id" method="post" class="d-flex gap-2">
+                            <select name="role" class="form-select form-select-sm" style="width: auto" aria-label="Role of @row.User.Email">
+                                @foreach (var role in UsersController.AssignableRoles)
+                                {
+                                    <option value="@role" selected="@(role == row.Role)">@role</option>
+                                }
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Change</button>
+                        </form>
+                    </td>
+                    <td class="small">
+                        @if (row.Disabled)
+                        {
+                            <span class="badge text-bg-secondary">Disabled</span>
+                        }
+                        else if (row.User.MustChangePassword)
+                        {
+                            <span class="badge text-bg-info">Hasn't chosen a password yet</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-success">Active</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2">
+                            <form asp-action="ResetPassword" asp-route-id="@row.User.Id" method="post"
+                                  onsubmit="return confirm('Give this person a new one-time password? Their current password stops working.');">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Reset password</button>
+                            </form>
+                            @if (!isMe)
+                            {
+                                <form asp-action="SetDisabled" asp-route-id="@row.User.Id" asp-route-disabled="@(!row.Disabled)" method="post">
+                                    <button type="submit" class="btn btn-sm @(row.Disabled ? "btn-outline-success" : "btn-outline-danger")">@(row.Disabled ? "Enable" : "Disable")</button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

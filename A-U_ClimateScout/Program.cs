@@ -75,6 +75,11 @@ builder.Services.AddScoped<CarbonValues>();
 builder.Services.AddScoped<Sponsors>();
 builder.Services.AddSingleton<ImageUploads>();
 
+// Email (plan §8): SMTP settings in the "Email" section; nothing is sent until Email:Host is set.
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, IdentityEmailSender>();
+
 // Contact form: at most 5 messages per visitor (IP address) per 15 minutes; more get the "too many requests" page.
 builder.Services.AddRateLimiter(options =>
 {
