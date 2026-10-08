@@ -45,7 +45,9 @@ Audit logging done: `Data/AuditInterceptor.cs` (EF Core save interceptor, scoped
 
 Editing screens done: Contact messages (`ace3af6`), Content blocks with the Quill rich-text editor and `HtmlCleaner` (`d6b59fd`), Sponsors (list by tier with up/down ordering, add/edit/delete, logo upload via `Services/ImageUploads.cs` — PNG/JPEG/WebP checked by their bytes, 2 MB). **Sponsors has not been tried in the browser yet** — start the next session by adding a test sponsor with a logo, reordering, checking /sponsors and the footer, then deleting it.
 
-**Next up:** Phase 5 — Climate zones and zone groups, then Design strategies (conflicts, zone assignment, reference projects), Diagrams, Carbon regions & equivalency factors, Media library, Users, Audit log viewer. Unpushed commits: GitHub sign-in uses b-shoeleh (403) — fix the saved credentials, then sync. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Climate zones + Zone groups (`98f662c`) and Design strategies + Reference projects (`644c8e1`) done; conflicts are edited per strategy (tick list, saved both ways) rather than as a 27×27 grid.
+
+**Next up:** Phase 5 — Audit log viewer, Users, Carbon regions & equivalency factors, Diagrams, Media library. Phase 7 (API) is on hold. Unpushed commits: GitHub sign-in uses b-shoeleh (403) — fix the saved credentials, then sync. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -401,12 +403,12 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Import-complete email
 - [x] Import the three new CSVs (`xfer/carbondata`) through the real importer (proves the importer; moved here from Phase 3) — via `tool import carbon`, batches 1–3 in the dev database
 
-### Phase 7 — API
+### Phase 7 — API (on hold, 2026-10-08)
+**On hold:** the site works without it — its own pages already use `/api/v1/geocode` and `/api/v1/carbon/calculate`. This phase only matters if outside users need the data. The proxy rate limits were moved to Phase 9 because the site needs them at launch.
 - [ ] v1 endpoints (§7) with DTOs, OpenAPI + Scalar
 - [ ] API key auth handler, admin key management (issue/rotate/revoke, hashed), per-key rate limits & usage log
 - [ ] Output caching, CORS policy
 - [ ] Server-side point lookup (NetTopologySuite)
-- [ ] Geocode proxy + tile proxy: per-IP rate limit, configurable daily cap, 80%-of-cap admin email
 - [ ] Integration tests for contracts
 
 ### Phase 8 — Email
@@ -415,6 +417,7 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Account emails (invite, reset)
 
 ### Phase 9 — Hardening & launch
+- [ ] Geocode proxy + tile proxy: per-IP rate limit, configurable daily cap, 80%-of-cap admin email (moved from Phase 7: OpenStreetMap's usage rules)
 - [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
 - [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web; optimise the 4 diagram SVGs (0.5–0.9 MB each, Illustrator exports) with an SVG optimiser, keeping the `ds-*` ids
 - [ ] UAT with PDD team; content review
