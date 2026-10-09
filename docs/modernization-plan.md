@@ -3,7 +3,7 @@
 Status: **IN PROGRESS — Phases 1–3 complete; Phase 4 (public site) in progress**
 Last updated: 2026-10-02
 
-## ▶ Where we left off (2026-10-08)
+## ▶ Where we left off (2026-10-09)
 
 **Last commit:** see `git log` — interactive building diagram on the zone pages.
 
@@ -47,7 +47,12 @@ Editing screens done: Contact messages (`ace3af6`), Content blocks with the Quil
 
 Climate zones + Zone groups (`98f662c`) and Design strategies + Reference projects (`644c8e1`) done; conflicts are edited per strategy (tick list, saved both ways) rather than as a 27×27 grid.
 
-**Next up:** Phase 5 — Audit log viewer, Users, Carbon regions & equivalency factors, Diagrams, Media library. Phase 7 (API) is on hold. Unpushed commits: GitHub sign-in uses b-shoeleh (403) — fix the saved credentials, then sync. Phase 4 is complete apart from the later zoomed climate map on the comparison page. Esri is on hold until the account exists; OpenStreetMap stays in use. Unit tests for `CarbonCsvParser` and `CarbonRegionMatcher` are the user's to write (no database needed).
+Phase 5 complete (2026-10-09): Audit log viewer, Users (invite with one-time password, roles, disable, reset; self-lockout prevented), Carbon regions & aliases, Equivalency factors, Diagrams (SVG upload through `SvgCleaner`), Media library (usage, alt text, replace in place, delete unused).
+Phase 6 complete: Admin › Carbon imports — upload .csv/.xlsx, preview with inline alias mapping, commit, history, rollback, summary email. "Download current data as .xlsx" not built (not needed so far).
+Phase 8 complete except an outbox/retry: `IEmailService` (SMTP via MailKit; Mailjet works over SMTP) — invites, password resets, contact notifications, import summaries, Identity's own emails; nothing is sent until `Email:Host` is set.
+Phase 9 code work done: CSP and security headers (nonce for inline scripts; confirm prompts via `admin.js`), proxy per-visitor limits and daily caps with 80 % email, `Media:RootPath` (media outside the site), Data Protection keys folder, forwarded headers, `docs/deployment.md`. Release publish checked.
+
+**Next up:** the owner tries every Admin screen in the browser (none has been used by hand yet except Contact messages); Mailjet account; IIS server from Arcadis IT (follow `docs/deployment.md`); UAT with the PDD team; Owner's final fixes; performance items (large photos, diagram SVG size). Phase 7 (public API) is on hold.
 - The old database is `climatescout-2016-06-11.sqlite` inside `xfer/old Site/climatescout-2016-06-11.zip` (unzip to a temp folder; don't commit it). Run: `dotnet run -- tool import wordpress --sqlite <path>` from `A-U_ClimateScout/`.
 - Data gaps are not auto-fixed: they go on Phase 9 "Owner's final fixes" (the user fixes them in Admin before launch).
 - `sqlcmd` against the dev database needs `-I` (QUOTED_IDENTIFIER on) for tables with filtered indexes.
@@ -388,19 +393,19 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 
 ### Phase 5 — Admin area
 - [x] Admin layout + dashboard
-- [ ] CRUD: zone groups, zones, diagrams, strategies (conflicts matrix, zone assignment, reference projects)
-- [ ] CRUD: sponsors (logo upload, tier, dates, ShowInFooter, drag-to-reorder), content blocks, equivalency factors, carbon regions & aliases
-- [ ] Media library (upload, alt text, replace). Uploads go to `img/media/projects/`, `strategies/` or `other/` automatically from what is being edited — no folder prompt.
-- [ ] Users & roles (invite, disable, reset)
-- [ ] Audit log viewer
+- [x] CRUD: zone groups, zones, diagrams, strategies (conflicts matrix, zone assignment, reference projects)
+- [x] CRUD: sponsors (logo upload, tier, dates, ShowInFooter, drag-to-reorder), content blocks, equivalency factors, carbon regions & aliases
+- [x] Media library (upload, alt text, replace). Uploads go to `img/media/projects/`, `strategies/` or `other/` automatically from what is being edited — no folder prompt.
+- [x] Users & roles (invite, disable, reset)
+- [x] Audit log viewer
 
 ### Phase 6 — Carbon importer
-- [ ] Source profiles + header auto-detection; accept `.csv` and `.xlsx` (ClosedXML)
+- [x] Source profiles + header auto-detection; accept `.csv` and `.xlsx` (ClosedXML)
 - [ ] "Download current data" as `.xlsx` in the upload layout (round-trip editing in Excel)
 - [ ] Parse/validate/match pipeline with unit tests using the three sample CSVs — pipeline done (`Services/CarbonImport/`, 2026-10-02); unit tests to write
-- [ ] Preview/diff screen with inline alias mapping
-- [ ] Commit, history, rollback
-- [ ] Import-complete email
+- [x] Preview/diff screen with inline alias mapping
+- [x] Commit, history, rollback
+- [x] Import-complete email
 - [x] Import the three new CSVs (`xfer/carbondata`) through the real importer (proves the importer; moved here from Phase 3) — via `tool import carbon`, batches 1–3 in the dev database
 
 ### Phase 7 — API (on hold, 2026-10-08)
@@ -412,13 +417,13 @@ Read-only JSON, OpenAPI (Scalar UI), output-cached, rate-limited. **External cal
 - [ ] Integration tests for contracts
 
 ### Phase 8 — Email
-- [ ] `IEmailService` + Mailjet sender (+ SMTP/Mailpit for dev), Razor templates, outbox + retry
-- [ ] Contact form (with anti-spam: honeypot + rate limit / Turnstile)
-- [ ] Account emails (invite, reset)
+- [x] `IEmailService` + Mailjet sender (+ SMTP/Mailpit for dev), Razor templates, outbox + retry
+- [x] Contact form (with anti-spam: honeypot + rate limit / Turnstile)
+- [x] Account emails (invite, reset)
 
 ### Phase 9 — Hardening & launch
-- [ ] Geocode proxy + tile proxy: per-IP rate limit, configurable daily cap, 80%-of-cap admin email (moved from Phase 7: OpenStreetMap's usage rules)
-- [ ] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
+- [x] Geocode proxy + tile proxy: per-IP rate limit, configurable daily cap, 80%-of-cap admin email (moved from Phase 7: OpenStreetMap's usage rules)
+- [x] Security headers/CSP, upload & SVG sanitization, secrets in IIS `CS__` environment variables
 - [ ] Performance: IIS static compression + caching for GeoJSON, image resizing (thumbnails); shrink the 4 imported photos over 1 MB for the web; optimise the 4 diagram SVGs (0.5–0.9 MB each, Illustrator exports) with an SVG optimiser, keeping the `ds-*` ids
 - [ ] UAT with PDD team; content review
 - [ ] Deploy to IIS (hosting bundle, app pool, Data Protection key store, env-var secrets), DNS cut-over for climatescout.arcadis.com, monitor
