@@ -10,6 +10,8 @@ using A_U_ClimateScout.Security;
 using A_U_ClimateScout.Services;
 using A_U_ClimateScout.Services.CarbonImport;
 using A_U_ClimateScout.Tools;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -99,6 +101,29 @@ builder.Services.AddRateLimiter(options =>
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
 });
 builder.Services.AddSingleton<ProxyUsage>();
+builder.Services.AddSingleton<MediaStorage>();
+
+// Sign-in cookies and antiforgery tokens are encrypted with Data Protection keys. On IIS, keep them in a folder
+// (DataProtection:KeysPath) so they survive restarts and redeployments; otherwise everyone is signed out.
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("ClimateScout")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
+
+// Behind a load balancer or reverse proxy (ForwardedHeaders:Enabled), take the visitor's address and https from
+// its X-Forwarded-* headers, so rate limits count real visitors and links use https.
+var behindProxy = builder.Configuration.GetValue<bool>("ForwardedHeaders:Enabled");
+if (behindProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownIPNetworks.Clear();   // the proxy's address is set by IT; trust what it forwards
+        options.KnownProxies.Clear();
+    });
+}
 
 var app = builder.Build();
 
@@ -110,6 +135,10 @@ if (args is ["tool", ..])
 }
 
 // Configure the HTTP request pipeline.
+if (behindProxy)
+{
+    app.UseForwardedHeaders();
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -130,6 +159,18 @@ app.UseSecurityHeaders(app.Environment.IsDevelopment());
 
 // One summary log line per request: method, path, status code, duration.
 app.UseSerilogRequestLogging();
+
+// Media kept outside the site (Media:RootPath) is served at the same /img/media/… addresses.
+var mediaStorage = app.Services.GetRequiredService<MediaStorage>();
+if (mediaStorage.IsOutsideWebRoot)
+{
+    Directory.CreateDirectory(mediaStorage.Root);
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(mediaStorage.Root),
+        RequestPath = "/img/media",
+    });
+}
 
 app.UseRouting();
 

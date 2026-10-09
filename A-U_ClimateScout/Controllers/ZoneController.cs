@@ -9,7 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace A_U_ClimateScout.Controllers
 {
     // Public climate zone pages at /zone/{slug}, the same URLs as the old site (plan §4).
-    public class ZoneController(ApplicationDbContext db, IWebHostEnvironment environment, IMemoryCache cache) : Controller
+    public class ZoneController(ApplicationDbContext db, MediaStorage media, IMemoryCache cache) : Controller
     {
         [HttpGet("zone/{slug}")]
         public async Task<IActionResult> Index(string slug, CancellationToken cancellationToken)
@@ -66,7 +66,7 @@ namespace A_U_ClimateScout.Controllers
                 var strategySlugs = (await db.DesignStrategies.Select(s => s.Slug).ToListAsync(cancellationToken))
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var svg = await System.IO.File.ReadAllTextAsync(
-                    Path.Combine(environment.WebRootPath, "img", "media", diagram.SvgAsset.StoragePath), cancellationToken);
+                    media.FullPath(diagram.SvgAsset.StoragePath)!, cancellationToken);
                 return DiagramMarkup.Prepare(svg, strategySlugs, $"{diagram.Name} building diagram");
             });
         }

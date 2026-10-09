@@ -3,11 +3,11 @@ using A_U_ClimateScout.Models;
 
 namespace A_U_ClimateScout.Services
 {
-    // Saves an uploaded image under wwwroot/img/media/{folder}/ and describes it as a MediaAsset (plan §9).
+    // Saves an uploaded image in the media folder ({folder}/…, see MediaStorage) and describes it as a MediaAsset (plan §9).
     // The type is read from the file's first bytes, never trusted from its name or the browser: only PNG, JPEG and
     // WebP are accepted (SVG needs its own cleaning, Phase 9). Files get a new random name, so an upload can never
     // overwrite another file or choose its own path.
-    public class ImageUploads(IWebHostEnvironment environment)
+    public class ImageUploads(MediaStorage media)
     {
         public const long MaxBytes = 2 * 1024 * 1024;
         public const string Accept = "image/png,image/jpeg,image/webp";   // for <input type="file" accept="…">
@@ -37,7 +37,7 @@ namespace A_U_ClimateScout.Services
 
             var (extension, contentType, width, height) = image.Value;
             var storagePath = $"{folder}/{Guid.NewGuid():N}{extension}";
-            var fullPath = Path.Combine(environment.WebRootPath, "img", "media", folder, Path.GetFileName(storagePath));
+            var fullPath = media.FullPath(storagePath)!;
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
             await File.WriteAllBytesAsync(fullPath, bytes, cancellationToken);
 

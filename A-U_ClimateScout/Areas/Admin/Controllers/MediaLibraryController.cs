@@ -11,7 +11,7 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
     // Every uploaded or imported file (wwwroot/img/media/…): where it's used, its alt text, replacing an image with a
     // new file (every page using it updates), and deleting files nothing uses. New files are uploaded on the screen
     // that uses them (sponsor, strategy, project, diagram), which also decides their folder (plan Phase 5).
-    public class MediaLibraryController(ApplicationDbContext db, ImageUploads uploads, IWebHostEnvironment environment) : AdminController
+    public class MediaLibraryController(ApplicationDbContext db, ImageUploads uploads, MediaStorage media) : AdminController
     {
         public record MediaRow(MediaAsset Asset, IReadOnlyList<string> UsedBy);
 
@@ -152,9 +152,7 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
 
         private void DeleteFile(string storagePath)
         {
-            var path = Path.GetFullPath(Path.Combine(environment.WebRootPath, "img", "media", storagePath));
-            var root = Path.GetFullPath(Path.Combine(environment.WebRootPath, "img", "media"));
-            if (path.StartsWith(root, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(path))
+            if (media.FullPath(storagePath) is { } path && System.IO.File.Exists(path))
             {
                 System.IO.File.Delete(path);
             }

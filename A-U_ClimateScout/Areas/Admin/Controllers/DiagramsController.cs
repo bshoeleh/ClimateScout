@@ -10,7 +10,7 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
 {
     // The four building diagrams: rename, replace the SVG artwork (cleaned by SvgCleaner before it's saved), and see
     // which strategy layers (<g id="ds-{slug}">) the artwork has. Zones choose their diagram on the zone screen.
-    public class DiagramsController(ApplicationDbContext db, IWebHostEnvironment environment) : AdminController
+    public class DiagramsController(ApplicationDbContext db, MediaStorage media) : AdminController
     {
         private const long MaxBytes = 5 * 1024 * 1024;
 
@@ -89,7 +89,8 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
             {
                 // A new file under a new name: the zone pages cache diagrams by file, so they switch over at once.
                 var storagePath = $"diagrams/{diagram.Slug}-{DateTime.UtcNow:yyyyMMddHHmmss}.svg";
-                var fullPath = Path.Combine(environment.WebRootPath, "img", "media", storagePath);
+                var fullPath = media.FullPath(storagePath)!;
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
                 await System.IO.File.WriteAllTextAsync(fullPath, cleaned, cancellationToken);
                 diagram.SvgAsset = new MediaAsset
                 {
@@ -124,8 +125,8 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
             IReadOnlySet<string> layers = new HashSet<string>();
             if (diagram.SvgAsset is not null)
             {
-                var path = Path.Combine(environment.WebRootPath, "img", "media", diagram.SvgAsset.StoragePath);
-                if (System.IO.File.Exists(path))
+                var path = media.FullPath(diagram.SvgAsset.StoragePath);
+                if (path is not null && System.IO.File.Exists(path))
                 {
                     layers = DiagramMarkup.Prepare(await System.IO.File.ReadAllTextAsync(path, cancellationToken), slugs, "").Layers;
                 }
