@@ -1,5 +1,6 @@
-<script type="importmap"></script>
-<script>
+@using A_U_ClimateScout.Security
+<script type="importmap" nonce="@SecurityHeaders.Nonce(Context)"></script>
+<script nonce="@SecurityHeaders.Nonce(Context)">
     // Set the theme before anything renders, so dark-mode visitors never see a white flash.
     (() => {
         let stored = null;

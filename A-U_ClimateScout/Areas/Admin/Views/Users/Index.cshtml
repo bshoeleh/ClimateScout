@@ -51,7 +51,7 @@
                     <td class="text-end">
                         <div class="d-inline-flex gap-2">
                             <form asp-action="ResetPassword" asp-route-id="@row.User.Id" method="post"
-                                  onsubmit="return confirm('Give this person a new one-time password? Their current password stops working.');">
+                                  data-confirm="Give this person a new one-time password? Their current password stops working.">
                                 <button type="submit" class="btn btn-sm btn-outline-secondary">Reset password</button>
                             </form>
                             @if (!isMe)

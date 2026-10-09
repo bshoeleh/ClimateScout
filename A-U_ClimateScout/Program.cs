@@ -6,6 +6,7 @@ using A_U_ClimateScout.Controllers;
 using A_U_ClimateScout.Data;
 using A_U_ClimateScout.Identity;
 using A_U_ClimateScout.Options;
+using A_U_ClimateScout.Security;
 using A_U_ClimateScout.Services;
 using A_U_ClimateScout.Services.CarbonImport;
 using A_U_ClimateScout.Tools;
@@ -87,7 +88,17 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy(ContactController.RateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
+
+    // Map proxies, per visitor: a map view loads 20–40 tiles, so 600 a minute allows brisk panning but not scraping;
+    // address search is typed by hand. Daily caps across all visitors are in ProxyUsage.
+    options.AddPolicy(ProxyUsage.Tiles, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 600, Window = TimeSpan.FromMinutes(1) }));
+    options.AddPolicy(ProxyUsage.Geocode, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1) }));
 });
+builder.Services.AddSingleton<ProxyUsage>();
 
 var app = builder.Build();
 
@@ -115,6 +126,7 @@ else
 app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.UseHttpsRedirection();
+app.UseSecurityHeaders(app.Environment.IsDevelopment());
 
 // One summary log line per request: method, path, status code, duration.
 app.UseSerilogRequestLogging();

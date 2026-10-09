@@ -59,7 +59,7 @@ else
                             @if (batch.Status == CarbonImportStatus.Committed)
                             {
                                 <form asp-action="Rollback" asp-route-id="@batch.Id" method="post"
-                                      onsubmit="return confirm('Roll back this import? Its values are removed and the ones it replaced come back.');">
+                                      data-confirm="Roll back this import? Its values are removed and the ones it replaced come back.">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Roll back</button>
                                 </form>
                             }

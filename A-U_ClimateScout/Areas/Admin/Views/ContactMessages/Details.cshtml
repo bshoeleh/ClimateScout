@@ -46,7 +46,7 @@
                 <button type="submit" class="btn btn-outline-secondary">@(Model.Handled ? "Move back to To handle" : "Mark as handled")</button>
             </form>
             <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-grid"
-                  onsubmit="return confirm('Delete this message? This cannot be undone.');">
+                  data-confirm="Delete this message? This cannot be undone.">
                 <button type="submit" class="btn btn-outline-danger">Delete</button>
             </form>
         </div>

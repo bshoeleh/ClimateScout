@@ -7,14 +7,20 @@ namespace A_U_ClimateScout.Controllers.Api
     // Rate limits and the daily cap come with the rest of the API (Phase 7).
     [ApiController]
     [Route("api/v1/geocode")]
-    public class GeocodeController(Geocoder geocoder, ILogger<GeocodeController> logger) : ControllerBase
+    public class GeocodeController(Geocoder geocoder, ILogger<GeocodeController> logger, ProxyUsage usage) : ControllerBase
     {
         [HttpGet]
+        [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting(ProxyUsage.Geocode)]
         public async Task<ActionResult<IReadOnlyList<GeocodeResult>>> Get([FromQuery] string? q, CancellationToken cancellationToken)
         {
             if (q is null || q.Trim().Length is < 3 or > 200)
             {
                 return Problem("Search text must be 3 to 200 characters.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!usage.TryUse(ProxyUsage.Geocode))
+            {
+                return Problem("Address search has reached today's limit; please try again tomorrow.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
             try

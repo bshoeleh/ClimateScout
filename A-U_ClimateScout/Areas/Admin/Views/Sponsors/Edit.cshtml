@@ -99,7 +99,7 @@
 @if (!isNew)
 {
     <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-5 pt-3 border-top"
-          onsubmit="return confirm('Delete this sponsor? This cannot be undone.');">
+          data-confirm="Delete this sponsor? This cannot be undone.">
         <button type="submit" class="btn btn-outline-danger btn-sm">Delete this sponsor</button>
     </form>
 }

@@ -1,6 +1,8 @@
 using System.Net;
 using A_U_ClimateScout.Options;
+using A_U_ClimateScout.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace A_U_ClimateScout.Controllers
@@ -8,9 +10,11 @@ namespace A_U_ClimateScout.Controllers
     // Map tiles through our server (plan §5): the browser asks for /map/tiles/{z}/{x}/{y}; we fetch that tile
     // from the configured provider and pass it on. Any provider key stays on the server, and the provider
     // can change in configuration without touching the pages.
-    public class MapController(IHttpClientFactory httpClientFactory, IOptions<MapsOptions> options) : Controller
+    // Limited per visitor (the "tiles" rate-limit policy) and per day (ProxyUsage).
+    public class MapController(IHttpClientFactory httpClientFactory, IOptions<MapsOptions> options, ProxyUsage usage) : Controller
     {
         [HttpGet("map/tiles/{z:int}/{x:int}/{y:int}")]
+        [EnableRateLimiting(ProxyUsage.Tiles)]
         public async Task<IActionResult> Tile(int z, int x, int y, CancellationToken cancellationToken)
         {
             var maps = options.Value;
@@ -18,6 +22,11 @@ namespace A_U_ClimateScout.Controllers
             if (z < maps.MinZoom || z > maps.MaxZoom || x < 0 || y < 0 || x >= tilesPerSide || y >= tilesPerSide)
             {
                 return NotFound();
+            }
+
+            if (!usage.TryUse(ProxyUsage.Tiles))
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
 
             var url = maps.TileUrl.Replace("{z}", z.ToString()).Replace("{x}", x.ToString()).Replace("{y}", y.ToString());
