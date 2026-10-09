@@ -30,19 +30,36 @@ namespace A_U_ClimateScout.Controllers
             }
 
             var url = maps.TileUrl.Replace("{z}", z.ToString()).Replace("{x}", x.ToString()).Replace("{y}", y.ToString());
-            using var response = await httpClientFactory.CreateClient(MapsOptions.HttpClientName)
-                .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                return StatusCode(response.StatusCode == HttpStatusCode.NotFound ? 404 : 502);
+                using var response = await httpClientFactory.CreateClient(MapsOptions.HttpClientName)
+                    .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode(response.StatusCode == HttpStatusCode.NotFound ? 404 : 502);
+                }
+
+                // Let the browser cache the tile as long as the provider allows (a day if it doesn't say).
+                var maxAge = response.Headers.CacheControl?.MaxAge ?? TimeSpan.FromDays(1);
+                Response.Headers.CacheControl = $"public, max-age={(int)maxAge.TotalSeconds}";
+
+                var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+                return File(bytes, response.Content.Headers.ContentType?.MediaType ?? "image/png");
             }
-
-            // Let the browser cache the tile as long as the provider allows (a day if it doesn't say).
-            var maxAge = response.Headers.CacheControl?.MaxAge ?? TimeSpan.FromDays(1);
-            Response.Headers.CacheControl = $"public, max-age={(int)maxAge.TotalSeconds}";
-
-            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-            return File(bytes, response.Content.Headers.ContentType?.MediaType ?? "image/png");
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // The browser dropped the tile (the map zoomed or panned past it): nobody is waiting for an answer.
+                return new EmptyResult();
+            }
+            catch (OperationCanceledException)
+            {
+                // The provider took longer than the HttpClient timeout.
+                return StatusCode(StatusCodes.Status504GatewayTimeout);
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway);
+            }
         }
     }
 }

@@ -27,6 +27,16 @@ namespace A_U_ClimateScout.Controllers.Api
             {
                 return Ok(await geocoder.SearchAsync(q, cancellationToken));
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // The visitor left or searched again before the answer came back.
+                return new EmptyResult();
+            }
+            catch (OperationCanceledException exception)
+            {
+                logger.LogWarning(exception, "Address search timed out for {Query}", q);
+                return Problem("Address search is unavailable right now.", statusCode: StatusCodes.Status504GatewayTimeout);
+            }
             catch (HttpRequestException exception)
             {
                 logger.LogWarning(exception, "Address search failed for {Query}", q);

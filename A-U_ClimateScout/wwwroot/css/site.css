@@ -741,11 +741,30 @@ a.cs-zone-label:focus-visible {
 
 /* ---------- Carbon comparison ---------- */
 .cs-carbon-location {
-    display: inline-block;
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 1.5rem;
     border-left: .375rem solid var(--cs-orange);
     border-radius: .5rem;
     background-color: var(--bs-tertiary-bg);
+}
+
+/* The chosen location's name leads the panel, as on the old site. */
+.cs-carbon-location-name {
+    margin-bottom: .5rem;
+    font-size: calc(1.5rem + 1.5vw);
+    font-weight: 700;
+}
+
+@media (min-width: 1200px) {
+    .cs-carbon-location-name {
+        font-size: 3rem;
+    }
+}
+
+.cs-carbon-location-label {
+    display: inline-block;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--bs-secondary-color);
 }
 
 .cs-carbon-location-value {

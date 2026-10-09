@@ -256,10 +256,29 @@ const textColor = () => themeColor("--bs-secondary-color");
 const gridColor = () => themeColor("--bs-border-color-translucent");
 Chart.defaults.font.family = themeColor("--bs-body-font-family");
 
+// The chosen location stands out as on the old site: its name in the strongest text colour (the others stay dim),
+// with a light band behind its row.
+const isSelectedRow = (chart, index) => chart.data.labels[index] === regionsByCode.get(selectedCode)?.name;
+const selectedRowBand = {
+    id: "selectedRowBand",
+    beforeDraw(chart) {
+        const index = chart.data.labels.findIndex((_, i) => isSelectedRow(chart, i));
+        const bar = chart.getDatasetMeta(0).data[index];
+        if (!bar) return;
+        const { ctx, chartArea } = chart;
+        const half = (chart.scales.y.getPixelForTick(1) - chart.scales.y.getPixelForTick(0) || 20) / 2;
+        ctx.save();
+        ctx.fillStyle = themeColor("--bs-tertiary-bg");
+        ctx.fillRect(0, bar.y - half, chartArea.right, half * 2);
+        ctx.restore();
+    },
+};
+
 const chartBox = document.querySelector(".cs-carbon-chart");
 const chart = new Chart(document.getElementById("carbon-chart"), {
     type: "bar",
     data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderColor: themeColor("--bs-emphasis-color"), borderWidth: [] }] },
+    plugins: [selectedRowBand],
     options: {
         indexAxis: "y",
         responsive: true,
@@ -280,12 +299,11 @@ const chart = new Chart(document.getElementById("carbon-chart"), {
                 grid: { color: gridColor },
                 border: { color: gridColor },
                 ticks: {
-                    color: textColor,
                     autoSkip: false,
-                    // The chosen location's name in bold (context.chart, since this runs while the chart is created).
-                    font: context => ({
-                        weight: context.chart.data.labels[context.index] === regionsByCode.get(selectedCode)?.name ? "bold" : "normal",
-                    }),
+                    // The chosen location's name in bold and full colour (context.chart, since this runs while the
+                    // chart is created).
+                    color: context => isSelectedRow(context.chart, context.index) ? themeColor("--bs-emphasis-color") : textColor(),
+                    font: context => ({ weight: isSelectedRow(context.chart, context.index) ? "bold" : "normal" }),
                 },
             },
         },
