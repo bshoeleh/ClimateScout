@@ -310,8 +310,16 @@ body > .container {
     font-size: .875rem;
 }
 
-.cs-strategy-card.is-disabled .cs-strategy-link {
-    opacity: .55;
+/* A strategy blocked by a selected one: the whole card looks switched off (no fill, dashed edge, faded contents);
+   only the "Conflicts with …" note stays clear, since it says why. */
+.cs-strategy-card.is-disabled {
+    border-style: dashed;
+    background-color: transparent;
+}
+
+.cs-strategy-card.is-disabled .cs-strategy-link,
+.cs-strategy-card.is-disabled .cs-strategy-toggle {
+    opacity: .4;
 }
 
 .cs-strategy-card.is-disabled img {
