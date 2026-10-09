@@ -35,7 +35,13 @@
                             }
                             else
                             {
-                                @zone.Diagram.Name
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    @if (zone.Diagram.SvgAsset is not null)
+                                    {
+                                        <img src="~/img/media/@zone.Diagram.SvgAsset.StoragePath" alt="" class="cs-admin-diagram-thumb" loading="lazy" />
+                                    }
+                                    @zone.Diagram.Name
+                                </span>
                             }
                         </td>
                         <td class="small">@zone.Strategies.Count strategies</td>

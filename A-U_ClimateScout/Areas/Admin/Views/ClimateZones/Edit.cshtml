@@ -3,7 +3,8 @@
     ViewData["Title"] = $"{Model.KoppenCode} {Model.Name}";
     var strategies = (List<DesignStrategy>)ViewData["Strategies"]!;
     var ticked = Model.StrategyIds.ToHashSet();
-    var diagrams = (SelectList)ViewData["Diagrams"]!;
+    var diagrams = (List<Diagram>)ViewData["Diagrams"]!;
+    var chosenDiagram = diagrams.FirstOrDefault(d => d.Id == Model.DiagramId);
 }
 
 @section Styles {
@@ -42,11 +43,18 @@
             <span asp-validation-for="Color" class="text-danger small"></span>
             <div class="form-text">Visitors see a new colour within 10 minutes.</div>
         </div>
-        <div class="col-sm-6 col-md-3">
+        <div class="col-12 cs-admin-diagram-field">
             <label asp-for="DiagramId" class="form-label"></label>
-            <select asp-for="DiagramId" asp-items="diagrams" class="form-select">
+            @* Each option carries its artwork, so the preview below follows the choice (admin.js). *@
+            <select asp-for="DiagramId" class="form-select" data-preview="diagram-preview">
                 <option value="">None</option>
+                @foreach (var diagram in diagrams)
+                {
+                    <option value="@diagram.Id" data-image="@(diagram.SvgAsset is null ? null : Url.Content($"~/img/media/{diagram.SvgAsset.StoragePath}"))">@diagram.Name</option>
+                }
             </select>
+            <img id="diagram-preview" src="@(chosenDiagram?.SvgAsset is null ? null : Url.Content($"~/img/media/{chosenDiagram.SvgAsset.StoragePath}"))"
+                 alt="Preview of the chosen diagram" class="cs-admin-diagram-preview mt-2" hidden="@(chosenDiagram?.SvgAsset is null)" />
         </div>
 
         <div class="col-12">
@@ -71,7 +79,13 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="StrategyIds" value="@strategy.Id" id="strategy-@strategy.Id"
                                    checked="@ticked.Contains(strategy.Id)" />
-                            <label class="form-check-label" for="strategy-@strategy.Id">@strategy.Name</label>
+                            <label class="form-check-label d-inline-flex align-items-center gap-2" for="strategy-@strategy.Id">
+                                @if (strategy.ImageAsset is not null)
+                                {
+                                    <img src="~/img/media/@strategy.ImageAsset.StoragePath" alt="" width="28" height="28" loading="lazy" />
+                                }
+                                @strategy.Name
+                            </label>
                         </div>
                     </div>
                 }

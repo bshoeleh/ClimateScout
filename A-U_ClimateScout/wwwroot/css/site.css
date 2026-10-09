@@ -1060,9 +1060,12 @@ a.cs-zone-label:focus-visible {
 }
 
 /* Rich-text editor (Quill, snow theme): the site's font and colours in both themes. The text is the same size as
-   on the public pages (".ql-container" also matches, so Quill's own 13 px would otherwise win). */
+   on the public pages (".ql-container" also matches, so Quill's own 13 px would otherwise win). Quill's
+   "height: 100%" is replaced by the content's height: in a form row it made the box as tall as the whole column
+   (label and toolbar included), so it ran over the next field. */
 .cs-rich-text,
 .cs-rich-text.ql-container {
+    height: auto;
     min-height: 20rem;
     font-family: var(--bs-body-font-family);
     font-size: 1rem;
@@ -1143,6 +1146,31 @@ a.cs-zone-label:focus-visible {
 .cs-rich-text.cs-rich-text-short,
 .cs-rich-text-short .ql-editor {
     min-height: 8rem;
+}
+
+/* Climate zones: the diagram's artwork as a small thumbnail in the list, and a preview under the form's choice
+   (the choice and preview on their own row, no wider than half the form on large screens). */
+.cs-admin-diagram-field {
+    max-width: 36rem;
+}
+
+.cs-admin-diagram-thumb {
+    width: auto;
+    height: 2.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .25rem;
+}
+
+.cs-admin-diagram-preview {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+}
+
+.cs-admin-diagram-preview[hidden] {
+    display: none;
 }
 
 /* Logo thumbnail in admin lists and forms: on white, like most logos are made for. */

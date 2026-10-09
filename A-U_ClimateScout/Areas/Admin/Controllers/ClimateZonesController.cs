@@ -16,7 +16,7 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
     {
         public async Task<IActionResult> Index(CancellationToken cancellationToken) =>
             View(await db.ClimateZones.AsNoTracking()
-                .Include(z => z.Group).Include(z => z.Diagram).Include(z => z.Strategies)
+                .Include(z => z.Group).Include(z => z.Diagram!).ThenInclude(d => d.SvgAsset).Include(z => z.Strategies)
                 .OrderBy(z => z.Group.SortOrder).ThenBy(z => z.SortOrder).ToListAsync(cancellationToken));
 
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
@@ -86,8 +86,9 @@ namespace A_U_ClimateScout.Areas.Admin.Controllers
 
         private async Task FillChoicesAsync(CancellationToken cancellationToken)
         {
-            ViewData["Diagrams"] = new SelectList(await db.Diagrams.AsNoTracking().OrderBy(d => d.Name).ToListAsync(cancellationToken), "Id", "Name");
-            ViewData["Strategies"] = await db.DesignStrategies.AsNoTracking().OrderBy(s => s.Name).ToListAsync(cancellationToken);
+            // With their artwork and icons, so the form can show the chosen diagram and each strategy's icon.
+            ViewData["Diagrams"] = await db.Diagrams.AsNoTracking().Include(d => d.SvgAsset).OrderBy(d => d.Name).ToListAsync(cancellationToken);
+            ViewData["Strategies"] = await db.DesignStrategies.AsNoTracking().Include(s => s.ImageAsset).OrderBy(s => s.Name).ToListAsync(cancellationToken);
         }
     }
 }
