@@ -1,6 +1,7 @@
 // Shared setup for the site's maps (plan §5): the base map through our /map/tiles proxy, the credits, the locate
 // button and the address search box. Each page passes the settings its controller put in the page (MapSettings).
 /* global L */
+import { addCountryLabels } from "./map-labels.js";
 
 export function createMap(elementId, settings) {
     const map = L.map(elementId, { minZoom: settings.minZoom, maxZoom: settings.maxZoom, worldCopyJump: true })
@@ -12,6 +13,8 @@ export function createMap(elementId, settings) {
         maxZoom: settings.maxZoom,
         className: "cs-map-tiles",
     }).addTo(map);
+    addCountryLabels(map, settings.labelsUrl)
+        .catch(error => console.error("Map: could not load the country names.", error));
     L.control.locate({ flyTo: true, strings: { title: "Show my location" } }).addTo(map);
     new SearchControl({ geocodeUrl: settings.geocodeUrl }).addTo(map);
     // Printing: before the page is laid out for paper, size the map to the paper's text width (6.75 in fits Letter

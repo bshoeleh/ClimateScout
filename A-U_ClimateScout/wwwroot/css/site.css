@@ -630,6 +630,24 @@ a.cs-zone-label:focus-visible {
     opacity: .6;
 }
 
+/* Country names over the map colours (map-labels.js): centred on their point, with a halo so they read on any colour. */
+.cs-map-label span {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: #212529;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 4px #fff;
+    pointer-events: none;
+}
+
+[data-bs-theme="dark"] .cs-map-label span {
+    color: #fff;
+    text-shadow: 0 0 2px #000, 0 0 2px #000, 0 0 4px #000;
+}
+
 .cs-zone-filter {
     display: flex;
     flex-wrap: wrap;
