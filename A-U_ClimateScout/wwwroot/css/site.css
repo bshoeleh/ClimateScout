@@ -1059,8 +1059,10 @@ a.cs-zone-label:focus-visible {
     overflow-wrap: anywhere;
 }
 
-/* Rich-text editor (Quill, snow theme): the site's font and colours in both themes. */
-.cs-rich-text {
+/* Rich-text editor (Quill, snow theme): the site's font and colours in both themes. The text is the same size as
+   on the public pages (".ql-container" also matches, so Quill's own 13 px would otherwise win). */
+.cs-rich-text,
+.cs-rich-text.ql-container {
     min-height: 20rem;
     font-family: var(--bs-body-font-family);
     font-size: 1rem;
