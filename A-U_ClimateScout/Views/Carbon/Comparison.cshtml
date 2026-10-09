@@ -41,27 +41,20 @@
     </nav>
     <h1>Carbon comparison</h1>
 
-    @if (Model.Selected is { } selected)
+    @* The location panel is always in the page (hidden without a location): the Location list in the calculator
+       fills it in when the visitor chooses another place (carbon-comparison.js). *@
+    <section class="cs-carbon-location mt-3" aria-labelledby="location-heading" aria-live="polite" data-location hidden="@(Model.Selected is null)">
+        <h2 id="location-heading" class="cs-carbon-location-name"><span data-location-name>@Model.Selected?.Name</span> <span class="cs-carbon-location-label">Grid carbon intensity</span></h2>
+        <div class="cs-carbon-location-value"><span data-location-value>@Model.Selected?.Value.ToString("N0")</span> <span class="fs-6">g CO₂e/kWh</span></div>
+        <div class="small">
+            <span data-location-year>@Model.Selected?.Year</span> ·
+            <a href="@(Model.Selected?.SourceUrl)" rel="noopener" data-location-source-link hidden="@(Model.Selected?.SourceUrl is null)">@Model.Selected?.Source</a>
+            <span data-location-source hidden="@(Model.Selected?.SourceUrl is not null)">@Model.Selected?.Source</span>
+        </div>
+    </section>
+    @if (Model.NoDataRegionName is not null)
     {
-        <section class="cs-carbon-location mt-3" aria-labelledby="location-heading">
-            <h2 id="location-heading" class="cs-carbon-location-name">@selected.Name <span class="cs-carbon-location-label">Grid carbon intensity</span></h2>
-            <div class="cs-carbon-location-value">@selected.Value.ToString("N0") <span class="fs-6">g CO₂e/kWh</span></div>
-            <div class="small">
-                @selected.Year ·
-                @if (selected.SourceUrl is not null)
-                {
-                    <a href="@selected.SourceUrl" rel="noopener">@selected.Source</a>
-                }
-                else
-                {
-                    @selected.Source
-                }
-            </div>
-        </section>
-    }
-    else if (Model.NoDataRegionName is not null)
-    {
-        <div class="alert alert-secondary mt-3">
+        <div class="alert alert-secondary mt-3" data-no-data>
             There is no grid carbon intensity for @Model.NoDataRegionName in our data yet. Choose another location, or enter a value in the calculator.
         </div>
     }

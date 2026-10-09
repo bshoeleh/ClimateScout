@@ -14,15 +14,46 @@ const form = document.getElementById("carbon-calculator");
 const result = document.getElementById("carbon-result");
 const field = name => form.elements[name];
 
-// Choosing a location fills in its grid intensity (still editable) and shows it in the chart.
+// Choosing a location makes it the page's location: the panel at the top, the page title and address (so a refresh
+// or a shared link shows the same place), its grid intensity in the calculator (still editable) and the chart.
 field("regionCode").addEventListener("change", () => {
     const region = regionsByCode.get(field("regionCode").value);
     selectedCode = region?.code ?? null;
     if (region) {
         field("gridIntensity").value = region.value;
     }
+    showLocation(region);
     showGroup((region && groupOf(region)) ?? currentGroup);
 });
+
+function showLocation(region) {
+    const panel = document.querySelector("[data-location]");
+    const part = name => panel.querySelector(`[data-location-${name}]`);
+    panel.hidden = !region;
+    document.querySelector("[data-no-data]")?.remove();
+    if (region) {
+        part("name").textContent = region.name;
+        part("value").textContent = number(region.value);
+        part("year").textContent = region.year;
+        part("source-link").textContent = part("source").textContent = region.source;
+        part("source-link").hidden = !region.sourceUrl;
+        part("source").hidden = Boolean(region.sourceUrl);
+        if (region.sourceUrl) {
+            part("source-link").href = region.sourceUrl;
+        }
+    }
+
+    const siteName = "Arcadis ClimateScout®";
+    document.title = `${region ? `Carbon comparison: ${region.name}` : "Carbon comparison"} · ${siteName}`;
+    const url = new URL(location.href);
+    url.searchParams.delete("l");   // the old site's ?l=Name form
+    if (region) {
+        url.searchParams.set("region", region.code);
+    } else {
+        url.searchParams.delete("region");
+    }
+    history.replaceState(null, "", url);
+}
 
 // As on the old site, the EUI unit implies the area unit: kBtu/ft² goes with ft², the metric ones with m².
 field("euiUnit").addEventListener("change", () => {
